@@ -333,4 +333,16 @@ which is very large. Sensible defaults were chosen and documented below:
 8. **Styling** — custom Tailwind palette rather than pulling a component
    library, to stay closer to Xero's own clean aesthetic.
 
+---
+
+## Disclaimer and limitation of liability
+
+This project is **free / open-source software**, provided **“as is”** and **without warranties of any kind**, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, title, and non-infringement.
+
+**No liability:** To the fullest extent permitted by applicable law, the maintainers, contributors, and copyright holders **disclaim all liability** for any direct, indirect, incidental, special, exemplary, or consequential damages, or any loss of profits, data, goodwill, or business interruption, arising out of or in connection with the use or inability to use this software — even if advised of the possibility of such damages.
+
+**Not professional advice:** goXero is **not** certified or audited accounting, tax, payroll, or legal software. Nothing in this repository constitutes financial, tax, legal, or regulatory advice. **You alone** are responsible for the accuracy of your books, filings, integrations, backups, security, and compliance with the laws and professional standards that apply to you and your organisation.
+
+**Use at your own risk:** Deploying goXero for production or regulated workloads is entirely **your decision** and **your responsibility**, including obtaining any licences, insurance, or professional review you may require.
+
 PRs welcome :)
