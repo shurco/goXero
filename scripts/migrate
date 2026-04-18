@@ -1,0 +1,278 @@
+#!/usr/bin/env bash
+
+# Migration script for goXero (standalone goose CLI; same UX as Luna scripts/migrate)
+# Install: go install github.com/pressly/goose/v3/cmd/goose@latest
+# Usage: ./scripts/migrate [command] [options]
+#
+# Commands:
+#   up                 Apply all pending core migrations (migrations/)
+#   up-by-one          Apply next pending core migration
+#   up-to VERSION      Apply core migrations up to specific version
+#   down               Roll back last applied core migration
+#   down-to VERSION    Roll back core to specific version
+#   reset              Roll back all core migrations
+#   redo               Re-run last core migration
+#   status             Show core migration status
+#   version            Show current core DB version
+#   create NAME [sql]  Create a new migration file under migrations/ (default type: sql)
+#
+# Dev (core + fixtures):
+#   dev up             Core up, then fixtures up (migrations/fixtures/, table goose_fixtures)
+#   dev down           One fixture down if applied; else one core down
+#   dev reset          Fixtures reset, then core reset
+#   dev status | version
+#   dev up-to V        Core up-to V, then fixtures up
+#   dev down-to V      Fixtures reset, then core down-to V
+#
+# Examples:
+#   ./scripts/migrate up
+#   ./scripts/migrate dev up
+#   ./scripts/migrate down
+#   ./scripts/migrate reset
+#   ./scripts/migrate status
+#   ./scripts/migrate up-to 00009
+#   ./scripts/migrate create add_users sql
+
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MIGRATIONS_DIR="${ROOT_PATH}/migrations"
+FIXTURES_DIR="${ROOT_PATH}/migrations/fixtures"
+GOOSE_FIXTURES_TABLE="goose_fixtures"
+
+# shellcheck source=/dev/null
+source "${ROOT_PATH}/scripts/_helper"
+
+load_env() {
+    local env_file="${ROOT_PATH}/.env"
+
+    if [ ! -f "$env_file" ]; then
+        print_answer "Error: .env file not found at $env_file" red
+        print_answer "Please create .env file based on .env.example" yellow
+        exit 1
+    fi
+
+    set -a
+    # shellcheck source=/dev/null
+    source "$env_file"
+    set +a
+
+    if [ -n "${DB_HOST}" ] && [ -n "${DB_USER}" ] && [ -n "${DB_PASSWORD}" ] && [ -n "${DB_NAME}" ]; then
+        export DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT:-5432}/${DB_NAME}?sslmode=${DB_SSL_MODE:-disable}"
+    else
+        print_answer "Error: set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME in .env" red
+        exit 1
+    fi
+}
+
+check_goose() {
+    if ! command_exists goose; then
+        local gopath_bin="${GOBIN}/goose"
+        if [ -x "$gopath_bin" ]; then
+            export PATH="${PATH}:${GOBIN}"
+        else
+            print_answer "Error: goose is not installed" red
+            print_answer "Install goose with: go install github.com/pressly/goose/v3/cmd/goose@latest" yellow
+            exit 1
+        fi
+    fi
+}
+
+run_goose_db() {
+    local command=$1
+    shift
+
+    print_answer "Running: goose -dir migrations postgres \"\$DATABASE_URL\" $command $*" grey
+
+    if goose -dir "${MIGRATIONS_DIR}" postgres "$DATABASE_URL" $command "$@"; then
+        print_answer "✓ Core migration '$command $*' completed successfully" green
+    else
+        print_answer "✗ Core migration '$command $*' failed" red
+        exit 1
+    fi
+}
+
+run_goose_fixtures() {
+    local command=$1
+    shift
+
+    print_answer "Running: goose -dir migrations/fixtures -table ${GOOSE_FIXTURES_TABLE} postgres \"\$DATABASE_URL\" $command $*" grey
+
+    if goose -dir "${FIXTURES_DIR}" -table "${GOOSE_FIXTURES_TABLE}" postgres "$DATABASE_URL" $command "$@"; then
+        print_answer "✓ Fixtures '$command $*' completed successfully" green
+    else
+        print_answer "✗ Fixtures '$command $*' failed" red
+        exit 1
+    fi
+}
+
+# Roll back one fixture migration if possible; otherwise one core migration.
+run_dev_down() {
+    local out ec
+    out=$(goose -dir "${FIXTURES_DIR}" -table "${GOOSE_FIXTURES_TABLE}" postgres "$DATABASE_URL" down "$@" 2>&1)
+    ec=$?
+    if [ "$ec" -eq 0 ]; then
+        print_answer "✓ Rolled back one fixture migration" green
+        return 0
+    fi
+    if echo "$out" | grep -qiE 'no migration|no next version|version 0|nothing to roll|already at version zero'; then
+        print_answer "No fixture steps to roll back; rolling back one core migration" grey
+        run_goose_db down "$@"
+        return 0
+    fi
+    print_answer "$out" red
+    exit 1
+}
+
+run_goose_create() {
+    if [ $# -lt 1 ]; then
+        print_answer "Usage: $0 create NAME [sql]" red
+        exit 1
+    fi
+    print_answer "Running: goose -dir migrations create $*" grey
+    if goose -dir "${MIGRATIONS_DIR}" create "$@"; then
+        print_answer "✓ Migration file(s) created" green
+    else
+        print_answer "✗ goose create failed" red
+        exit 1
+    fi
+}
+
+show_usage() {
+    echo "goXero Database Migration Script"
+    echo "Usage: $0 [command] [options]"
+    echo "       $0 dev [command] [options]"
+    echo ""
+    echo "Core commands (migrations/ only):"
+    echo "  up                 Apply all pending migrations"
+    echo "  up-by-one          Apply next pending migration"
+    echo "  up-to VERSION      Apply migrations up to specific version"
+    echo "  down               Roll back last applied migration"
+    echo "  down-to VERSION    Roll back to specific version"
+    echo "  reset              Roll back all migrations"
+    echo "  redo               Re-run last migration"
+    echo "  status             Show migration status"
+    echo "  version            Show current database version"
+    echo "  create NAME [sql]  Create a new migration file (default type: sql)"
+    echo ""
+    echo "Dev commands (core first, then migrations/fixtures via table goose_fixtures):"
+    echo "  dev up             Core up, then fixtures up"
+    echo "  dev down           One fixture down if any; else one core down"
+    echo "  dev reset          Fixtures reset, then core reset"
+    echo "  dev status         Core status, then fixtures status"
+    echo "  dev version        Core version, then fixtures version"
+    echo "  dev up-to VERSION  Core up-to VERSION, then fixtures up"
+    echo "  dev down-to V      Fixtures reset, then core down-to V"
+    echo ""
+    echo "Examples:"
+    echo "  $0 up"
+    echo "  $0 dev up"
+    echo "  $0 down"
+    echo "  $0 reset"
+    echo "  $0 status"
+    echo "  $0 up-to 00009"
+    echo "  $0 down-to 00008"
+    echo "  $0 create add_users sql"
+    echo ""
+    echo "Prerequisite:"
+    echo "  go install github.com/pressly/goose/v3/cmd/goose@latest"
+    echo ""
+    echo "Environment:"
+    echo "  Reads .env: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME (optional: DB_PORT, DB_SSL_MODE)"
+    echo "Fixtures:"
+    echo "  See migrations/fixtures/README.md"
+}
+
+handle_dev() {
+    if [ $# -eq 0 ]; then
+        print_answer "Usage: $0 dev {up|down|reset|status|version|up-to|down-to} [...]" red
+        exit 1
+    fi
+
+    local sub=$1
+    shift
+
+    print_header "Database Migration (dev: core + fixtures): $sub"
+    load_env
+    check_goose
+
+    case $sub in
+        up)
+            run_goose_db up "$@"
+            run_goose_fixtures up "$@"
+            ;;
+        down)
+            run_dev_down "$@"
+            ;;
+        reset)
+            run_goose_fixtures reset "$@"
+            run_goose_db reset "$@"
+            ;;
+        status)
+            run_goose_db status "$@"
+            echo ""
+            run_goose_fixtures status "$@"
+            ;;
+        version)
+            run_goose_db version "$@"
+            echo ""
+            run_goose_fixtures version "$@"
+            ;;
+        up-to)
+            run_goose_db up-to "$@"
+            run_goose_fixtures up "$@"
+            ;;
+        down-to)
+            run_goose_fixtures reset "$@"
+            run_goose_db down-to "$@"
+            ;;
+        up-by-one|redo|create)
+            print_answer "dev $sub is not supported. Use: $0 dev up   or   $0 $sub (core only)" red
+            print_answer "To add a fixture file: goose -dir migrations/fixtures create name sql" yellow
+            exit 1
+            ;;
+        *)
+            print_answer "Unknown dev subcommand: $sub" red
+            echo ""
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+main() {
+    if [ $# -eq 0 ]; then
+        show_usage
+        exit 1
+    fi
+
+    local command=$1
+    shift
+
+    case $command in
+        "help"|"-h"|"--help")
+            show_usage
+            exit 0
+            ;;
+        "dev")
+            handle_dev "$@"
+            ;;
+        "create")
+            print_header "Database Migration: create"
+            check_goose
+            run_goose_create "$@"
+            ;;
+        "up"|"up-by-one"|"up-to"|"down"|"down-to"|"reset"|"redo"|"status"|"version")
+            print_header "Database Migration: $command"
+            load_env
+            check_goose
+            run_goose_db "$command" "$@"
+            ;;
+        *)
+            print_answer "Error: Unknown command '$command'" red
+            echo ""
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

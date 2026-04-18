@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+# Golang install/update script for goXero
+# Usage: ./scripts/golang [command]
+#
+# Commands:
+#   install   Install or update Go to the latest stable version (default)
+#   update    Alias for install
+#   help      Show this help
+#
+# Examples:
+#   ./scripts/golang
+#   ./scripts/golang install
+#   ./scripts/golang update
+
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=_helper
+source "${ROOT_PATH}/scripts/_helper"
+
+get_latest_go_version() {
+  curl -fsSL "https://golang.org/dl/" \
+    | grep -v -E 'go[0-9\.]+(beta|rc)' \
+    | grep -E -o 'go[0-9\.]+' \
+    | grep -E -o '[0-9]\.[0-9]+(\.[0-9]+)?' \
+    | sort -V \
+    | uniq \
+    | tail -1
+}
+
+install_go_darwin() {
+  print_header "Install/Update Golang (macOS)"
+  brew install go
+}
+
+install_go_linux() {
+  print_header "Install/Update Golang (Linux)"
+
+  support_arch
+  GO_RELEASE=$(get_latest_go_version)
+  GO_PATH="$HOME/go"
+
+  mkdir -p "${GO_PATH}"
+
+  if ! grep -q 'export GOROOT="\$HOME/go"' ~/.bashrc 2>/dev/null; then
+    echo 'export GOROOT="$HOME/go"' >> ~/.bashrc
+  fi
+
+  if ! grep -q 'export GOPATH="\$HOME/go/packages"' ~/.bashrc 2>/dev/null; then
+    echo 'export GOPATH="$HOME/go/packages"' >> ~/.bashrc
+  fi
+
+  if ! grep -q 'export PATH=\$PATH:\$GOROOT/bin:\$GOPATH/bin' ~/.bashrc 2>/dev/null; then
+    echo 'export PATH=$PATH:$GOROOT/bin:$GOPATH/bin' >> ~/.bashrc
+  fi
+
+  if [ -f ~/.bashrc ]; then
+    # shellcheck disable=SC1090
+    source ~/.bashrc
+  fi
+
+  print_answer "Downloading Go ${GO_RELEASE} for linux-amd64..." grey
+  curl -fsSL "https://dl.google.com/go/go${GO_RELEASE}.linux-amd64.tar.gz" \
+    | tar -xz --strip-components 1 -C "${GO_PATH}" >/dev/null 2>&1
+
+  print_answer "Go ${GO_RELEASE} installed in ${GO_PATH}" green
+}
+
+show_usage() {
+  echo "goXero Golang Script"
+  echo "Usage: $0 [command]"
+  echo ""
+  echo "Commands:"
+  echo "  install   Install or update Go to the latest stable version (default)"
+  echo "  update    Alias for install"
+  echo "  help      Show this help"
+  echo ""
+  echo "Examples:"
+  echo "  $0"
+  echo "  $0 install"
+  echo "  $0 update"
+}
+
+main() {
+  local command="${1:-install}"
+
+  case "${command}" in
+    "help"|"-h"|"--help")
+      show_usage
+      exit 0
+      ;;
+    "install"|"update")
+      case "${OS}" in
+        Darwin*)
+          install_go_darwin
+          ;;
+        Linux*)
+          install_go_linux
+          ;;
+        *)
+          print_answer "Unsupported OS: ${OS}" red
+          exit 1
+          ;;
+      esac
+      ;;
+    *)
+      print_answer "Error: Unknown command '${command}'" red
+      echo ""
+      show_usage
+      exit 1
+      ;;
+  esac
+
+  print_answer "SUCCESS" green
+}
+
+main "$@"

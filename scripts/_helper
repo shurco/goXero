@@ -1,0 +1,47 @@
+#!/bin/bash
+
+ARCH=$(uname -m)
+case $ARCH in
+i386) ARCH="386" ;;
+i686) ARCH="386" ;;
+x86_64) ARCH="amd64" ;;
+esac
+
+OS=$(uname -s)
+
+COLOR_GREY=$(tput setaf 0)
+COLOR_RED=$(tput setaf 1)
+COLOR_GREEN=$(tput setaf 2)
+COLOR_YELLOW=$(tput setaf 3)
+COLOR_RESET=$(tput sgr0)
+
+GOPATH=$(go env GOPATH)
+GOBIN=$(go env GOPATH)/bin
+
+support_arch() {
+  if [ "$ARCH" != "amd64" ]; then
+    print_answer "unsupported architecture: $ARCH" red
+    exit 1
+  fi
+}
+
+command_exists() {
+  command -v "$@" >/dev/null 2>&1
+}
+
+print_answer() {
+  local COLOR="$COLOR_RESET"
+  for flag in "$@"; do
+    case $flag in
+    grey) COLOR=$COLOR_GREY ;;
+    green) COLOR=$COLOR_GREEN ;;
+    yellow) COLOR=$COLOR_YELLOW ;;
+    red) COLOR=$COLOR_RED ;;
+    esac
+  done
+  echo "${COLOR}$1${COLOR_RESET}" >&2
+}
+
+print_header() {
+  printf "%.45s " "$* ........................................"
+}

@@ -1,0 +1,51 @@
+# --- Secrets / local env (keep *.example in git) ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# --- Go: binaries & tooling ---
+bin/
+*.exe
+*.dll
+*.dylib
+*.test
+vendor/
+
+# Test coverage & profiles
+*.out
+coverage.out
+coverage.html
+coverage/
+*.prof
+cpu.prof
+mem.prof
+
+# Delve / IDE debug binaries
+__debug*
+
+# --- Frontend (Bun: commit bun.lock; do not commit npm lock) ---
+web/node_modules/
+web/package-lock.json
+web/.svelte-kit/
+web/build/
+web/dist/
+web/.vite/
+web/.env
+web/.env.*
+!web/.env.example
+vite.config.*.timestamp-*
+
+# --- IDE ---
+.idea/
+.vscode/
+
+# --- OS & editor junk ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- Logs ---
+*.log

@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	html {
+		font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+	}
+	body {
+		@apply bg-ink-50 text-ink-800;
+	}
+	button {
+		cursor: pointer;
+	}
+}
+
+@layer components {
+	.btn {
+		@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium
+		       transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed;
+	}
+	.btn-primary   { @apply btn bg-brand-500 text-white hover:bg-brand-600 shadow-card; }
+	.btn-secondary { @apply btn bg-white text-ink-800 border border-ink-200 hover:bg-ink-50; }
+	.btn-ghost     { @apply btn text-ink-700 hover:bg-ink-100; }
+	.btn-danger    { @apply btn bg-red-500 text-white hover:bg-red-600; }
+
+	.input {
+		@apply w-full rounded-md border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 shadow-sm
+		       focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+	}
+	.select  { @apply input; }
+	.textarea { @apply input min-h-[96px] leading-relaxed; }
+	.label   { @apply block text-sm font-medium text-ink-700 mb-1.5; }
+
+	.card   { @apply rounded-lg bg-white shadow-card border border-ink-100; }
+	.card-p { @apply card p-6; }
+
+	.badge {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+	}
+	.badge-draft      { @apply badge bg-ink-100 text-ink-700; }
+	.badge-authorised { @apply badge bg-amber-100 text-amber-800; }
+	.badge-paid       { @apply badge bg-emerald-100 text-emerald-800; }
+	.badge-overdue    { @apply badge bg-red-100 text-red-700; }
+	.badge-archived   { @apply badge bg-ink-200 text-ink-700; }
+	.badge-active     { @apply badge bg-brand-100 text-brand-800; }
+
+	.table-auto-xero {
+		@apply w-full text-sm;
+	}
+	.table-auto-xero thead tr {
+		@apply bg-ink-50 text-ink-500 text-left uppercase text-xs tracking-wide;
+	}
+	.table-auto-xero thead th { @apply px-4 py-3 font-semibold; }
+	.table-auto-xero tbody tr {
+		@apply border-t border-ink-100 hover:bg-ink-50/60 transition;
+	}
+	.table-auto-xero tbody td { @apply px-4 py-3; }
+
+	/* ── Xero-style top navigation ───────────────────────────────── */
+	.topbar {
+		@apply bg-brand-500 text-white;
+	}
+	.topbar-nav-item {
+		@apply relative inline-flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium
+		       text-white/90 hover:bg-white/10 transition whitespace-nowrap;
+	}
+	.topbar-nav-item-active {
+		@apply bg-brand-800 text-white hover:bg-brand-800;
+	}
+	.topbar-icon-btn {
+		@apply inline-flex h-9 w-9 items-center justify-center rounded-full text-white/90 hover:bg-white/10 transition;
+	}
+
+	/* Dropdown card shown below a top-nav item. */
+	.nav-dropdown {
+		@apply absolute left-0 top-full mt-1 min-w-[260px] rounded-lg bg-white text-ink-800
+		       shadow-pop border border-ink-100 py-2 z-40;
+	}
+	.nav-dropdown-group-title {
+		@apply px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-ink-500;
+	}
+	.nav-dropdown-item {
+		@apply flex items-center justify-between gap-3 px-4 py-2 text-sm text-ink-800 hover:bg-ink-50
+		       transition cursor-pointer;
+	}
+	.nav-dropdown-item-active {
+		@apply bg-ink-100/70 font-medium;
+	}
+	.nav-dropdown-separator {
+		@apply my-2 border-t border-ink-100;
+	}
+
+	.section-title {
+		@apply text-2xl font-semibold text-ink-900 tracking-tight;
+	}
+	.muted { @apply text-ink-500; }
+}

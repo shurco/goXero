@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+
+# Kill script for goXero dev processes
+# Usage: ./scripts/kill [backend|frontend|all]
+#
+# Commands:
+#   backend     Kill API server (go run / bin/goxero on SERVER_PORT)
+#   frontend    Kill SvelteKit/Vite dev in web/ (FRONTEND_PORT)
+#   all         Kill backend and frontend
+#
+# On macOS (no pwdx) processes are matched by command line containing project path.
+#
+# Examples:
+#   ./scripts/kill backend
+#   ./scripts/kill frontend
+#   ./scripts/kill all
+
+ROOT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=_helper
+source "${ROOT_PATH}/scripts/_helper"
+
+BACKEND_PORT=${SERVER_PORT:-8080}
+FRONTEND_PORT=${FRONTEND_PORT:-5173}
+
+is_project_pid() {
+  local pid=$1
+  if command_exists pwdx; then
+    local cwd
+    cwd=$(pwdx "$pid" 2>/dev/null | awk '{print $2}')
+    [[ -n "$cwd" && "$cwd" == *"$ROOT_PATH"* ]]
+  else
+    local cmdline
+    cmdline=$(ps -p "$pid" -o command= 2>/dev/null)
+    [[ -n "$cmdline" && "$cmdline" == *"$ROOT_PATH"* ]]
+  fi
+}
+
+kill_by_port() {
+  local port=$1
+  local name=$2
+
+  print_header "Killing $name process on port $port"
+
+  local pid
+  pid=$(lsof -ti:"$port" 2>/dev/null)
+
+  if [ -z "$pid" ]; then
+    print_answer "No $name process found on port $port" yellow
+    return 0
+  fi
+
+  print_answer "Found $name process (PID: $pid) on port $port" grey
+
+  if kill -TERM $pid 2>/dev/null; then
+    print_answer "✓ Sent SIGTERM to $name process (PID: $pid)" green
+    sleep 2
+    if kill -0 $pid 2>/dev/null; then
+      print_answer "Process still running, sending SIGKILL..." yellow
+      if kill -KILL $pid 2>/dev/null; then
+        print_answer "✓ Force killed $name process (PID: $pid)" green
+      else
+        print_answer "✗ Failed to kill $name process (PID: $pid)" red
+        return 1
+      fi
+    else
+      print_answer "✓ $name process terminated gracefully" green
+    fi
+  else
+    print_answer "✗ Failed to send SIGTERM to $name process (PID: $pid)" red
+    return 1
+  fi
+
+  return 0
+}
+
+kill_backend() {
+  print_header "Killing goXero backend processes"
+
+  local backend_pids=""
+
+  for pattern in "go run.*cmd/server" "go run \\./cmd/server" "bin/goxero"; do
+    for pid in $(pgrep -f "$pattern" 2>/dev/null); do
+      if is_project_pid "$pid"; then
+        [[ " $backend_pids " != *" $pid "* ]] && backend_pids="$backend_pids $pid"
+      fi
+    done
+  done
+
+  if [ -n "$backend_pids" ]; then
+    for pid in $backend_pids; do
+      print_answer "Found goXero backend process (PID: $pid)" grey
+      if kill -TERM $pid 2>/dev/null; then
+        print_answer "✓ Sent SIGTERM to backend process (PID: $pid)" green
+      else
+        print_answer "✗ Failed to kill backend process (PID: $pid)" red
+      fi
+    done
+    sleep 2
+    local remaining=""
+    for pid in $backend_pids; do
+      if kill -0 $pid 2>/dev/null; then
+        remaining="$remaining $pid"
+      fi
+    done
+    if [ -n "$remaining" ]; then
+      print_answer "Some backend processes still running, force killing..." yellow
+      for pid in $remaining; do
+        kill -KILL $pid 2>/dev/null
+      done
+    fi
+  fi
+
+  local port_fallback_killed=""
+  local port_pid
+  port_pid=$(lsof -ti:"$BACKEND_PORT" 2>/dev/null)
+  if [ -n "$port_pid" ]; then
+    if is_project_pid "$port_pid"; then
+      kill_by_port "$BACKEND_PORT" "goXero API (port $BACKEND_PORT)"
+      port_fallback_killed=1
+    else
+      print_answer "Port $BACKEND_PORT is used by non-goXero process (PID: $port_pid), skipping" yellow
+    fi
+  fi
+
+  if [ -z "$backend_pids" ] && [ -z "$port_fallback_killed" ]; then
+    print_answer "No goXero backend process found" yellow
+  fi
+}
+
+is_frontend_pid() {
+  local pid=$1
+  if command_exists pwdx; then
+    local cwd
+    cwd=$(pwdx "$pid" 2>/dev/null | awk '{print $2}')
+    [[ -n "$cwd" && "$cwd" == *"$ROOT_PATH/web"* ]]
+  else
+    local cmdline
+    cmdline=$(ps -p "$pid" -o command= 2>/dev/null)
+    [[ -n "$cmdline" && "$cmdline" == *"$ROOT_PATH/web"* ]]
+  fi
+}
+
+kill_frontend() {
+  print_header "Killing goXero frontend processes"
+
+  local frontend_pids=""
+
+  for pattern in "vite" "svelte-kit" "bun.*dev"; do
+    for pid in $(pgrep -f "$pattern" 2>/dev/null); do
+      if is_frontend_pid "$pid"; then
+        [[ " $frontend_pids " != *" $pid "* ]] && frontend_pids="$frontend_pids $pid"
+      fi
+    done
+  done
+
+  if [ -n "$frontend_pids" ]; then
+    for pid in $frontend_pids; do
+      local cmdline
+      cmdline=$(ps -p "$pid" -o command= 2>/dev/null | head -1)
+      print_answer "Found goXero frontend process (PID: $pid): $cmdline" grey
+      if kill -TERM $pid 2>/dev/null; then
+        print_answer "✓ Sent SIGTERM to frontend process (PID: $pid)" green
+      else
+        print_answer "✗ Failed to kill frontend process (PID: $pid)" red
+      fi
+    done
+    sleep 2
+    local remaining=""
+    for pid in $frontend_pids; do
+      if kill -0 $pid 2>/dev/null; then
+        remaining="$remaining $pid"
+      fi
+    done
+    if [ -n "$remaining" ]; then
+      print_answer "Some frontend processes still running, force killing..." yellow
+      for pid in $remaining; do
+        kill -KILL $pid 2>/dev/null
+      done
+    fi
+  fi
+
+  local port_pid
+  port_pid=$(lsof -ti:"$FRONTEND_PORT" 2>/dev/null)
+  if [ -n "$port_pid" ]; then
+    if is_frontend_pid "$port_pid"; then
+      kill_by_port "$FRONTEND_PORT" "goXero frontend"
+    else
+      print_answer "Port $FRONTEND_PORT is used by non-goXero process (PID: $port_pid), skipping" yellow
+    fi
+  elif [ -z "$frontend_pids" ]; then
+    print_answer "No goXero frontend process found" yellow
+  fi
+}
+
+show_usage() {
+  echo "goXero Process Kill Script"
+  echo "Usage: $0 [command]"
+  echo ""
+  echo "Commands:"
+  echo "  backend     Kill Go API server (cmd/server)"
+  echo "  frontend    Kill SvelteKit/Vite dev in web/"
+  echo "  all         Kill backend and frontend"
+  echo ""
+  echo "Examples:"
+  echo "  $0 backend"
+  echo "  $0 frontend"
+  echo "  $0 all"
+  echo ""
+  echo "Environment:"
+  echo "  SERVER_PORT    - API port (default: 8080; same name as .env)"
+  echo "  FRONTEND_PORT  - Vite dev port (default: 5173)"
+}
+
+main() {
+  if [ $# -eq 0 ]; then
+    show_usage
+    exit 1
+  fi
+
+  local command=$1
+  shift
+
+  case $command in
+    "help"|"-h"|"--help")
+      show_usage
+      exit 0
+      ;;
+    "backend")
+      kill_backend
+      ;;
+    "frontend")
+      kill_frontend
+      ;;
+    "all")
+      kill_backend
+      echo ""
+      kill_frontend
+      ;;
+    *)
+      print_answer "Error: Unknown command '$command'" red
+      echo ""
+      show_usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

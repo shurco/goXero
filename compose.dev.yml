@@ -1,0 +1,54 @@
+volumes:
+  postgres_data: {}
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20M"
+    max-file: "10"
+
+x-resources: &default-resources
+  limits:
+    memory: 50M
+    cpus: "0.15"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: "no"
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-goxero}
+      POSTGRES_USER: ${POSTGRES_USER:-goxero}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-goxero}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-goxero} -d ${POSTGRES_DB:-goxero}"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    logging: *default-logging
+
+  # Postgres for DB-backed tests (pgtestdb). Run: docker compose -f compose.dev.yml up -d pgtestdb
+  # Tests default to localhost:5433, user postgres, password password — then: go test ./...
+  pgtestdb:
+    image: postgres:17-alpine
+    restart: "no"
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    command:
+      - "postgres"
+      - "-c"
+      - "fsync=off"
+      - "-c"
+      - "synchronous_commit=off"
+    tmpfs:
+      - /var/lib/postgresql/data
+    logging: *default-logging
