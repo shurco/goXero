@@ -10,6 +10,10 @@
 	}
 	export interface DropdownGroup {
 		title?: string;
+		/** Extra classes for the title row (e.g. emphasis colour). */
+		titleClass?: string;
+		/** Small icon after the title (e.g. favourite star). */
+		titleIcon?: 'star';
 		items: DropdownItem[];
 	}
 
@@ -105,7 +109,20 @@
 		<div class="nav-dropdown" role="menu" tabindex="-1" onmouseenter={show} onmouseleave={scheduleHide}>
 			{#each groups as group, gi}
 				{#if group.title}
-					<div class="nav-dropdown-group-title">{group.title}</div>
+					<div
+						class="nav-dropdown-group-title {group.titleClass ?? ''} {group.titleIcon ? 'flex items-center justify-between gap-2 pr-3' : ''}"
+					>
+						<span>{group.title}</span>
+						{#if group.titleIcon === 'star'}
+							<svg
+								class="h-3.5 w-3.5 shrink-0 fill-current text-brand-600"
+								viewBox="0 0 24 24"
+								aria-hidden="true"
+							>
+								<path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 17.8 5.7 21l2.3-7-6-4.6h7.6L12 2z" />
+							</svg>
+						{/if}
+					</div>
 				{/if}
 				{#each group.items as item}
 					{#if item.href}

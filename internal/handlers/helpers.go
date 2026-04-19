@@ -4,10 +4,12 @@ import (
 	"errors"
 	"log/slog"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	"github.com/shurco/goxero/internal/middleware"
 	"github.com/shurco/goxero/internal/models"
@@ -123,6 +125,44 @@ func parseOptionalUUID(raw, label string) (*uuid.UUID, error) {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "invalid "+label)
 	}
 	return &id, nil
+}
+
+// parseUUIDList converts a slice of raw strings (typically from JSON request
+// bodies like {"AttachmentIDs":[...]}) into uuid.UUIDs, returning a 400 Fiber
+// error when the list is empty or any entry is malformed.
+func parseUUIDList(strs []string) ([]uuid.UUID, error) {
+	if len(strs) == 0 {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "id list is required")
+	}
+	out := make([]uuid.UUID, 0, len(strs))
+	for _, s := range strs {
+		id, err := uuid.Parse(strings.TrimSpace(s))
+		if err != nil {
+			return nil, fiber.NewError(fiber.StatusBadRequest, "invalid id")
+		}
+		out = append(out, id)
+	}
+	return out, nil
+}
+
+// firstNonBlank returns the first argument that is not the empty string.
+// Handy for "take user value, else fall back to config default".
+func firstNonBlank(s ...string) string {
+	for _, v := range s {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+// zeroIfNil collapses a *decimal.Decimal (typically from an optional JSON
+// field) into a non-nil decimal.Decimal — decimal.Zero when nil.
+func zeroIfNil(d *decimal.Decimal) decimal.Decimal {
+	if d == nil {
+		return decimal.Zero
+	}
+	return *d
 }
 
 // paginationFromQuery extracts ?page and ?pageSize with the project's defaults

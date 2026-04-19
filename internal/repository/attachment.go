@@ -3,12 +3,21 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/shurco/goxero/internal/models"
+)
+
+// Org file inbox (Xero Files) — polymorphic row with subject_id = organisation_id.
+const (
+	SubjectOrgFile   = "ORGFILE"
+	FileFolderInbox  = "INBOX"
+	FileFolderArchive = "ARCHIVE"
 )
 
 // AttachmentRepository implements the polymorphic Attachments endpoint
@@ -83,6 +92,120 @@ func (r *AttachmentRepository) Fetch(ctx context.Context, orgID, attachmentID uu
 		return nil, nil, err
 	}
 	return &a, body, nil
+}
+
+// ListOrgFiles returns files for the organisation inbox or archive folder.
+func (r *AttachmentRepository) ListOrgFiles(ctx context.Context, orgID uuid.UUID, folder string, limit, offset int) ([]models.Attachment, int, error) {
+	folder = strings.ToUpper(strings.TrimSpace(folder))
+	if folder == "" {
+		folder = FileFolderInbox
+	}
+	if folder != FileFolderInbox && folder != FileFolderArchive {
+		return nil, 0, fmt.Errorf("invalid folder")
+	}
+	var total int
+	if err := r.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM attachments
+		 WHERE organisation_id=$1 AND subject_type=$2 AND subject_id=$1 AND COALESCE(file_folder,'')=$3`,
+		orgID, SubjectOrgFile, folder,
+	).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	if limit <= 0 {
+		limit = 100
+	}
+	if limit > 500 {
+		limit = 500
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	rows, err := r.pool.Query(ctx,
+		`SELECT attachment_id, file_name, COALESCE(mime_type,''),
+		        COALESCE(size_bytes,0), include_online, COALESCE(file_folder,''), created_at
+		   FROM attachments
+		  WHERE organisation_id=$1 AND subject_type=$2 AND subject_id=$1 AND COALESCE(file_folder,'')=$3
+		  ORDER BY created_at DESC
+		  LIMIT $4 OFFSET $5`,
+		orgID, SubjectOrgFile, folder, limit, offset,
+	)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	var out []models.Attachment
+	for rows.Next() {
+		var a models.Attachment
+		if err := rows.Scan(&a.AttachmentID, &a.FileName, &a.MimeType, &a.ContentLength, &a.IncludeOnline, &a.FileFolder, &a.CreatedDateUTC); err != nil {
+			return nil, 0, err
+		}
+		out = append(out, a)
+	}
+	return out, total, rows.Err()
+}
+
+// InsertOrgFile stores a blob in the organisation Files area.
+func (r *AttachmentRepository) InsertOrgFile(
+	ctx context.Context, orgID uuid.UUID,
+	folder, filename, mime string, body []byte,
+) (*models.Attachment, error) {
+	folder = strings.ToUpper(strings.TrimSpace(folder))
+	if folder == "" {
+		folder = FileFolderInbox
+	}
+	if folder != FileFolderInbox && folder != FileFolderArchive {
+		return nil, fmt.Errorf("invalid folder")
+	}
+	fn := strings.TrimSpace(filename)
+	if fn == "" {
+		return nil, fmt.Errorf("filename required")
+	}
+	var a models.Attachment
+	err := r.pool.QueryRow(ctx,
+		`INSERT INTO attachments (
+			organisation_id, subject_type, subject_id,
+			file_name, mime_type, size_bytes, content, include_online, file_folder)
+		 VALUES ($1,$2,$1,$3,NULLIF($4,''),$5,$6,false,$7)
+		 RETURNING attachment_id, file_name, COALESCE(mime_type,''),
+		           COALESCE(size_bytes,0), include_online, COALESCE(file_folder,''), created_at`,
+		orgID, SubjectOrgFile, fn, mime, int64(len(body)), body, folder,
+	).Scan(&a.AttachmentID, &a.FileName, &a.MimeType, &a.ContentLength, &a.IncludeOnline, &a.FileFolder, &a.CreatedDateUTC)
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+// MoveOrgFiles sets folder for the given attachment ids (ORGFILE rows only).
+func (r *AttachmentRepository) MoveOrgFiles(ctx context.Context, orgID uuid.UUID, ids []uuid.UUID, folder string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	folder = strings.ToUpper(strings.TrimSpace(folder))
+	if folder != FileFolderInbox && folder != FileFolderArchive {
+		return fmt.Errorf("invalid folder")
+	}
+	_, err := r.pool.Exec(ctx,
+		`UPDATE attachments SET file_folder=$3
+		  WHERE organisation_id=$1 AND subject_type=$4 AND subject_id=$1
+		    AND attachment_id = ANY($2::uuid[])`,
+		orgID, ids, folder, SubjectOrgFile,
+	)
+	return err
+}
+
+// DeleteOrgFiles removes organisation file rows.
+func (r *AttachmentRepository) DeleteOrgFiles(ctx context.Context, orgID uuid.UUID, ids []uuid.UUID) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	_, err := r.pool.Exec(ctx,
+		`DELETE FROM attachments
+		  WHERE organisation_id=$1 AND subject_type=$2 AND subject_id=$1
+		    AND attachment_id = ANY($3::uuid[])`,
+		orgID, SubjectOrgFile, ids,
+	)
+	return err
 }
 
 // HistoryRepository mirrors the History & Notes endpoint.

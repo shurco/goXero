@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -210,6 +211,42 @@ func TestNoContentReturns204(t *testing.T) {
 	resp, err := app.Test(req, fiber.TestConfig{Timeout: -1})
 	require.NoError(t, err)
 	assert.Equal(t, fiber.StatusNoContent, resp.StatusCode)
+}
+
+func TestParseUUIDListHappyPath(t *testing.T) {
+	a, b := uuid.New(), uuid.New()
+	ids, err := parseUUIDList([]string{a.String(), "  " + b.String() + "  "})
+	require.NoError(t, err)
+	require.Len(t, ids, 2)
+	assert.Equal(t, a, ids[0])
+	assert.Equal(t, b, ids[1])
+}
+
+func TestParseUUIDListEmpty(t *testing.T) {
+	_, err := parseUUIDList(nil)
+	var fe *fiber.Error
+	require.ErrorAs(t, err, &fe)
+	assert.Equal(t, fiber.StatusBadRequest, fe.Code)
+}
+
+func TestParseUUIDListInvalid(t *testing.T) {
+	_, err := parseUUIDList([]string{uuid.New().String(), "not-a-uuid"})
+	var fe *fiber.Error
+	require.ErrorAs(t, err, &fe)
+	assert.Equal(t, fiber.StatusBadRequest, fe.Code)
+}
+
+func TestFirstNonBlank(t *testing.T) {
+	assert.Equal(t, "a", firstNonBlank("", "a", "b"))
+	assert.Equal(t, "b", firstNonBlank("", "b"))
+	assert.Empty(t, firstNonBlank())
+	assert.Empty(t, firstNonBlank("", ""))
+}
+
+func TestZeroIfNil(t *testing.T) {
+	assert.True(t, zeroIfNil(nil).IsZero())
+	d := decimal.NewFromInt(5)
+	assert.Equal(t, d, zeroIfNil(&d))
 }
 
 func TestAttachmentSubjectMapCompleteness(t *testing.T) {

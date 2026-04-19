@@ -1,21 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { session } from '$lib/stores/session';
-	import { authApi, orgApi } from '$lib/api';
+	import { authApi } from '$lib/api';
 	import NavDropdown from './NavDropdown.svelte';
+	import CreateOrganisationModal from './CreateOrganisationModal.svelte';
 	import type { DropdownGroup } from './NavDropdown.svelte';
 	import type { TenantSummary } from '$lib/types';
+	import { getReportRowByKey, reportFavourites } from '$lib/reports-favourites.svelte';
+	import type { FlatReportRow } from '$lib/reports-catalog';
 
 	let tenantMenu = $state(false);
 	let userMenu = $state(false);
 	let quickAdd = $state(false);
 	let showCreateOrg = $state(false);
-
-	let newOrg = $state({ name: '', countryCode: '', baseCurrency: 'USD' });
-	let creatingOrg = $state(false);
-	let createError = $state('');
 
 	const salesGroups: DropdownGroup[] = [
 		{
@@ -43,42 +42,38 @@
 		}
 	];
 
-	const reportingGroups: DropdownGroup[] = [
+	const reportingFavouriteItems = $derived.by(() =>
+		reportFavourites.keys
+			.map((k) => getReportRowByKey(k))
+			.filter((r): r is FlatReportRow => !!r && r.href != null)
+			.map((r) => ({ label: r.label, href: r.href! }))
+	);
+
+	const reportingGroups = $derived.by((): DropdownGroup[] => [
 		{ items: [{ label: 'All reports', href: '/app/reports' }] },
-		{
-			title: 'Analytics',
-			items: [
-				{ label: 'Dashboards', href: '/app/reports/dashboards', iconAfter: 'external' },
-				{ label: 'Cash flow manager', href: '/app/reports/cash-flow' },
-				{ label: 'Visualisations', href: '/app/reports/visualisations', iconAfter: 'external' },
-				{ label: 'Business health scorecard', href: '/app/reports/health', iconAfter: 'external' }
-			]
-		},
-		{
-			title: 'Favourite reports',
-			items: [
-				{ label: 'Account Transactions', href: '/app/reports/account-transactions' },
-				{ label: 'Balance Sheet', href: '/app/reports/balance-sheet' },
-				{ label: 'General Ledger Detail', href: '/app/reports/general-ledger-detail' },
-				{ label: 'General Ledger Summary', href: '/app/reports/general-ledger' },
-				{ label: 'Income Statement (Profit and Loss)', href: '/app/reports/profit-and-loss' },
-				{ label: 'Sales Tax Report', href: '/app/reports/sales-tax' }
-			]
-		},
+		...(reportingFavouriteItems.length > 0
+			? [
+					{
+						title: 'Favourite reports',
+						titleClass: 'nav-dropdown-group-title-favourite',
+						titleIcon: 'star' as const,
+						items: reportingFavouriteItems
+					}
+				]
+			: []),
 		{
 			items: [
 				{ label: 'Short-term cash flow', href: '/app/reports/short-term-cash-flow' },
 				{ label: 'Business snapshot', href: '/app/reports/business-snapshot' }
 			]
 		}
-	];
+	]);
 
 	const accountingGroups: DropdownGroup[] = [
 		{
 			title: 'Banking',
 			items: [
 				{ label: 'Bank accounts', href: '/app/accounting/bank-accounts' },
-				{ label: 'Bank feeds', href: '/app/bank-feeds' },
 				{ label: 'Bank rules', href: '/app/accounting/bank-rules' }
 			]
 		},
@@ -86,8 +81,11 @@
 			title: 'Accounting tools',
 			items: [
 				{ label: 'Chart of accounts', href: '/app/accounts' },
+				{ label: 'Fixed assets', href: '/app/accounting/fixed-assets' },
 				{ label: 'Manual journals', href: '/app/accounting/manual-journals' },
-				{ label: 'Fixed assets', href: '/app/accounting/fixed-assets' }
+				{ label: 'Find and recode', href: '/app/accounting/find-and-recode' },
+				{ label: 'Assurance dashboard', href: '/app/accounting/assurance' },
+				{ label: 'History and notes', href: '/app/accounting/history-and-notes' }
 			]
 		}
 	];
@@ -152,6 +150,29 @@
 		$session.tenants.find((t) => t.organisationId === $session.tenantId)
 	);
 
+	const userDisplayName = $derived(
+		[$session.firstName, $session.lastName].filter(Boolean).join(' ').trim() ||
+			$session.email?.split('@')[0] ||
+			'User'
+	);
+
+	const orgSettingsActive = $derived($page.url.pathname.startsWith('/app/settings'));
+	const orgFilesActive = $derived($page.url.pathname.startsWith('/app/files'));
+
+	function orgInitials(name: string | undefined) {
+		if (!name?.trim()) return '?';
+		const parts = name.trim().split(/\s+/).filter(Boolean);
+		if (parts.length >= 2)
+			return (parts[0][0] + parts[parts.length - 1]![0]).toUpperCase();
+		return name.slice(0, 3).toUpperCase();
+	}
+
+	function orgAvatarColor(id: string) {
+		let h = 0;
+		for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+		return `hsl(${h % 360} 52% 46%)`;
+	}
+
 	function pickTenant(t: TenantSummary) {
 		session.setTenant(t.organisationId);
 		tenantMenu = false;
@@ -169,35 +190,6 @@
 		}
 		session.logout();
 		goto('/login');
-	}
-
-	async function createOrg() {
-		creatingOrg = true;
-		createError = '';
-		try {
-			await orgApi.create(newOrg);
-			// reload tenants and switch to the new one
-			const mine = await orgApi.mine();
-			const created = mine.organisations?.find((o) => o.Name === newOrg.name);
-			if (created) {
-				session.updateTenants(
-					mine.organisations.map((o) => ({
-						organisationId: o.OrganisationID,
-						name: o.Name,
-						baseCurrency: o.BaseCurrency
-					}))
-				);
-				session.setTenant(created.OrganisationID);
-				location.href = '/app';
-				return;
-			}
-			await invalidateAll();
-			showCreateOrg = false;
-		} catch (e) {
-			createError = (e as Error).message;
-		} finally {
-			creatingOrg = false;
-		}
 	}
 
 	// Close menus on navigation or outside click.
@@ -256,34 +248,104 @@
 				aria-expanded={tenantMenu}
 				onclick={() => (tenantMenu = !tenantMenu)}
 			>
-				<span class="max-w-[200px] truncate">{currentTenant?.name ?? 'Choose org'}</span>
+				<span class="max-w-[220px] truncate text-left">
+					{currentTenant?.name ?? 'Choose org'}
+					{#if currentTenant?.baseCurrency}
+						<span class="font-normal opacity-90"> ({currentTenant.baseCurrency})</span>
+					{/if}
+				</span>
 				<svg viewBox="0 0 24 24" class="h-4 w-4 fill-current"><path d="M7 10l5 5 5-5z" /></svg>
 			</button>
 			{#if tenantMenu}
-				<div class="absolute left-11 top-12 min-w-[260px] rounded-lg bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-50">
-					<div class="px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-ink-500">My organisations</div>
+				<div
+					class="absolute left-11 top-12 w-[min(100vw-2rem,300px)] rounded-xl bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-50"
+					role="menu"
+				>
+					{#if currentTenant}
+						<div class="px-4 pt-3 pb-2 flex gap-3 items-start">
+							<div
+								class="h-10 w-10 shrink-0 rounded flex items-center justify-center text-xs font-bold text-white shadow-sm"
+								style="background-color: {orgAvatarColor(currentTenant.organisationId)}"
+								aria-hidden="true"
+							>
+								{orgInitials(currentTenant.name)}
+							</div>
+							<div class="min-w-0 flex-1">
+								<p class="font-semibold text-ink-900 text-sm leading-snug break-words">
+									{currentTenant.name}
+								</p>
+								{#if currentTenant.baseCurrency}
+									<p class="text-xs text-ink-500 mt-0.5">{currentTenant.baseCurrency}</p>
+								{/if}
+							</div>
+						</div>
+						<div class="px-2 pb-1 space-y-0.5">
+							<a
+								href="/app/files"
+								class="topbar-org-menu-row {orgFilesActive ? 'topbar-org-menu-row-active' : ''}"
+								onclick={() => (tenantMenu = false)}
+								role="menuitem"
+							>
+								<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+									<path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+								<span>Files</span>
+							</a>
+							<a
+								href="/app/settings"
+								class="topbar-org-menu-row {orgSettingsActive ? 'topbar-org-menu-row-active' : ''}"
+								onclick={() => (tenantMenu = false)}
+								role="menuitem"
+							>
+								<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+									<path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke-linecap="round" />
+									<path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001.51 1 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+								<span>Settings</span>
+							</a>
+						</div>
+					{:else}
+						<p class="px-4 pt-3 pb-2 text-sm text-ink-600">Select an organisation to open Files and Settings.</p>
+					{/if}
+
+					<div class="nav-dropdown-separator"></div>
+					<div class="px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+						Organisation
+					</div>
 					{#each $session.tenants as t}
 						<button
 							type="button"
-							class="w-full text-left px-4 py-2 text-sm hover:bg-ink-50 flex items-center justify-between"
+							class="w-full text-left px-4 py-2 text-sm hover:bg-ink-50 flex items-center gap-3"
 							onclick={() => pickTenant(t)}
+							role="menuitem"
 						>
-							<span class="truncate">{t.name}</span>
+							<div
+								class="h-8 w-8 shrink-0 rounded flex items-center justify-center text-[10px] font-bold text-white"
+								style="background-color: {orgAvatarColor(t.organisationId)}"
+								aria-hidden="true"
+							>
+								{orgInitials(t.name)}
+							</div>
+							<span class="truncate flex-1">{t.name}</span>
 							{#if t.organisationId === $session.tenantId}
-								<span class="text-brand-600">✓</span>
+								<span class="text-brand-600 text-xs shrink-0" aria-label="Current">✓</span>
 							{/if}
 						</button>
 					{/each}
 					{#if $session.tenants.length === 0}
 						<div class="px-4 py-2 text-sm text-ink-500">No organisations yet.</div>
 					{/if}
-					<div class="nav-dropdown-separator"></div>
 					<button
 						type="button"
-						class="w-full text-left px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 font-medium"
-						onclick={() => { tenantMenu = false; showCreateOrg = true; }}
+						class="w-full text-left px-4 py-2.5 text-sm text-ink-800 hover:bg-ink-50 flex items-center gap-3"
+						onclick={() => {
+							tenantMenu = false;
+							showCreateOrg = true;
+						}}
+						role="menuitem"
 					>
-						+ Add a new organisation
+						<span class="inline-flex h-8 w-8 items-center justify-center rounded border border-ink-200 bg-ink-50 text-ink-600 font-semibold" aria-hidden="true">+</span>
+						<span class="font-medium">Add new organisation</span>
 					</button>
 				</div>
 			{/if}
@@ -301,16 +363,12 @@
 				label="Sales"
 				href="/app/sales"
 				groups={salesGroups}
-				settingsHref="/app/sales/settings"
-				settingsLabel="Sales settings"
 				isActive={salesActive}
 			/>
 			<NavDropdown
 				label="Purchases"
 				href="/app/purchases"
 				groups={purchasesGroups}
-				settingsHref="/app/purchases/settings"
-				settingsLabel="Purchases settings"
 				isActive={purchasesActive}
 			/>
 			<NavDropdown
@@ -323,24 +381,18 @@
 				label="Accounting"
 				href="/app/accounting"
 				groups={accountingGroups}
-				settingsHref="/app/accounting/settings"
-				settingsLabel="Accounting settings"
 				isActive={accountingActive}
 			/>
 			<NavDropdown
 				label="Tax"
 				href="/app/tax"
 				groups={taxGroups}
-				settingsHref="/app/tax/settings"
-				settingsLabel="Tax settings"
 				isActive={taxActive}
 			/>
 			<NavDropdown
 				label="Contacts"
 				href="/app/contacts"
 				groups={contactsGroups}
-				settingsHref="/app/contacts/settings"
-				settingsLabel="Contacts settings"
 				isActive={contactsActive}
 			/>
 		</nav>
@@ -351,29 +403,112 @@
 				<button
 					type="button"
 					class="topbar-icon-btn"
-					aria-label="Create"
+					aria-label="Create new"
+					aria-haspopup="menu"
 					aria-expanded={quickAdd}
 					onclick={() => (quickAdd = !quickAdd)}
 				>
 					<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z" /></svg>
 				</button>
 				{#if quickAdd}
-					<div class="absolute right-0 mt-1 min-w-[220px] rounded-lg bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-50">
-						<a class="nav-dropdown-item" href="/app/invoices/new" onclick={() => (quickAdd = false)}>New invoice</a>
-						<a class="nav-dropdown-item" href="/app/purchases/bills/new" onclick={() => (quickAdd = false)}>New bill</a>
-						<a class="nav-dropdown-item" href="/app/contacts/new" onclick={() => (quickAdd = false)}>New contact</a>
-						<a class="nav-dropdown-item" href="/app/sales/quotes/new" onclick={() => (quickAdd = false)}>New quote</a>
+					<div
+						class="absolute right-0 mt-1 w-[min(100vw-2rem,280px)] rounded-xl bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-50"
+						role="menu"
+						aria-label="Create"
+					>
+						<button
+							type="button"
+							class="nav-dropdown-item w-full text-left border-0 bg-transparent font-inherit"
+							role="menuitem"
+							onclick={() => {
+								quickAdd = false;
+								showCreateOrg = true;
+							}}
+						>
+							New organisation
+						</button>
+
+						<div class="nav-dropdown-separator"></div>
+
+						<div class="nav-dropdown-group-title !pt-1">Create new</div>
+
+						<a
+							class="nav-dropdown-item"
+							href="/app/invoices/new"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Invoice
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/purchases/bills/new"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Bill
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/contacts/new"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Contact
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/sales/quotes/new"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Quote
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/purchases/orders/new"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Purchase order
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/accounting/manual-journals"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Manual journal
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/bank-transactions"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Spend money
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/bank-transactions"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Receive money
+						</a>
+						<a
+							class="nav-dropdown-item"
+							href="/app/bank-transactions"
+							role="menuitem"
+							onclick={() => (quickAdd = false)}
+						>
+							Transfer money
+						</a>
 					</div>
 				{/if}
 			</div>
 			<button type="button" class="topbar-icon-btn" aria-label="Search">
 				<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" /></svg>
-			</button>
-			<button type="button" class="topbar-icon-btn" aria-label="Help">
-				<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 17h-2v-2h2v2zm2.1-7.8-.9.9c-.7.8-1.2 1.4-1.2 2.9h-2v-.5c0-1.1.5-2.1 1.2-2.9l1.2-1.3c.4-.4.6-.9.6-1.4a2 2 0 1 0-4 0H7a4 4 0 0 1 8 0c0 .8-.3 1.5-.9 2z" /></svg>
-			</button>
-			<button type="button" class="topbar-icon-btn" aria-label="Notifications">
-				<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z" /></svg>
 			</button>
 
 			<div class="relative" bind:this={userMenuRoot}>
@@ -387,19 +522,50 @@
 					{($session.firstName || $session.email || '?')[0].toUpperCase()}
 				</button>
 				{#if userMenu}
-					<div class="absolute right-0 mt-1 min-w-[240px] rounded-lg bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-50">
-						<div class="px-4 py-2 text-xs text-ink-500">
-							Signed in as
-							<div class="font-medium text-ink-900">{$session.email}</div>
+					<div
+						class="absolute right-0 mt-1 w-[min(100vw-2rem,280px)] rounded-xl bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-50"
+						role="menu"
+					>
+						<div class="px-4 pt-3 pb-2 text-xs font-bold uppercase tracking-wide text-brand-900">
+							{userDisplayName}
+						</div>
+						<div class="px-2 pb-1 space-y-0.5">
+							<a
+								href="/app/profile"
+								class="topbar-user-menu-row"
+								onclick={() => (userMenu = false)}
+								role="menuitem"
+							>
+								<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+									<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+								<span>Profile</span>
+							</a>
+							<a
+								href="/app/account"
+								class="topbar-user-menu-row"
+								onclick={() => (userMenu = false)}
+								role="menuitem"
+							>
+								<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+									<path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke-linecap="round" />
+									<path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001.51 1 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+								<span>Account</span>
+							</a>
 						</div>
 						<div class="nav-dropdown-separator"></div>
 						<button
 							type="button"
-							class="w-full text-left nav-dropdown-item"
-							onclick={() => { userMenu = false; showCreateOrg = true; }}
-						>Add a new organisation</button>
-						<a class="nav-dropdown-item" href="/app/settings" onclick={() => (userMenu = false)}>Settings</a>
-						<button class="nav-dropdown-item w-full text-left" onclick={logout}>Sign out</button>
+							class="topbar-user-menu-row w-full text-left"
+							onclick={logout}
+							role="menuitem"
+						>
+							<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-ink-500" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+								<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+							<span>Log out</span>
+						</button>
 					</div>
 				{/if}
 			</div>
@@ -407,43 +573,4 @@
 	</div>
 </header>
 
-{#if showCreateOrg}
-	<div class="fixed inset-0 bg-ink-900/40 flex items-center justify-center z-[60] p-4" role="dialog" aria-modal="true">
-		<div class="bg-white rounded-xl shadow-pop w-full max-w-md">
-			<div class="p-5 border-b border-ink-100 flex items-center justify-between">
-				<h3 class="font-semibold text-lg">Add a new organisation</h3>
-				<button type="button" class="btn-ghost" onclick={() => (showCreateOrg = false)} aria-label="Close">✕</button>
-			</div>
-			<div class="p-5 space-y-4">
-				<label class="block">
-					<span class="label">Organisation name *</span>
-					<input class="input" bind:value={newOrg.name} placeholder="Acme, Inc." />
-				</label>
-				<div class="grid grid-cols-2 gap-3">
-					<label class="block">
-						<span class="label">Country</span>
-						<input class="input" bind:value={newOrg.countryCode} maxlength="2" placeholder="US" />
-					</label>
-					<label class="block">
-						<span class="label">Base currency</span>
-						<input class="input" bind:value={newOrg.baseCurrency} maxlength="3" placeholder="USD" />
-					</label>
-				</div>
-				{#if createError}
-					<div class="text-sm text-red-700">{createError}</div>
-				{/if}
-			</div>
-			<div class="p-5 border-t border-ink-100 flex justify-end gap-2">
-				<button type="button" class="btn-secondary" onclick={() => (showCreateOrg = false)}>Cancel</button>
-				<button
-					type="button"
-					class="btn-primary"
-					onclick={createOrg}
-					disabled={!newOrg.name.trim() || creatingOrg}
-				>
-					{creatingOrg ? 'Creating…' : 'Create organisation'}
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+<CreateOrganisationModal bind:open={showCreateOrg} />

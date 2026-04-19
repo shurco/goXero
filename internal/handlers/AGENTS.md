@@ -37,12 +37,23 @@ Fiber v3 handlers. They depend on `internal/repository` for persistence and
 * **Pagination** — read `?page` / `?pageSize` via `paginationFromQuery(c)`.
   Rolling your own `strconv.Atoi` on those query params is a DRY violation and
   will be rejected in review.
+* **UUID list bodies** — endpoints that take `{"XxxIDs":["..."]}` (bank rule
+  bulk delete, org-file move/delete, …) must parse via `parseUUIDList(body.Xxx)`
+  from `helpers.go`. It rejects empty lists and malformed entries with 400
+  Fiber errors uniformly.
+* **Default fallbacks** — use `firstNonBlank(userValue, defaultValue)` instead
+  of hand-rolled `if v == "" {...}` ladders. Decimal optional fields collapse
+  via `zeroIfNil(*decimal.Decimal)` → `decimal.Zero` when absent.
 
 ## Tests
 
 `helpers_test.go` covers error masking + optional UUID parsing; extend here when
 adding helpers. Repository-bound handlers stay integration-test territory and
-live next to `internal/repository` when added.
+live next to `internal/repository` when added. HTTP-level CRUD for new modules
+lives in the same package (`*_integration_test.go`) and uses the shared
+`newHarness(t)` + `appHarness.do` helpers from `http_integration_test.go`; see
+`bank_rule_integration_test.go` for the current pattern (including a
+`newMultipartUpload` helper for file-upload endpoints).
 
 ## Route map (`/api/v1`)
 
@@ -85,6 +96,14 @@ New handlers must be added here so the SPA's `web/src/lib/api.ts` stays in sync.
   + `PUT /api/v1/tracking-categories/{id}/options`
 * `Currencies`       — `GET/POST /api/v1/currencies`
 * `BrandingThemes`   — `GET/POST /api/v1/branding-themes`
+* `BankRules`        — `GET/POST/PUT/DELETE /api/v1/bank-rules[/{id}]` (`bank_rule.go`,
+  validated via `normaliseBankRule` — required `Name` + whitelisted
+  `RuleType ∈ {SPEND,RECEIVE,TRANSFER}`, `IsActive` is forwarded verbatim so
+  callers may create inactive rules).
+* `OrgFiles`         — `GET /api/v1/files[?folder=inbox|archive]`,
+  `POST /api/v1/files` (multipart `file=@…&folder=…`),
+  `POST /api/v1/files/move`, `POST /api/v1/files/delete` (`org_files.go`).
+  Uploads are capped at 25 MiB via `maxOrgFileUploadBytes`.
 
 ### Extra accounting resources (migration 00013)
 

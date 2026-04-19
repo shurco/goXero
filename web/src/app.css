@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 @layer base {
 	html {
@@ -19,31 +18,80 @@
 		@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium
 		       transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed;
 	}
-	.btn-primary   { @apply btn bg-brand-500 text-white hover:bg-brand-600 shadow-card; }
-	.btn-secondary { @apply btn bg-white text-ink-800 border border-ink-200 hover:bg-ink-50; }
-	.btn-ghost     { @apply btn text-ink-700 hover:bg-ink-100; }
-	.btn-danger    { @apply btn bg-red-500 text-white hover:bg-red-600; }
+	/* v4: @apply cannot chain custom component classes — repeat base utilities */
+	.btn-primary {
+		@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition
+			focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed
+			bg-brand-500 text-white hover:bg-brand-600 shadow-card;
+	}
+	.btn-secondary {
+		@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition
+			focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed
+			bg-white text-ink-800 border border-ink-200 hover:bg-ink-50;
+	}
+	.btn-ghost {
+		@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition
+			focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed
+			text-ink-700 hover:bg-ink-100;
+	}
+	.btn-danger {
+		@apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition
+			focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed
+			bg-red-500 text-white hover:bg-red-600;
+	}
+
+	.btn-secondary-sm {
+		@apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium
+		       bg-white text-ink-800 border border-ink-200 hover:bg-ink-50 transition
+		       focus:outline-none focus:ring-2 focus:ring-brand-100;
+	}
 
 	.input {
 		@apply w-full rounded-md border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 shadow-sm
 		       focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
 	}
-	.select  { @apply input; }
-	.textarea { @apply input min-h-[96px] leading-relaxed; }
+	.select {
+		@apply w-full rounded-md border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 shadow-sm
+			focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+	}
+	.textarea {
+		@apply w-full rounded-md border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 shadow-sm
+			focus:border-brand-500 focus:ring-2 focus:ring-brand-100 min-h-[96px] leading-relaxed;
+	}
 	.label   { @apply block text-sm font-medium text-ink-700 mb-1.5; }
 
 	.card   { @apply rounded-lg bg-white shadow-card border border-ink-100; }
-	.card-p { @apply card p-6; }
+	.card-p {
+		@apply rounded-lg bg-white shadow-card border border-ink-100 p-6;
+	}
 
 	.badge {
 		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
 	}
-	.badge-draft      { @apply badge bg-ink-100 text-ink-700; }
-	.badge-authorised { @apply badge bg-amber-100 text-amber-800; }
-	.badge-paid       { @apply badge bg-emerald-100 text-emerald-800; }
-	.badge-overdue    { @apply badge bg-red-100 text-red-700; }
-	.badge-archived   { @apply badge bg-ink-200 text-ink-700; }
-	.badge-active     { @apply badge bg-brand-100 text-brand-800; }
+	.badge-draft {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-ink-100 text-ink-700;
+	}
+	.badge-submitted {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 ring-1 ring-slate-200;
+	}
+	.badge-sent {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-white text-ink-700 ring-1 ring-ink-300;
+	}
+	.badge-authorised {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800;
+	}
+	.badge-paid {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-800;
+	}
+	.badge-overdue {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-700;
+	}
+	.badge-archived {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-ink-200 text-ink-700;
+	}
+	.badge-active {
+		@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-brand-100 text-brand-800;
+	}
 
 	.table-auto-xero {
 		@apply w-full text-sm;
@@ -80,6 +128,18 @@
 	.nav-dropdown-group-title {
 		@apply px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-ink-500;
 	}
+	.nav-dropdown-group-title-favourite {
+		@apply text-brand-900 font-bold;
+	}
+	/* Dashboard home: edit mode — block drag, disable accidental navigation */
+	.dashboard-home--edit .dashboard-widget-slot a,
+	.dashboard-home--edit .dashboard-widget-slot button:not(.dashboard-widget-edit-control) {
+		pointer-events: none;
+	}
+	.dashboard-home--edit .dashboard-widget-slot .dashboard-widget-edit-control {
+		pointer-events: auto;
+	}
+
 	.nav-dropdown-item {
 		@apply flex items-center justify-between gap-3 px-4 py-2 text-sm text-ink-800 hover:bg-ink-50
 		       transition cursor-pointer;
@@ -91,8 +151,119 @@
 		@apply my-2 border-t border-ink-100;
 	}
 
+	/* Top bar: organisation & user account menus */
+	.topbar-org-menu-row {
+		@apply flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-sm text-ink-800 transition hover:bg-ink-50;
+	}
+	.topbar-org-menu-row-active {
+		@apply bg-brand-50 font-medium text-brand-900;
+	}
+	.topbar-user-menu-row {
+		@apply flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-sm text-ink-800 transition hover:bg-ink-50;
+	}
+
+	/** Главный заголовок страницы (как ModuleHeader / Purchases overview). */
 	.section-title {
 		@apply text-2xl font-semibold text-ink-900 tracking-tight;
 	}
+	/** Внутренние заголовки блоков и карточек («Recent bills» на /app/purchases). */
+	.content-section-title {
+		@apply text-lg font-semibold text-ink-900;
+	}
 	.muted { @apply text-ink-500; }
+
+	/* ── Status tab row (Xero "old style" invoices/quotes) ──────────── */
+	.status-tabs {
+		@apply flex flex-wrap items-end gap-6 border-b border-ink-100;
+	}
+	.status-tab {
+		@apply relative inline-flex items-center gap-2 pb-3 -mb-px border-b-2 border-transparent
+		       text-sm text-ink-600 hover:text-ink-900 transition whitespace-nowrap;
+	}
+	.status-tab-active {
+		@apply border-brand-500 text-brand-700 font-semibold;
+	}
+	.status-tab-count {
+		@apply tabular-nums text-xs font-medium text-ink-500;
+	}
+
+	/* ── Sortable table header ───────────────────────────────────────── */
+	.th-sort {
+		@apply cursor-pointer select-none hover:text-ink-800 transition;
+	}
+	.th-sort::after {
+		content: '';
+		display: inline-block;
+		width: 0;
+		height: 0;
+		margin-left: 0.25rem;
+		vertical-align: middle;
+		border-left: 4px solid transparent;
+		border-right: 4px solid transparent;
+	}
+	.th-sort-asc::after  { border-bottom: 5px solid currentColor; }
+	.th-sort-desc::after { border-top:    5px solid currentColor; }
+
+	/* ── Bulk-action bar above a selectable table ────────────────────── */
+	.action-bar {
+		@apply flex items-center gap-2 px-4 py-2 text-sm bg-brand-50 border-b border-brand-100 text-brand-800;
+	}
+	.action-bar-btn {
+		@apply inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium
+		       text-brand-700 hover:bg-brand-100 transition;
+	}
+	.action-bar-btn-danger {
+		@apply inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium
+		       text-red-700 hover:bg-red-100 transition;
+	}
+
+	/* ── Filter chip ────────────────────────────────────────────────── */
+	.chip {
+		@apply inline-flex items-center gap-1.5 rounded-full bg-ink-100 text-ink-700
+		       px-2.5 py-0.5 text-xs font-medium;
+	}
+	.chip-remove {
+		@apply -mr-1 rounded-full p-0.5 text-ink-500 hover:bg-ink-200 hover:text-ink-800 transition;
+	}
+
+	/* ── Compact icon button for table row/kebab menus ──────────────── */
+	.icon-btn {
+		@apply inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-500
+		       hover:bg-ink-100 hover:text-ink-800 transition;
+	}
+
+	/* ── Form sections used on Settings pages ───────────────────────── */
+	.form-section {
+		@apply border-t border-ink-100 px-6 py-5 first:border-t-0;
+	}
+	.form-section-title {
+		@apply text-sm font-semibold text-ink-900 mb-3;
+	}
+	.form-grid-2 {
+		@apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+	}
+	.form-grid-3 {
+		@apply grid grid-cols-1 sm:grid-cols-3 gap-4;
+	}
+	.form-grid-4 {
+		@apply grid grid-cols-1 sm:grid-cols-4 gap-4;
+	}
+	.read-value {
+		@apply block text-sm text-ink-900;
+	}
+	.wip-pill {
+		@apply inline-flex items-center rounded-full bg-amber-100 text-amber-800 px-2 py-0.5
+		       text-[10px] font-semibold uppercase tracking-wider;
+	}
+
+	/* ── Simple sub-nav used inside Settings pages (Users tabs) ─────── */
+	.subnav {
+		@apply flex gap-6 border-b border-ink-100 text-sm;
+	}
+	.subnav-item {
+		@apply pb-2 -mb-px border-b-2 border-transparent text-ink-600 hover:text-ink-900 transition;
+	}
+	.subnav-item-active {
+		@apply border-brand-500 text-brand-700 font-semibold;
+	}
 }

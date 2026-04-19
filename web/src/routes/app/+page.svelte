@@ -1,33 +1,110 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { accountApi, orgApi, bankTransactionApi } from '$lib/api';
+	import { browser } from '$app/environment';
+	import {
+		accountApi,
+		orgApi,
+		bankTransactionApi,
+		invoiceApi,
+		paymentApi
+	} from '$lib/api';
 	import { session } from '$lib/stores/session';
+	import {
+		bankBalancesFromTransactions,
+		invoiceAgingBuckets,
+		monthlyReceiveSpend,
+		num,
+		ytdPaidTotals
+	} from '$lib/dashboard-utils';
+	import {
+		bankWidgetId,
+		parseBankWidgetId,
+		loadLayout,
+		saveLayout,
+		reconcileOrder
+	} from '$lib/dashboard-layout';
+	import type { BankTile } from '$lib/dashboard-types';
+	import DashboardWidgetsModal from '$lib/components/DashboardWidgetsModal.svelte';
+	import DashboardHomeGrid from '$lib/components/DashboardHomeGrid.svelte';
 	import { formatCurrency, formatDate } from '$lib/utils/format';
-	import type { Account, BankTransaction, Organisation } from '$lib/types';
-
-	interface BankTile {
-		account: Account;
-		statementBalance: number;
-		xeroBalance: number;
-		lastStatementDate?: string;
-		unreconciled: number;
-	}
+	import type { Account, BankTransaction, Invoice, Organisation, Payment } from '$lib/types';
 
 	let loading = $state(true);
 	let org = $state<Organisation | null>(null);
 	let tiles = $state<BankTile[]>([]);
-	let openMenuFor = $state<string | null>(null);
+	let menuOpen = $state<string | null>(null);
+
+	let invoicesRec = $state<Invoice[]>([]);
+	let invoicesPay = $state<Invoice[]>([]);
+	let payments = $state<Payment[]>([]);
+	let allBankTx = $state<BankTransaction[]>([]);
+	let accountsWatch = $state<Account[]>([]);
+
+	let layoutEdit = $state(false);
+	let lastRefreshAt = $state(Date.now());
+	let showAppsStrip = $state(true);
+	let widgetsModalOpen = $state(false);
+	let dashboardOrder = $state<string[]>([]);
+	let dashboardHidden = $state<Record<string, boolean>>({});
+	let draggingId = $state<string | null>(null);
+
+	let totalUnreconciled = $state(0);
 
 	function toggleMenu(id: string) {
-		openMenuFor = openMenuFor === id ? null : id;
+		menuOpen = menuOpen === id ? null : id;
 	}
+
+	/** До 3 букв из слов названия (как DCU на дашборде Xero). */
+	function orgBadgeLetters(name: string | undefined): string {
+		if (!name?.trim()) return '?';
+		const words = name.match(/[A-Za-z][A-Za-z]*/g) ?? [];
+		if (words.length >= 3) {
+			return words
+				.slice(0, 3)
+				.map((w) => w[0]!.toUpperCase())
+				.join('');
+		}
+		if (words.length === 2) {
+			const a = words[0]!.toUpperCase();
+			const b = words[1]!.toUpperCase();
+			return (a[0] + b[0] + (b[1] ?? a[1] ?? '')).slice(0, 3);
+		}
+		if (words.length === 1) return words[0]!.slice(0, 3).toUpperCase();
+		return name.slice(0, 3).toUpperCase();
+	}
+
+	function userMonogram(email: string | null | undefined) {
+		if (!email) return '—';
+		const local = email.split('@')[0] ?? '';
+		const bits = local.replace(/[^a-zA-Z]/g, ' ').trim().split(/\s+/).filter(Boolean);
+		if (bits.length >= 2) return (bits[0]![0] + bits[bits.length - 1]![0]).toUpperCase();
+		return local.slice(0, 2).toUpperCase() || 'U';
+	}
+
+	function relativeLoginLabel(at: number) {
+		const mins = Math.floor((Date.now() - at) / 60000);
+		if (mins < 1) return 'just now';
+		if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+		const hrs = Math.floor(mins / 60);
+		if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+		const days = Math.floor(hrs / 24);
+		return `${days} day${days === 1 ? '' : 's'} ago`;
+	}
+
+	const tzHint = $derived(
+		typeof Intl !== 'undefined'
+			? Intl.DateTimeFormat().resolvedOptions().timeZone?.replace(/_/g, ' ') ?? ''
+			: ''
+	);
 
 	onMount(() => {
 		function onDocClick(e: MouseEvent) {
 			const t = e.target as HTMLElement;
-			if (!t.closest('[data-tile-menu]')) openMenuFor = null;
+			if (!t.closest('[data-dash-menu]')) menuOpen = null;
 		}
-		function onKey(e: KeyboardEvent) { if (e.key === 'Escape') openMenuFor = null; }
+		function onKey(e: KeyboardEvent) {
+			if (e.key === 'Escape') menuOpen = null;
+		}
 		document.addEventListener('mousedown', onDocClick);
 		document.addEventListener('keydown', onKey);
 		return () => {
@@ -36,43 +113,54 @@
 		};
 	});
 
+	onMount(() => {
+		if (!browser) return;
+		lastRefreshAt = Date.now();
+	});
+
 	async function reload() {
 		loading = true;
 		try {
-			const [accounts, organisation] = await Promise.all([
+			const [accounts, organisation, invRec, invPay, payRes, txsRes] = await Promise.all([
 				accountApi.list({ status: 'ACTIVE' }).catch(() => [] as Account[]),
-				orgApi.current().catch(() => null)
+				orgApi.current().catch(() => null),
+				invoiceApi.list({ pageSize: '200', type: 'ACCREC' }).catch(() => null),
+				invoiceApi.list({ pageSize: '200', type: 'ACCPAY' }).catch(() => null),
+				paymentApi.list({ pageSize: '8' }).catch(() => null),
+				bankTransactionApi.list({ pageSize: '500' }).catch(() => null)
 			]);
 			org = organisation ?? null;
+			invoicesRec = invRec?.Invoices ?? [];
+			invoicesPay = invPay?.Invoices ?? [];
+			payments = payRes?.Payments ?? [];
+			allBankTx = txsRes?.BankTransactions ?? [];
+			accountsWatch = (accounts ?? [])
+				.filter((a) => a.Type === 'REVENUE' || a.Type === 'EXPENSE' || a.Type === 'OVERHEADS')
+				.slice(0, 6);
 
 			const bankAccounts = accounts.filter((a) => a.Type === 'BANK');
 			const built: BankTile[] = [];
+			let unreconAll = 0;
+
 			for (const acc of bankAccounts) {
-				let latest: BankTransaction | undefined;
-				let unreconciled = 0;
-				try {
-					const res = await bankTransactionApi.list({
-						accountId: acc.AccountID,
-						pageSize: '25'
-					});
-					latest = res.BankTransactions?.[0];
-					unreconciled = res.BankTransactions?.filter(
-						(t) => !t.IsReconciled
-					).length ?? 0;
-				} catch {
-					/* ignore — empty */
-				}
+				const accTxs = allBankTx.filter((t) => t.BankAccount?.AccountID === acc.AccountID);
+				const { statement, xero } = bankBalancesFromTransactions(accTxs, org?.BaseCurrency ?? 'USD');
+				const unreconciled = accTxs.filter((t) => !t.IsReconciled).length;
+				unreconAll += unreconciled;
+				const latest = accTxs[0];
 				built.push({
 					account: acc,
-					statementBalance: 0,
-					xeroBalance: 0,
+					statementBalance: statement,
+					xeroBalance: xero,
 					lastStatementDate: latest?.Date,
 					unreconciled
 				});
 			}
+			totalUnreconciled = unreconAll;
 			tiles = built;
 		} finally {
 			loading = false;
+			if (browser) lastRefreshAt = Date.now();
 		}
 	}
 
@@ -81,114 +169,289 @@
 	});
 
 	const currency = $derived(org?.BaseCurrency || 'USD');
+
+	const agingSales = $derived(invoiceAgingBuckets(invoicesRec, 'ACCREC'));
+	const agingBills = $derived(invoiceAgingBuckets(invoicesPay, 'ACCPAY'));
+
+	const awaitingRec = $derived(
+		invoicesRec.filter((i) => i.Status === 'AUTHORISED').reduce((s, i) => s + num(i.AmountDue), 0)
+	);
+	const overdueRec = $derived(
+		invoicesRec
+			.filter((i) => i.Status === 'AUTHORISED' && i.DueDate && new Date(i.DueDate) < new Date())
+			.reduce((s, i) => s + num(i.AmountDue), 0)
+	);
+
+	const awaitingPay = $derived(
+		invoicesPay.filter((i) => i.Status === 'AUTHORISED').reduce((s, i) => s + num(i.AmountDue), 0)
+	);
+	const overduePay = $derived(
+		invoicesPay
+			.filter((i) => i.Status === 'AUTHORISED' && i.DueDate && new Date(i.DueDate) < new Date())
+			.reduce((s, i) => s + num(i.AmountDue), 0)
+	);
+
+	const awaitingRecCount = $derived(invoicesRec.filter((i) => i.Status === 'AUTHORISED').length);
+	const draftRecCount = $derived(invoicesRec.filter((i) => i.Status === 'DRAFT').length);
+	const awaitingPayCount = $derived(invoicesPay.filter((i) => i.Status === 'AUTHORISED').length);
+	const draftPayCount = $derived(invoicesPay.filter((i) => i.Status === 'DRAFT').length);
+
+	const overdueInvCount = $derived(
+		invoicesRec.filter(
+			(i) => i.Status === 'AUTHORISED' && i.DueDate && new Date(i.DueDate) < new Date()
+		).length
+	);
+	const overdueBillCount = $derived(
+		invoicesPay.filter(
+			(i) => i.Status === 'AUTHORISED' && i.DueDate && new Date(i.DueDate) < new Date()
+		).length
+	);
+
+	const cashMonthly = $derived(monthlyReceiveSpend(allBankTx, 6));
+	const cashMonthMax = $derived(Math.max(1, ...cashMonthly.flatMap((m) => [m.in, m.out])));
+	const cashInTotal = $derived(cashMonthly.reduce((s, m) => s + m.in, 0));
+	const cashOutTotal = $derived(cashMonthly.reduce((s, m) => s + m.out, 0));
+	const cashNetTotal = $derived(cashInTotal - cashOutTotal);
+
+	const ytd = $derived(ytdPaidTotals([...invoicesRec, ...invoicesPay], new Date().getFullYear()));
+	const netProxy = $derived(ytd.income - ytd.bills);
+
+	const ytdStart = $derived(new Date(new Date().getFullYear(), 0, 1));
+	const netTrendPct = $derived.by(() => {
+		const denom = Math.abs(ytd.income) + Math.abs(ytd.bills);
+		if (denom < 1) return null;
+		const ratio = netProxy / denom;
+		return Math.round(ratio * 100);
+	});
+
+	function persistDashboard() {
+		if (!browser) return;
+		const tid = $session.tenantId;
+		if (!tid) return;
+		saveLayout(tid, { version: 1, order: dashboardOrder, hidden: dashboardHidden });
+	}
+
+	$effect(() => {
+		if (!browser) return;
+		const tid = $session.tenantId;
+		if (!tid) return;
+		const stored = loadLayout(tid);
+		dashboardHidden = { ...(stored?.hidden ?? {}) };
+		dashboardOrder = reconcileOrder(stored?.order, tiles);
+	});
+
+	const visibleOrderedIds = $derived.by(() => {
+		const bankSet = new Set(tiles.map((t) => bankWidgetId(t.account.AccountID)));
+		return dashboardOrder.filter((id) => {
+			if (dashboardHidden[id]) return false;
+			if (parseBankWidgetId(id)) return bankSet.has(id);
+			return true;
+		});
+	});
+
+	function setWidgetShown(id: string, shown: boolean) {
+		if (shown) {
+			const next = { ...dashboardHidden };
+			delete next[id];
+			dashboardHidden = next;
+		} else {
+			dashboardHidden = { ...dashboardHidden, [id]: true };
+		}
+		persistDashboard();
+	}
+
+	function onWidgetDragStart(e: DragEvent, id: string) {
+		if (!layoutEdit) return;
+		draggingId = id;
+		e.dataTransfer?.setData('text/plain', id);
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.dropEffect = 'move';
+		}
+	}
+
+	function onWidgetDragOver(e: DragEvent) {
+		if (!layoutEdit) return;
+		e.preventDefault();
+		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+	}
+
+	function onWidgetDrop(e: DragEvent, targetId: string) {
+		e.preventDefault();
+		const from = e.dataTransfer?.getData('text/plain') || draggingId;
+		draggingId = null;
+		if (!from || from === targetId || !layoutEdit) return;
+		const i = dashboardOrder.indexOf(from);
+		const j = dashboardOrder.indexOf(targetId);
+		if (i < 0 || j < 0) return;
+		const next = [...dashboardOrder];
+		next.splice(i, 1);
+		next.splice(j, 0, from);
+		dashboardOrder = next;
+		persistDashboard();
+	}
+
+	function onWidgetDragEnd() {
+		draggingId = null;
+	}
+
+	function bankTileIndex(accountId: string): number {
+		return tiles.findIndex((t) => t.account.AccountID === accountId);
+	}
 </script>
 
-<div class="space-y-6">
-	<div class="flex items-end justify-between flex-wrap gap-3">
-		<div>
-			<h1 class="section-title">{org?.Name ?? 'Your business'}</h1>
-			<p class="muted mt-0.5 text-sm">
-				{#if $session.firstName}
-					Last login by <span class="text-ink-700">{$session.firstName}</span>
-				{/if}
-				· {currency}
-			</p>
+<div class="dashboard-home space-y-4 pb-10" class:dashboard-home--edit={layoutEdit}>
+	<!-- Sub-header: org + last login (Xero-style white strip) -->
+	<div
+		class="flex flex-col gap-3 border-b border-ink-100 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+	>
+		<div class="flex items-center gap-3">
+			<div
+				class="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-rose-200 bg-rose-100 text-xs font-bold tracking-tight text-ink-900 shadow-sm"
+				aria-hidden="true"
+			>
+				{orgBadgeLetters(org?.Name)}
+			</div>
+			<h1 class="text-base font-bold leading-snug text-ink-900">{org?.Name ?? 'Your organisation'}</h1>
 		</div>
-		<div class="flex items-center gap-2">
-			<button type="button" class="btn-secondary">
-				<svg viewBox="0 0 24 24" class="h-4 w-4 fill-current"><path d="M3 17.25V21h3.75l11-11-3.75-3.75-11 11zM20.7 7.04a1 1 0 0 0 0-1.41L18.37 3.3a1 1 0 0 0-1.41 0l-1.84 1.83 3.75 3.75 1.84-1.84z" /></svg>
-				Edit homepage
+		<div class="text-sm sm:ml-auto sm:text-right">
+			<span class="text-ink-500">Last login: </span><span class="font-normal text-brand-600"
+				>{relativeLoginLabel(lastRefreshAt)}</span
+			>{#if tzHint}<span class="whitespace-nowrap font-normal text-brand-600"> from {tzHint}</span>{/if}
+		</div>
+	</div>
+
+	<!-- Business Overview: заголовок слева, действия справа -->
+	<div class="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+		<h2 class="section-title min-w-0">Business Overview</h2>
+		<div class="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end sm:gap-3">
+			{#if layoutEdit}
+				<button
+					type="button"
+					class="btn-secondary border-brand-200 text-brand-700"
+					onclick={() => (widgetsModalOpen = true)}
+				>
+					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+						><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg
+					>
+					Add widget
+				</button>
+				<button
+					type="button"
+					class="btn-primary inline-flex items-center gap-2"
+					onclick={() => (layoutEdit = false)}
+				>
+					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+						><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" /></svg
+					>
+					Done
+				</button>
+			{:else}
+				<button
+					type="button"
+					class="btn-primary inline-flex items-center gap-2"
+					onclick={() => (layoutEdit = true)}
+				>
+					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+						><path
+							d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/></svg
+					>
+					Edit homepage
+				</button>
+			{/if}
+		</div>
+	</div>
+
+	{#if loading && tiles.length === 0}
+		<div class="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:items-start">
+			{#each Array(6) as _}
+				<div class="card h-[251px] w-full animate-pulse bg-ink-100/80"></div>
+			{/each}
+		</div>
+	{:else}
+		<DashboardHomeGrid
+			visibleOrderedIds={visibleOrderedIds}
+			layoutEdit={layoutEdit}
+			draggingId={draggingId}
+			tiles={tiles}
+			currency={currency}
+			menuOpen={menuOpen}
+			toggleMenu={toggleMenu}
+			setWidgetShown={setWidgetShown}
+			onWidgetDragStart={onWidgetDragStart}
+			onWidgetDragOver={onWidgetDragOver}
+			onWidgetDrop={onWidgetDrop}
+			onWidgetDragEnd={onWidgetDragEnd}
+			bankTileIndex={bankTileIndex}
+			agingSales={agingSales}
+			agingBills={agingBills}
+			awaitingPayCount={awaitingPayCount}
+			awaitingPay={awaitingPay}
+			overdueBillCount={overdueBillCount}
+			overduePay={overduePay}
+			draftPayCount={draftPayCount}
+			awaitingRecCount={awaitingRecCount}
+			awaitingRec={awaitingRec}
+			overdueInvCount={overdueInvCount}
+			overdueRec={overdueRec}
+			draftRecCount={draftRecCount}
+			payments={payments}
+			totalUnreconciled={totalUnreconciled}
+			cashMonthly={cashMonthly}
+			cashMonthMax={cashMonthMax}
+			cashInTotal={cashInTotal}
+			cashOutTotal={cashOutTotal}
+			cashNetTotal={cashNetTotal}
+			ytd={ytd}
+			netProxy={netProxy}
+			netTrendPct={netTrendPct}
+			ytdStart={ytdStart}
+			accountsWatch={accountsWatch}
+			userEmail={$session.email}
+			userMonogram={userMonogram}
+			num={num}
+		/>
+		<DashboardWidgetsModal
+			open={widgetsModalOpen}
+			tiles={tiles}
+			hidden={dashboardHidden}
+			onClose={() => (widgetsModalOpen = false)}
+			onToggle={(id, vis) => setWidgetShown(id, vis)}
+		/>
+	{/if}
+
+	<!-- Apps strip -->
+	{#if showAppsStrip}
+		<section
+			class="card flex flex-col gap-4 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+		>
+			<div>
+				<h3 class="font-semibold text-ink-900">Apps that connect with goXero</h3>
+				<p class="mt-1 text-sm text-ink-600">Extend payroll, inventory, CRM and more.</p>
+			</div>
+			<div class="flex flex-wrap items-center gap-3">
+				<a href="/app/settings/connected-apps" class="btn-secondary">Explore more apps</a>
+				<button
+					type="button"
+					class="text-sm font-medium text-ink-600 hover:underline"
+					onclick={() => (showAppsStrip = false)}
+				>
+					Hide
+				</button>
+			</div>
+		</section>
+	{:else}
+		<div class="flex justify-end">
+			<button
+				type="button"
+				class="text-sm font-medium text-brand-700 hover:underline"
+				onclick={() => (showAppsStrip = true)}
+			>
+				Show apps
 			</button>
 		</div>
-	</div>
-
-	<div class="flex items-center justify-between">
-		<h2 class="text-lg font-semibold text-ink-900">Business Overview</h2>
-	</div>
-
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-		{#if loading && tiles.length === 0}
-			{#each Array(3) as _}
-				<div class="card p-5 animate-pulse h-40"></div>
-			{/each}
-		{:else if tiles.length === 0}
-			<div class="card p-8 col-span-full text-center">
-				<div class="muted mb-3">No bank accounts yet.</div>
-				<a href="/app/bank-feeds" class="btn-primary">Connect a bank</a>
-			</div>
-		{:else}
-			{#each tiles as tile}
-				<div class="card p-5 flex flex-col gap-3">
-					<div class="flex items-start justify-between gap-3">
-						<div>
-							<div class="font-semibold text-ink-900">{tile.account.Name}</div>
-							<div class="text-xs muted mt-0.5">
-								{tile.account.BankAccountNumber || tile.account.Code}
-							</div>
-						</div>
-						<div class="relative" data-tile-menu>
-							<button
-								class="text-ink-400 hover:text-ink-600"
-								aria-label="More"
-								aria-haspopup="menu"
-								aria-expanded={openMenuFor === tile.account.AccountID}
-								onclick={() => toggleMenu(tile.account.AccountID)}
-							>
-								<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" /></svg>
-							</button>
-							{#if openMenuFor === tile.account.AccountID}
-								<div class="absolute right-0 mt-1 min-w-[220px] rounded-lg bg-white text-ink-800 shadow-pop border border-ink-100 py-2 z-30" role="menu">
-									<a class="nav-dropdown-item" href="/app/bank-transactions?accountId={tile.account.AccountID}">Account transactions</a>
-									<a class="nav-dropdown-item" href="/app/bank-feeds">Manage bank feeds</a>
-									<a class="nav-dropdown-item" href="/app/accounting/bank-accounts">Edit account details</a>
-									<a class="nav-dropdown-item" href="/app/reports/bank-summary">Bank summary report</a>
-								</div>
-							{/if}
-						</div>
-					</div>
-
-					<div class="grid grid-cols-2 gap-3 pt-1">
-						<div>
-							<div class="text-2xl font-semibold tabular-nums">
-								{formatCurrency(tile.statementBalance, tile.account.CurrencyCode || currency)}
-							</div>
-							<div class="text-xs text-brand-600 hover:underline cursor-pointer">
-								Statement balance{tile.lastStatementDate ? ` (${formatDate(tile.lastStatementDate)})` : ''}
-							</div>
-						</div>
-						<div>
-							<div class="text-2xl font-semibold tabular-nums">
-								{formatCurrency(tile.xeroBalance, tile.account.CurrencyCode || currency)}
-							</div>
-							<div class="text-xs text-brand-600 hover:underline cursor-pointer">
-								Balance in Xero
-							</div>
-						</div>
-					</div>
-
-					<div class="mt-auto pt-3 border-t border-ink-100 flex items-center justify-between">
-						{#if tile.unreconciled > 0}
-							<span class="text-xs muted">
-								Balance difference
-								<span class="ml-1 font-semibold text-ink-900">
-									{formatCurrency(tile.statementBalance - tile.xeroBalance, tile.account.CurrencyCode || currency)}
-								</span>
-							</span>
-							<a href="/app/bank-transactions?accountId={tile.account.AccountID}" class="btn-primary !py-1.5 !px-3 !text-xs rounded-full">
-								Reconcile {tile.unreconciled} items
-							</a>
-						{:else}
-							<span class="inline-flex items-center gap-1 text-xs text-emerald-700">
-								<svg viewBox="0 0 24 24" class="h-4 w-4 fill-current"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 14.5-4.5-4.5 1.4-1.4 3.1 3 6.6-6.6 1.4 1.4-8 8z" /></svg>
-								Reconciled
-							</span>
-							<a href="/app/bank-transactions?accountId={tile.account.AccountID}" class="text-xs text-brand-600 hover:underline">
-								View account transactions
-							</a>
-						{/if}
-					</div>
-				</div>
-			{/each}
-		{/if}
-	</div>
+	{/if}
 </div>

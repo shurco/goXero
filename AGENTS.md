@@ -74,6 +74,14 @@
     `internal/handlers/report.go`.
 13. **Polymorphic endpoints** (`attachments`, `history`) use the `attachmentSubjectMap`
     lookup; add new subjects there and to the router (see `internal/router`).
+14. **Chart of accounts for the demo org is US-style** after migration `00018`.
+    Old Sales code `200` is now `400`; old Cost of Goods Sold `310` is now `500`;
+    old Accounts Receivable `610` is now `120`; old Accounts Payable `800` is
+    now `200`. Integration tests and any demo seed helpers that POST line items
+    must use the new codes (`400` for revenue lines, `500` for direct costs).
+15. **Uploads are capped.** Organisation Files (`POST /api/v1/files`) reject
+    payloads larger than `maxOrgFileUploadBytes` (25 MiB) to stop a single
+    request from OOM-ing the server.
 
 ## API surface (v1)
 
@@ -121,7 +129,9 @@ All under `/api/v1/*`, JWT + `Xero-Tenant-Id` required.
 | Receipts           | `GET/POST /receipts`, `GET/PUT /receipts/:id`                                                                                                                    |
 | Expense claims     | `GET/POST /expense-claims`, `GET/PUT /expense-claims/:id`                                                                                                        |
 | Users              | `GET /users`                                                                                                                                                     |
-| Bank feeds         | `GET /bank-feeds/providers`, `GET /bank-feeds/institutions`, `GET/POST /bank-feeds/connections`, `GET/DELETE /bank-feeds/connections/:id`, `POST /bank-feeds/connections/:id/finalize`, `POST /bank-feeds/connections/:id/sync`, `PUT /bank-feeds/accounts/:feedAccountId`, `GET /bank-feeds/statement-lines`, `POST /bank-feeds/statement-lines/:id/import`, `POST /bank-feeds/statement-lines/:id/ignore` |
+| Bank feeds         | `GET /bank-feeds/providers`, `GET /bank-feeds/institutions`, `GET/POST /bank-feeds/connections`, `GET/DELETE /bank-feeds/connections/:id`, `POST /bank-feeds/connections/:id/finalize`, `POST /bank-feeds/connections/:id/sync`, `PUT /bank-feeds/accounts/:feedAccountId`, `GET /bank-feeds/statement-lines`, `POST /bank-feeds/statement-lines/:id/import` (requires `AccountCode`), `POST /bank-feeds/statement-lines/:id/ignore` |
+| Bank rules         | `GET/POST /bank-rules`, `GET/PUT/DELETE /bank-rules/:id`                                                                                                                                                                      |
+| Org files          | `GET /files?folder=inbox|archive`, `POST /files` (multipart, 25 MiB cap), `POST /files/move`, `POST /files/delete`                                                                                                             |
 | Reports            | `GET /reports/trial-balance`, `/profit-and-loss`, `/balance-sheet`, `/aged-receivables`, `/aged-payables`, `/bank-summary`, `/cash-summary`, `/executive-summary`, `/budget-summary`, `/bas`, `/journal-report`, `/invoice-summary` |
 
 `:subject` for attachments/history is one of: `invoices`, `credit-notes`, `bank-transactions`, `contacts`, `accounts`, `manual-journals`, `quotes`, `purchase-orders`, `receipts`, `expense-claims`.

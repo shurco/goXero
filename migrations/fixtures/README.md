@@ -23,6 +23,12 @@ Goose stores fixture versions in table **`goose_fixtures`** (separate from `goos
 | Draft invoice `FIX-1001` | `1eb8691d-450a-4b89-a07e-9c0e8d007cd0` |
 | Invoice line item | `cb97aa93-5e0d-4ae2-80ee-02c2d81dd4f7` |
 
+### `00003_fixture_demo_rich_dataset.sql` (demo org)
+
+Applied after core seed `00009_seed_demo.sql`. Enriches organisation **`6823b27b-c48f-4099-bb27-4202a4f496a2`** (`admin@demo.local` / `admin123`) with profile JSON, second bank account **091**, two extra contacts, sales invoices **DEMO-5001…5004**, bills **BILL-6001…6003**, payments, six bank transactions on **090**, two **bank_rules**, a **bank_feed** connection + statement lines, quote **QUO-DEMO-9001**, PO **PO-DEMO-8001**, manual journal, and an internal **bank_transfer** to savings.
+
+Stable IDs are prefixed in the migration file (`f2a30…`); use them only for fixture teardown or integration tests that target this dataset.
+
 ## Commands
 
 | Command | Effect |

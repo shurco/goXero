@@ -39,6 +39,7 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	creditNoteHandler := handlers.NewCreditNoteHandler(repos)
 	bankTxHandler := handlers.NewBankTransactionHandler(repos)
 	bankTransferHandler := handlers.NewBankTransferHandler(repos)
+	bankRuleHandler := handlers.NewBankRuleHandler(repos)
 	manualJournalHandler := handlers.NewManualJournalHandler(repos)
 	journalHandler := handlers.NewJournalHandler(repos)
 	quoteHandler := handlers.NewQuoteHandler(repos)
@@ -48,6 +49,7 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	brandingHandler := handlers.NewBrandingThemeHandler(repos)
 	trackingHandler := handlers.NewTrackingCategoryHandler(repos)
 	attachmentHandler := handlers.NewAttachmentHandler(repos)
+	orgFileHandler := handlers.NewOrgFileHandler(repos)
 	historyHandler := handlers.NewHistoryHandler(repos)
 	reportHandler := handlers.NewReportHandler(repos)
 	prepaymentHandler := handlers.NewPrepaymentHandler(repos)
@@ -89,6 +91,7 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	// Versioned accounting API (require tenant)
 	apiV1 := app.Group("/api/v1", mw.JWTAuth(cfg.Auth), mw.Tenant(cfg.Auth, repos))
 	apiV1.Get("/organisation", organisation.Get)
+	apiV1.Put("/organisation", organisation.Update)
 
 	apiV1.Get("/accounts", accountHandler.List)
 	apiV1.Post("/accounts", accountHandler.Create)
@@ -153,6 +156,13 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Get("/bank-transfers", bankTransferHandler.List)
 	apiV1.Post("/bank-transfers", bankTransferHandler.Create)
 	apiV1.Get("/bank-transfers/:id", bankTransferHandler.Get)
+
+	apiV1.Get("/bank-rules", bankRuleHandler.List)
+	apiV1.Post("/bank-rules", bankRuleHandler.Create)
+	apiV1.Get("/bank-rules/:id", bankRuleHandler.Get)
+	apiV1.Put("/bank-rules/:id", bankRuleHandler.Update)
+	apiV1.Post("/bank-rules/:id", bankRuleHandler.Update)
+	apiV1.Delete("/bank-rules/:id", bankRuleHandler.Delete)
 
 	apiV1.Get("/manual-journals", manualJournalHandler.List)
 	apiV1.Post("/manual-journals", manualJournalHandler.Create)
@@ -251,6 +261,12 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Get("/bank-feeds/statement-lines", bankFeedHandler.ListStatementLines)
 	apiV1.Post("/bank-feeds/statement-lines/:id/import", bankFeedHandler.ImportStatementLine)
 	apiV1.Post("/bank-feeds/statement-lines/:id/ignore", bankFeedHandler.IgnoreStatementLine)
+
+	// Organisation Files (inbox/archive) — must be registered before /:subject/:id/attachments.
+	apiV1.Post("/files/move", orgFileHandler.Move)
+	apiV1.Post("/files/delete", orgFileHandler.Delete)
+	apiV1.Get("/files", orgFileHandler.List)
+	apiV1.Post("/files", orgFileHandler.Upload)
 
 	// Polymorphic attachment + history endpoints (Xero pattern).
 	apiV1.Get("/:subject/:id/attachments", attachmentHandler.List)

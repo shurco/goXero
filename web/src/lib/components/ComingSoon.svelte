@@ -22,7 +22,7 @@
 		<div class="mx-auto mb-5 h-14 w-14 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center">
 			<svg viewBox="0 0 24 24" class="h-7 w-7 fill-current"><path d="M12 8v5l4 2 .7-1.2-3.2-1.9V8H12zm0-6a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" /></svg>
 		</div>
-		<h1 class="text-xl font-semibold text-ink-900">{title}</h1>
+		<h1 class="section-title">{title}</h1>
 		{#if description}
 			<p class="muted mt-2">{description}</p>
 		{/if}

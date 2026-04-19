@@ -33,6 +33,28 @@ SvelteKit 2 + Svelte 5 (runes) frontend. Managed with **Bun**; do not add
 * `src/lib/components/ModuleHeader.svelte`, `ReportView.svelte` — shared UI
   primitives for module pages and reports (title + subtitle + actions slot,
   and a pre-styled report viewer respectively).
+* `src/lib/components/SettingsHeader.svelte` — consistent breadcrumb + title
+  shell used by every page under `src/routes/app/settings/**` (Connected Apps,
+  Users, Financial, Conversion Balances, Organisation, Email). New settings
+  pages must compose this instead of duplicating the breadcrumb markup.
+* `src/lib/components/BankRuleForm.svelte`, `BankAccountForm.svelte`,
+  `CreateOrganisationModal.svelte`, `AccountFormModal.svelte`,
+  `DashboardHomeGrid.svelte`, `DashboardWidgetsModal.svelte`,
+  `BankBalanceChart.svelte`, `BankDashboardCard.svelte`,
+  `AccountReportsExplainer.svelte` — reusable feature-level components
+  introduced with the Dashboard / Bank rules / Bank accounts / Organisation
+  setup work. Prefer reusing these over copy-pasting markup into pages;
+  extend props instead of forking.
+* `src/lib/components/SettingsSection.svelte` + `SettingsFooterActions.svelte`
+  — shared building blocks for `src/routes/app/settings/**` pages. Compose
+  `SettingsHeader` → one or more `SettingsSection` blocks → `SettingsFooterActions`
+  at the bottom. Don't reintroduce raw `<div class="form-section">` / inline
+  Save/Cancel buttons — the section component owns the title/hint/description
+  layout and the footer owns the emerald Save + Cancel pair so they stay in
+  sync visually across pages.
+* `src/lib/reports-catalog.ts` — single source of truth for the Reports hub
+  (categories, labels, descriptions, default favourites). `reports-favourites.svelte.ts`
+  reads from it.
 * `src/routes/login/`, `src/routes/register/` — public pages.
 * `src/routes/app/**` — authenticated SPA shell with Xero-like sections:
   - `app/` — Home (Business Overview bank cards).

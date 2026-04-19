@@ -40,6 +40,7 @@ type Repositories struct {
 	Payments           *PaymentRepository
 	BankTransactions   *BankTransactionRepository
 	BankTransfers      *BankTransferRepository
+	BankRules          *BankRuleRepository
 	ManualJournals     *ManualJournalRepository
 	Journals           *JournalRepository
 	Quotes             *QuoteRepository
@@ -78,6 +79,7 @@ func New(pool *pgxpool.Pool) *Repositories {
 		Payments:           &PaymentRepository{pool: pool},
 		BankTransactions:   &BankTransactionRepository{pool: pool},
 		BankTransfers:      &BankTransferRepository{pool: pool},
+		BankRules:          &BankRuleRepository{pool: pool},
 		ManualJournals:     &ManualJournalRepository{pool: pool},
 		Journals:           &JournalRepository{pool: pool},
 		Quotes:             &QuoteRepository{pool: pool},

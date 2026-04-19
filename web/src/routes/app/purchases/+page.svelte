@@ -59,7 +59,7 @@
 
 <div class="card p-5">
 	<div class="flex items-center justify-between mb-4">
-		<h2 class="text-lg font-semibold text-ink-900">Recent bills</h2>
+		<h2 class="content-section-title">Recent bills</h2>
 		<a href="/app/purchases/bills" class="text-sm text-brand-600 hover:underline">View all</a>
 	</div>
 	<table class="table-auto-xero">

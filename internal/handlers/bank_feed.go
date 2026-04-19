@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -318,6 +319,9 @@ func (h *BankFeedHandler) ImportStatementLine(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	if strings.TrimSpace(body.AccountCode) == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "AccountCode is required")
+	}
 	orgID := middleware.OrganisationIDFrom(c)
 
 	line, err := h.repos.BankFeeds.GetStatementLine(c.Context(), orgID, id)
@@ -360,7 +364,7 @@ func (h *BankFeedHandler) ImportStatementLine(c fiber.Ctx) error {
 			Description: line.Description,
 			Quantity:    decimal.NewFromInt(1),
 			UnitAmount:  amount,
-			AccountCode: firstNonBlank(body.AccountCode, "200"),
+			AccountCode: body.AccountCode,
 			TaxAmount:   zeroIfNil(body.TaxAmount),
 		}},
 	}
@@ -410,20 +414,4 @@ func (h *BankFeedHandler) reloadConnection(ctx context.Context, orgID, connID uu
 		return nil, err
 	}
 	return h.repos.BankFeeds.GetConnection(ctx, orgID, connID)
-}
-
-func firstNonBlank(s ...string) string {
-	for _, v := range s {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
-}
-
-func zeroIfNil(d *decimal.Decimal) decimal.Decimal {
-	if d == nil {
-		return decimal.Zero
-	}
-	return *d
 }

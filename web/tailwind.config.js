@@ -1,5 +1,6 @@
 import forms from '@tailwindcss/forms';
 
+/** Legacy JS config — loaded from `src/app.css` via `@config` (Tailwind v4). */
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],

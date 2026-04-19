@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { session } from '$lib/stores/session';
 	import { goto } from '$app/navigation';
 	import TopNav from '$lib/components/TopNav.svelte';
@@ -6,8 +7,9 @@
 	let { children } = $props();
 
 	$effect(() => {
+		if ($page.error) return;
 		if (!$session.token) {
-			goto('/login');
+			void goto('/login');
 		}
 	});
 </script>

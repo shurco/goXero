@@ -42,6 +42,9 @@ type Attachment struct {
 	ContentLength int64     `json:"ContentLength"`
 	IncludeOnline bool      `json:"IncludeOnline"`
 	URL           string    `json:"Url,omitempty"`
+	// Organisation Files inbox (subject ORGFILE only).
+	FileFolder     string    `json:"FileFolder,omitempty"`
+	CreatedDateUTC time.Time `json:"CreatedDateUTC,omitempty"`
 }
 
 type HistoryRecord struct {

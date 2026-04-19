@@ -185,6 +185,36 @@ func TestHTTP_OrganisationGet(t *testing.T) {
 	assert.Contains(t, string(body), "Demo Company")
 }
 
+func TestHTTP_OrganisationPut(t *testing.T) {
+	h := newHarness(t)
+	payload := map[string]any{
+		"Name":               "Demo Company",
+		"LegalName":          "Demo Company (Global)",
+		"OrganisationType":   "COMPANY",
+		"CountryCode":        "US",
+		"LineOfBusiness":     "Software",
+		"RegistrationNumber": "REG-001",
+		"Description":        "Integration test update",
+		"Timezone":           "UTC",
+		"TaxNumber":          "101-2-303",
+		"Profile": map[string]any{
+			"ShowExtraOnInvoices": false,
+			"SameAsPostal":        true,
+			"Email":               "org@example.com",
+			"Postal": map[string]string{
+				"AddressLine1": "23 Main Street",
+				"City":         "Central City",
+				"PostalCode":   "90210",
+				"Country":      "US",
+			},
+		},
+	}
+	status, body := h.do(t, http.MethodPut, "/api/v1/organisation", payload, true)
+	require.Equal(t, http.StatusOK, status, string(body))
+	assert.Contains(t, string(body), "Integration test update")
+	assert.Contains(t, string(body), "org@example.com")
+}
+
 func TestHTTP_Accounts_CRUD(t *testing.T) {
 	h := newHarness(t)
 

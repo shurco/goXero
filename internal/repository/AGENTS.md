@@ -52,7 +52,17 @@ must be handled there and the tests extended.
 ## Tests
 
 * **Unit:** `invoice_test.go` — `recalculateTotals` (no database).
-* **Integration:** `integration_test.go` — `testutil.NewPool` + pgtestdb / goose
-  on `migrations/`. Start: `docker compose -f compose.dev.yml up -d pgtestdb`.
-  Skip DB only: `PGTESTDB_SKIP=1 go test ./internal/repository/...`
+* **Integration:** `integration_test.go`, `organisation_integration_test.go`,
+  `bank_rule_test.go`, `org_files_test.go` and the rest of `*_integration_test.go`
+  use `testutil.NewPool` + pgtestdb / goose on `migrations/`. Start with
+  `docker compose -f compose.dev.yml up -d pgtestdb`. Skip DB only:
+  `PGTESTDB_SKIP=1 go test ./internal/repository/...`.
+* **Cross-tenant isolation.** Any new repository method that takes an `orgID`
+  must have a test that creates a second org via `repos.Organisations.Create`
+  and asserts the row cannot be read / updated / deleted from the other tenant
+  scope (see `TestIntegration_BankRule_CrossTenantIsolation`).
+* **JSONB round-trips.** When a table stores a struct as `jsonb` (bank rule
+  `definition`, invoice online-URL metadata, etc.), the scan test must mutate
+  the struct and re-read it to prove `json.Unmarshal` errors are not being
+  silently swallowed — mirror the assertions in `TestIntegration_BankRule_CRUD`.
 * Assertions: `github.com/stretchr/testify` (`require` / `assert`).

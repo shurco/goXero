@@ -4,17 +4,23 @@ import { session } from './stores/session';
 import { get } from 'svelte/store';
 import type {
 	Account,
+	BankRule,
 	BankTransaction,
 	Contact,
+	Currency,
 	Invoice,
 	InvoiceSummary,
 	Item,
 	LoginResponse,
 	ManualJournal,
+	OrgFile,
 	Organisation,
+	OrgUser,
 	Pagination,
 	Payment,
-	RefreshResponse
+	Quote,
+	RefreshResponse,
+	TaxRate
 } from './types';
 
 interface ApiError extends Error {
@@ -103,7 +109,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 	const doFetch = async (): Promise<Response> => {
 		const s = get(session);
 		const headers = new Headers(init.headers || {});
-		if (!headers.has('Content-Type') && init.body) {
+		if (!headers.has('Content-Type') && init.body && !(init.body instanceof FormData)) {
 			headers.set('Content-Type', 'application/json');
 		}
 		headers.set('Accept', 'application/json');
@@ -214,11 +220,23 @@ export const orgApi = {
 		taxNumber?: string;
 		lineOfBusiness?: string;
 		registrationNumber?: string;
+		financialYearEndDay?: number;
+		financialYearEndMonth?: number;
+		hasEmployees?: boolean;
+		priorAccountingTool?: string;
 	}) =>
 		request<{ organisation: Organisation }>('/api/organisations', {
 			method: 'POST',
 			body: JSON.stringify(payload)
-		})
+		}),
+	/** PUT current tenant organisation (settings). */
+	update: async (payload: Partial<Organisation> & { Profile?: Organisation['Profile'] }) => {
+		const res = await request<XeroEnvelope<'Organisations', Organisation>>('/api/v1/organisation', {
+			method: 'PUT',
+			body: JSON.stringify(payload)
+		});
+		return unwrap(res, 'Organisations')[0];
+	}
 };
 
 // ── Accounts ───────────────────────────────────────────────────────────────
@@ -243,7 +261,8 @@ export const accountApi = {
 		request<{ Accounts: Account[] }>(`/api/v1/accounts/${id}`, {
 			method: 'PUT',
 			body: JSON.stringify(payload)
-		})
+		}),
+	delete: (id: string) => request<void>(`/api/v1/accounts/${id}`, { method: 'DELETE' })
 };
 
 // ── Contacts ───────────────────────────────────────────────────────────────
@@ -385,6 +404,94 @@ export const bankTransactionApi = {
 		request<void>(`/api/v1/bank-transactions/${id}`, { method: 'DELETE' })
 };
 
+// ── Bank rules ─────────────────────────────────────────────────────────────
+export const bankRuleApi = {
+	list: async () => {
+		const res = await request<XeroEnvelope<'BankRules', BankRule>>('/api/v1/bank-rules');
+		return unwrap(res, 'BankRules');
+	},
+	get: async (id: string) => {
+		const res = await request<XeroEnvelope<'BankRules', BankRule>>(`/api/v1/bank-rules/${id}`);
+		return unwrap(res, 'BankRules')[0];
+	},
+	create: (payload: BankRule) =>
+		request<{ BankRules: BankRule[] }>('/api/v1/bank-rules', {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	update: (id: string, payload: BankRule) =>
+		request<{ BankRules: BankRule[] }>(`/api/v1/bank-rules/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(payload)
+		}),
+	delete: (id: string) => request<void>(`/api/v1/bank-rules/${id}`, { method: 'DELETE' })
+};
+
+// ── Users (GET /api/v1/users) ─────────────────────────────────────────────
+export const userApi = {
+	list: async () => {
+		const res = await request<XeroEnvelope<'Users', OrgUser>>('/api/v1/users');
+		return unwrap(res, 'Users');
+	}
+};
+
+// ── Tax rates ──────────────────────────────────────────────────────────────
+export const taxRateApi = {
+	list: async () => {
+		const res = await request<XeroEnvelope<'TaxRates', TaxRate>>('/api/v1/tax-rates');
+		return unwrap(res, 'TaxRates');
+	},
+	create: (payload: Partial<TaxRate>) =>
+		request<{ TaxRates: TaxRate[] }>('/api/v1/tax-rates', {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	update: (id: string, payload: Partial<TaxRate>) =>
+		request<{ TaxRates: TaxRate[] }>(`/api/v1/tax-rates/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(payload)
+		}),
+	delete: (id: string) => request<void>(`/api/v1/tax-rates/${id}`, { method: 'DELETE' })
+};
+
+// ── Currencies ─────────────────────────────────────────────────────────────
+export const currencyApi = {
+	list: async () => {
+		const res = await request<XeroEnvelope<'Currencies', Currency>>('/api/v1/currencies');
+		return unwrap(res, 'Currencies');
+	},
+	create: (payload: Currency) =>
+		request<{ Currencies: Currency[] }>('/api/v1/currencies', {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		})
+};
+
+// ── Quotes ─────────────────────────────────────────────────────────────────
+export const quoteApi = {
+	list: (params: Record<string, string> = {}) => {
+		const qs = new URLSearchParams(params).toString();
+		return request<{ Quotes: Quote[]; Pagination: Pagination }>(
+			'/api/v1/quotes' + (qs ? `?${qs}` : '')
+		);
+	},
+	get: async (id: string) => {
+		const res = await request<XeroEnvelope<'Quotes', Quote>>(`/api/v1/quotes/${id}`);
+		return unwrap(res, 'Quotes')[0];
+	},
+	create: (payload: Partial<Quote>) =>
+		request<{ Quotes: Quote[] }>(`/api/v1/quotes`, {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	update: (id: string, payload: Partial<Quote>) =>
+		request<{ Quotes: Quote[] }>(`/api/v1/quotes/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(payload)
+		}),
+	delete: (id: string) => request<void>(`/api/v1/quotes/${id}`, { method: 'DELETE' })
+};
+
 // ── Manual journals ────────────────────────────────────────────────────────
 export const manualJournalApi = {
 	list: (params: Record<string, string> = {}) => {
@@ -484,3 +591,66 @@ export const bankFeedApi = {
 			{ method: 'PUT', body: JSON.stringify({ AccountID: accountId }) }
 		)
 };
+
+// ── Organisation Files (inbox / archive) ───────────────────────────────────
+export const orgFileApi = {
+	list: (params: Record<string, string> = {}) => {
+		const qs = new URLSearchParams(params).toString();
+		return request<{ Files: OrgFile[]; Pagination: Pagination }>(
+			'/api/v1/files' + (qs ? `?${qs}` : '')
+		);
+	},
+	upload: (file: File, folder: 'inbox' | 'archive' = 'inbox') => {
+		const fd = new FormData();
+		fd.append('file', file);
+		fd.append('folder', folder);
+		return request<{ Files: OrgFile[] }>('/api/v1/files', { method: 'POST', body: fd });
+	},
+	move: (AttachmentIDs: string[], Folder: 'INBOX' | 'ARCHIVE') =>
+		request<{ ok: boolean }>('/api/v1/files/move', {
+			method: 'POST',
+			body: JSON.stringify({ AttachmentIDs, Folder })
+		}),
+	delete: (AttachmentIDs: string[]) =>
+		request<{ ok: boolean }>('/api/v1/files/delete', {
+			method: 'POST',
+			body: JSON.stringify({ AttachmentIDs })
+		})
+};
+
+/** Download binary attachment (JWT + tenant header). */
+export async function downloadOrgFileContent(attachmentId: string, filename: string): Promise<void> {
+	if (!browser) return;
+	const path = `/api/v1/attachments/${attachmentId}/content`;
+	const isAuthPath = path.startsWith('/api/auth/');
+	if (!isAuthPath && shouldPreemptivelyRefresh()) {
+		await refreshAccessToken();
+	}
+	const doFetch = async (): Promise<Response> => {
+		const s = get(session);
+		const headers = new Headers();
+		headers.set('Accept', '*/*');
+		if (s.token) headers.set('Authorization', `Bearer ${s.token}`);
+		if (s.tenantId && path.startsWith('/api/v1/')) headers.set('Xero-Tenant-Id', s.tenantId);
+		return fetch(path, { headers });
+	};
+	let res = await doFetch();
+	if (res.status === 401 && !isAuthPath) {
+		const refreshed = await refreshAccessToken();
+		if (refreshed) res = await doFetch();
+	}
+	if (!res.ok) {
+		if (res.status === 401) {
+			session.logout();
+			goto('/login');
+		}
+		throw new Error(res.statusText || 'Download failed');
+	}
+	const blob = await res.blob();
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = filename || 'download';
+	a.click();
+	URL.revokeObjectURL(url);
+}

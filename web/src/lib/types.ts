@@ -6,8 +6,66 @@ export type LineAmountType = 'Exclusive' | 'Inclusive' | 'NoTax';
 export type ContactStatus = 'ACTIVE' | 'ARCHIVED' | 'GDPRREQUEST';
 export type AccountStatus = 'ACTIVE' | 'ARCHIVED';
 
+/** Address block stored in Organisation.Profile (Xero-like). */
+export interface OrganisationAddress {
+	AddressLine1?: string;
+	City?: string;
+	Region?: string;
+	PostalCode?: string;
+	Country?: string;
+	Attention?: string;
+}
+
+export interface OrganisationPhone {
+	PhoneCountryCode?: string;
+	PhoneNumber?: string;
+}
+
+export interface OrganisationSocial {
+	Facebook?: string;
+	Twitter?: string;
+	LinkedIn?: string;
+}
+
+/** Extra reply-to line (in addition to the logged-in user). */
+export interface ReplyEmailAddress {
+	ID?: string;
+	Email: string;
+	Name?: string;
+}
+
+/** Stored email template row (subject/body may include [Placeholder] tokens). */
+export interface OrgEmailTemplate {
+	ID?: string;
+	Type: string;
+	Name: string;
+	IsDefault?: boolean;
+	Subject?: string;
+	Body?: string;
+}
+
+export interface OrganisationProfile {
+	ShowExtraOnInvoices?: boolean;
+	SameAsPostal?: boolean;
+	Postal?: OrganisationAddress;
+	Physical?: OrganisationAddress;
+	Telephone?: OrganisationPhone;
+	Mobile?: OrganisationPhone;
+	Fax?: OrganisationPhone;
+	Email?: string;
+	Website?: string;
+	Social?: OrganisationSocial;
+	ReplyAddresses?: ReplyEmailAddress[];
+	EmailTemplates?: OrgEmailTemplate[];
+	/** Whether the business employs staff (onboarding). */
+	HasEmployees?: boolean;
+	/** Prior accounting system, e.g. QuickBooks, None. */
+	PriorAccountingTool?: string;
+}
+
 export interface Organisation {
 	OrganisationID: string;
+	APIKey?: string;
 	Name: string;
 	LegalName?: string;
 	ShortCode?: string;
@@ -15,10 +73,48 @@ export interface Organisation {
 	CountryCode?: string;
 	BaseCurrency: string;
 	Timezone?: string;
+	FinancialYearEndDay?: number;
+	FinancialYearEndMonth?: number;
+	TaxNumber?: string;
+	LineOfBusiness?: string;
+	RegistrationNumber?: string;
+	Description?: string;
+	Profile?: OrganisationProfile;
 	IsDemoCompany?: boolean;
 	OrganisationStatus: string;
 	CreatedDateUTC?: string;
 	UpdatedDateUTC?: string;
+}
+
+/** Xero /Users payload — everybody who has access to the current org. */
+export interface OrgUser {
+	UserID: string;
+	EmailAddress: string;
+	FirstName?: string;
+	LastName?: string;
+	IsSubscriber: boolean;
+	OrganisationRole: string;
+	CreatedDateUTC?: string;
+}
+
+export interface TaxRate {
+	TaxRateID: string;
+	Name: string;
+	TaxType: string;
+	ReportTaxType?: string;
+	CanApplyToAssets: boolean;
+	CanApplyToEquity: boolean;
+	CanApplyToExpenses: boolean;
+	CanApplyToLiabilities: boolean;
+	CanApplyToRevenue: boolean;
+	DisplayTaxRate: string | number;
+	EffectiveRate: string | number;
+	Status: string;
+}
+
+export interface Currency {
+	Code: string;
+	Description?: string;
 }
 
 export interface Account {
@@ -107,6 +203,30 @@ export interface Invoice {
 	UpdatedDateUTC?: string;
 }
 
+export type QuoteStatus = 'DRAFT' | 'SENT' | 'DECLINED' | 'ACCEPTED' | 'INVOICED' | 'DELETED';
+
+export interface Quote {
+	QuoteID: string;
+	Contact?: Contact;
+	ContactID?: string;
+	QuoteNumber?: string;
+	Reference?: string;
+	Title?: string;
+	Summary?: string;
+	Terms?: string;
+	Date?: string;
+	ExpiryDate?: string;
+	Status: QuoteStatus;
+	LineAmountTypes: LineAmountType;
+	CurrencyCode?: string;
+	SubTotal: string | number;
+	TotalTax: string | number;
+	Total: string | number;
+	TotalDiscount?: string | number;
+	LineItems?: LineItem[];
+	UpdatedDateUTC?: string;
+}
+
 export interface Item {
 	ItemID: string;
 	Code: string;
@@ -136,6 +256,16 @@ export interface Pagination {
 	page: number;
 	pageSize: number;
 	total: number;
+}
+
+/** Row in Organisation → Files (inbox / archive). */
+export interface OrgFile {
+	AttachmentID: string;
+	FileName: string;
+	MimeType?: string;
+	ContentLength: number;
+	FileFolder?: string;
+	CreatedDateUTC?: string;
 }
 
 export interface InvoiceSummary {
@@ -184,6 +314,8 @@ export interface BankTransaction {
 	Type: BankTransactionType;
 	Status: InvoiceStatus;
 	LineAmountTypes: LineAmountType;
+	/** Present when the API embeds the bank account (list/get). */
+	BankAccount?: Pick<Account, 'AccountID' | 'Name' | 'Code'>;
 	BankAccountID?: string;
 	ContactID?: string;
 	Contact?: Contact;
@@ -215,6 +347,50 @@ export interface ManualJournal {
 	Date?: string;
 	ShowOnCashBasisReports?: boolean;
 	JournalLines?: ManualJournalLine[];
+	UpdatedDateUTC?: string;
+}
+
+export type BankRuleType = 'SPEND' | 'RECEIVE' | 'TRANSFER';
+
+export interface BankRuleCondition {
+	Field: string;
+	Operator: string;
+	Value: string;
+}
+
+export interface BankRuleAllocationLine {
+	LineID?: string;
+	Description?: string;
+	AccountID?: string;
+	TaxRateID?: string;
+	Region?: string;
+	Amount?: number;
+	Percent?: number;
+}
+
+export interface BankRuleDefinition {
+	MatchMode: string;
+	Conditions: BankRuleCondition[];
+	ContactMode?: string;
+	ContactID?: string;
+	ContactName?: string;
+	FixedLines?: BankRuleAllocationLine[];
+	PercentLines?: BankRuleAllocationLine[];
+	ReferenceField?: string;
+	RunOn: string;
+	ScopeBankAccountID?: string;
+	TransferTargetMode?: string;
+	TransferBankAccountID?: string;
+	TransferTrackingRegion?: string;
+}
+
+export interface BankRule {
+	BankRuleID?: string;
+	RuleType: BankRuleType;
+	Name: string;
+	Definition: BankRuleDefinition;
+	IsActive?: boolean;
+	CreatedDateUTC?: string;
 	UpdatedDateUTC?: string;
 }
 

@@ -46,7 +46,7 @@ func TestHTTP_Reports_Values(t *testing.T) {
 		"DueDate":         date,
 		"LineAmountTypes": "Exclusive",
 		"LineItems": []map[string]any{
-			{"Description": "Work", "Quantity": "1", "UnitAmount": "100", "AccountCode": "200", "TaxAmount": "0"},
+			{"Description": "Work", "Quantity": "1", "UnitAmount": "100", "AccountCode": "400", "TaxAmount": "0"},
 		},
 	}, true)
 	require.Equal(t, http.StatusCreated, status, string(body))

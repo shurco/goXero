@@ -133,7 +133,7 @@
 {:else}
 	<div class="card p-5 mb-6">
 		<div class="flex items-center justify-between mb-3">
-			<h2 class="text-lg font-semibold text-ink-900">Connect a bank</h2>
+			<h2 class="content-section-title">Connect a bank</h2>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 			{#each providers as name}
@@ -151,7 +151,7 @@
 {/if}
 
 <div class="card p-5">
-	<h2 class="text-lg font-semibold text-ink-900 mb-4">Connections</h2>
+	<h2 class="content-section-title mb-4">Connections</h2>
 	{#if loading}
 		<div class="muted">Loading…</div>
 	{:else if connections.length === 0}
