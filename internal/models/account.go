@@ -30,6 +30,65 @@ const (
 	AccountTypeWages       = "WAGESEXPENSE"
 )
 
+// Account system roles, exactly as Xero documents them on the Account
+// resource (SystemAccount). A role, not a code, is what identifies a control
+// account: Xero gives the account the role and leaves the code to the
+// organisation, so code "820" in one chart is "Sales Tax" in another and a
+// different account entirely in a third.
+//
+// The list is Xero's own enum, verbatim:
+// https://github.com/XeroAPI/Xero-OpenAPI — xero_accounting.yaml, Account.SystemAccount.
+const (
+	SystemAccountDebtors                = "DEBTORS"
+	SystemAccountCreditors              = "CREDITORS"
+	SystemAccountBankCurrencyGain       = "BANKCURRENCYGAIN"
+	SystemAccountGST                    = "GST"
+	SystemAccountGSTOnImports           = "GSTONIMPORTS"
+	SystemAccountHistorical             = "HISTORICAL"
+	SystemAccountRealisedCurrencyGain   = "REALISEDCURRENCYGAIN"
+	SystemAccountRetainedEarnings       = "RETAINEDEARNINGS"
+	SystemAccountRounding               = "ROUNDING"
+	SystemAccountTrackingTransfers      = "TRACKINGTRANSFERS"
+	SystemAccountUnpaidExpClm           = "UNPAIDEXPCLM"
+	SystemAccountUnrealisedCurrencyGain = "UNREALISEDCURRENCYGAIN"
+	SystemAccountWagePayables           = "WAGEPAYABLES"
+)
+
+// Account classes, Xero's Account.Class — the reporting group an account's type
+// belongs to. They are the five groups Xero's reports are organised by, and the
+// value is a function of the type rather than an independent fact, which is why
+// nothing stores it.
+const (
+	AccountClassAsset     = "ASSET"
+	AccountClassEquity    = "EQUITY"
+	AccountClassExpense   = "EXPENSE"
+	AccountClassLiability = "LIABILITY"
+	AccountClassRevenue   = "REVENUE"
+)
+
+// AccountClassForType returns the reporting class Xero gives an account of this
+// type, or "" for a type outside the enum. Every type has one: a Current Asset is
+// an asset, a PAYG Liability is a liability, and Revenue and Sales are both
+// revenue — Xero's Class is derived from Type, never set independently.
+func AccountClassForType(t string) string {
+	switch t {
+	case AccountTypeBank, AccountTypeCurrent, AccountTypeFixed, AccountTypeInventory,
+		AccountTypeNonCurrent, AccountTypePrepayment:
+		return AccountClassAsset
+	case AccountTypeCurrLiab, AccountTypeLiability, AccountTypeTermLiab,
+		AccountTypePAYGLiab, AccountTypeSuperLiab:
+		return AccountClassLiability
+	case AccountTypeEquity:
+		return AccountClassEquity
+	case AccountTypeRevenue, AccountTypeSales:
+		return AccountClassRevenue
+	case AccountTypeExpense, AccountTypeOverheads, AccountTypeDepreciatn,
+		AccountTypeDirectCosts, AccountTypeWages:
+		return AccountClassExpense
+	}
+	return ""
+}
+
 type Account struct {
 	AccountID               uuid.UUID `json:"AccountID"`
 	Code                    string    `json:"Code"`

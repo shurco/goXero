@@ -323,18 +323,28 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Get("/reports/balance-sheet", reportHandler.BalanceSheet)
 	apiV1.Get("/reports/aged-receivables", reportHandler.AgedReceivables)
 	apiV1.Get("/reports/aged-payables", reportHandler.AgedPayables)
-	apiV1.Get("/reports/aged-receivables-by-contact", reportHandler.AgedReceivables)
-	apiV1.Get("/reports/aged-payables-by-contact", reportHandler.AgedPayables)
+	// The by-contact routes are the per-contact drill-down, not aliases of the
+	// summary above: they answer with the contact's own invoices and a
+	// different ReportName, so a client can tell the two apart.
+	apiV1.Get("/reports/aged-receivables-by-contact", reportHandler.AgedReceivablesByContact)
+	apiV1.Get("/reports/aged-payables-by-contact", reportHandler.AgedPayablesByContact)
 	apiV1.Get("/reports/bank-summary", reportHandler.BankSummary)
 	apiV1.Get("/reports/cash-summary", reportHandler.CashSummary)
 	apiV1.Get("/reports/executive-summary", reportHandler.ExecutiveSummary)
 	apiV1.Get("/reports/budget-summary", reportHandler.BudgetSummary)
 	apiV1.Get("/reports/bas", reportHandler.BAS)
-	apiV1.Get("/reports/sales-tax", reportHandler.BAS)
+	apiV1.Get("/reports/sales-tax", reportHandler.SalesTax)
 	apiV1.Get("/reports/journal-report", reportHandler.JournalReport)
 	apiV1.Get("/reports/account-transactions", reportHandler.AccountTransactions)
 	apiV1.Get("/reports/general-ledger-detail", reportHandler.GeneralLedgerDetail)
 	apiV1.Get("/reports/general-ledger", reportHandler.GeneralLedgerDetail)
+	apiV1.Get("/reports/form-1120", reportHandler.Form1120)
+
+	// Xero-compatible path for the same report. Xero's Reporting API answers on
+	// GET /api.xro/2.0/Reports/<ReportID>, so a client written against Xero can
+	// ask for this workpaper the way it asks for ProfitAndLoss.
+	apiXro := app.Group("/api.xro/2.0", mw.JWTAuth(cfg.Auth), mw.Tenant(cfg.Auth, repos))
+	apiXro.Get("/Reports/Form1120", reportHandler.Form1120)
 
 	return bankFeedHandler
 }

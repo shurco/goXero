@@ -17,9 +17,12 @@
 	let search = $state('');
 	let accountFilter = $state('');
 
+	// Statement lines carry an empty currency code; fall through to the account's
+	// and then the organisation's rather than printing a symbol-less amount.
 	const currencyOf = (l: BankStatementLine) =>
-		l.CurrencyCode ??
-		accounts.find((a) => a.AccountID === l.BankAccountID)?.CurrencyCode ??
+		l.CurrencyCode ||
+		accounts.find((a) => a.AccountID === l.BankAccountID)?.CurrencyCode ||
+		org?.BaseCurrency ||
 		'USD';
 
 	const accountName = (id: string | undefined) => {

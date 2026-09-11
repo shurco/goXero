@@ -14,6 +14,22 @@
 	let tab = $state<TabId>('home');
 	let showDescriptions = $state(false);
 	let openMenuKey = $state<string | null>(null);
+	let search = $state('');
+
+	const query = $derived(search.trim().toLowerCase());
+
+	/** Catalog filtered by the search box; empty categories drop out. */
+	const visibleCategories = $derived.by(() => {
+		if (!query) return REPORT_CATEGORIES;
+		return REPORT_CATEGORIES.map((cat) => ({
+			...cat,
+			reports: cat.reports.filter(
+				(r) =>
+					r.label.toLowerCase().includes(query) ||
+					r.description.toLowerCase().includes(query)
+			)
+		})).filter((cat) => cat.reports.length > 0);
+	});
 
 	const favouriteRows = $derived.by(() =>
 		reportFavourites.keys
@@ -96,7 +112,12 @@
 											<path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 17.8 5.7 21l2.3-7-6-4.6h7.6L12 2z" />
 										</svg>
 										<span class="text-sm font-medium text-ink-500 leading-snug">{fav.label}</span>
-										<span class="text-[10px] font-semibold uppercase tracking-wide text-amber-700">Soon</span>
+										<span
+											class="text-[10px] font-semibold uppercase tracking-wide text-amber-700"
+											title="This report is not available in this build"
+										>
+											Not available
+										</span>
 									</div>
 								{/if}
 								<button
@@ -124,6 +145,14 @@
 				>
 					<h2 class="content-section-title min-w-0">All reports</h2>
 					<div class="flex shrink-0 items-center justify-end gap-2 sm:justify-end">
+						<label for="reports-search" class="sr-only">Search reports</label>
+						<input
+							id="reports-search"
+							type="search"
+							class="input w-44"
+							placeholder="Search reports"
+							bind:value={search}
+						/>
 						<label
 							for="reports-show-desc"
 							id="show-desc-label"
@@ -152,8 +181,12 @@
 					</div>
 				</div>
 
+				{#if visibleCategories.length === 0}
+					<p class="muted text-sm">No reports match “{search.trim()}”.</p>
+				{/if}
+
 				<div class="space-y-3">
-					{#each REPORT_CATEGORIES as cat (cat.id)}
+					{#each visibleCategories as cat (cat.id)}
 						<details class="report-category group rounded-lg border border-ink-100 bg-white shadow-card" open>
 							<summary
 								class="flex cursor-pointer list-none flex-col gap-1 px-4 py-3 marker:content-none [&::-webkit-details-marker]:hidden"
@@ -209,7 +242,12 @@
 													</a>
 												{:else}
 													<span class="text-sm font-medium text-ink-500">{entry.label}</span>
-													<span class="ml-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700">Soon</span>
+													<span
+														class="ml-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700"
+														title="This report is not available in this build"
+													>
+														Not available
+													</span>
 												{/if}
 												{#if showDescriptions}
 													<p class="mt-0.5 text-xs leading-snug text-ink-500">

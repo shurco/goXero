@@ -10,7 +10,7 @@ export const FAVOURITE_REPORTS: { label: string; href: string }[] = [
 
 export interface ReportEntry {
 	label: string;
-	/** `null` = listed for UI parity; not wired yet */
+	/** `null` = the API serves no report for this row; the hub shows it as unavailable */
 	href: string | null;
 	favourite?: boolean;
 	/** Shown when "Show descriptions" is on (Xero-style copy). */
@@ -33,14 +33,24 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 		reports: [
 			{
 				label: 'Budget Manager',
-				href: '/app/reports/budget-summary',
+				// No budget editor exists: `migrations/` has no budget table, so
+				// there is nothing to create a budget with. The row keeps Xero's
+				// own label and description, and is marked unavailable rather
+				// than pointing at the Budget Summary, which can only ever show
+				// the empty report. Point it at the editor the day one lands.
+				href: null,
 				description:
 					'Create budgets to monitor business performance against your goals.'
 			},
 			{
 				label: 'Budget Summary',
+				// The route exists and renders Xero's budget layout, but the
+				// schema has no budget table, so the report can only ever state
+				// that no budget is stored. The description says that rather
+				// than promising budgets Budget Manager cannot create.
 				href: '/app/reports/budget-summary',
-				description: "View the budgets you've created in Budget Manager."
+				description:
+					'Show budget figures against actuals. goXero stores no budget, so this report says so instead of printing one.'
 			},
 			{
 				label: 'Budget Variance',
@@ -50,7 +60,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Business Cash Flow Summary',
-				href: '/app/reports/cash-flow',
+				href: '/app/reports/cash-summary',
 				description:
 					'See how your business has received and used cash within a certain timeframe.'
 			},
@@ -137,7 +147,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 		reports: [
 			{
 				label: 'Accounts Payable Aging Detail',
-				href: '/app/reports/aged-payables',
+				href: '/app/reports/aged-payables-by-contact',
 				description:
 					'See individual bills, credit notes, and overpayments you owe, based on the age of the transactions.'
 			},
@@ -150,7 +160,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Accounts Receivable Aging Detail',
-				href: '/app/reports/aged-receivables',
+				href: '/app/reports/aged-receivables-by-contact',
 				description:
 					'See individual invoices, credit notes, and overpayments owed to you, based on the age of the transactions.'
 			},
@@ -280,7 +290,12 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 		reports: [
 			{
 				label: 'Account Summary',
-				href: '/app/reports/bank-summary',
+				// Xero's Account Summary is a per-account monthly summary. The
+				// API serves no such report -- /reports/bank-summary is Xero's
+				// Bank Summary for every bank account and already has its own
+				// row below -- so this row keeps Xero's copy and is marked
+				// unavailable rather than pointing at a different report.
+				href: null,
 				description: 'See a monthly summary for a specific account.'
 			},
 			{
@@ -340,7 +355,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Custom Sales Tax Report',
-				href: null,
+				href: '/app/reports/sales-tax',
 				description: 'Review sales tax details.'
 			},
 			{
@@ -348,6 +363,12 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 				href: null,
 				description:
 					'See revalued balances for foreign currency accounts and a summary of your currency-related gains or losses.'
+			},
+			{
+				label: 'Form 1120 Workpaper (US)',
+				href: '/app/reports/form-1120',
+				description:
+					'Prepare the annual US corporation income tax return: Form 1120 Page 1, Schedules L and M-1, and the accounts no 1120 line claims.'
 			},
 			{
 				label: 'General Ledger Detail',
@@ -391,7 +412,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Trial Balance by Date Range Beta',
-				href: null,
+				href: '/app/reports/trial-balance',
 				description: 'View account balances based on a selected date range.'
 			}
 		]

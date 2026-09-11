@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { session } from '$lib/stores/session';
-	import { accountApi, statementApi } from '$lib/api';
+	import { accountApi, orgApi, statementApi } from '$lib/api';
 	import { formatCurrency, formatDate } from '$lib/utils/format';
-	import type { Account, StatementBalance } from '$lib/types';
+	import type { Account, Organisation, StatementBalance } from '$lib/types';
 
 	/**
 	 * One row per bank account: what the bank says, what the ledger says, and
@@ -15,6 +15,7 @@
 	}
 
 	let rows = $state<Row[]>([]);
+	let org = $state<Organisation | null>(null);
 	let loading = $state(true);
 	let err = $state('');
 
@@ -22,7 +23,11 @@
 		loading = true;
 		err = '';
 		try {
-			const accounts = await accountApi.list({ type: 'BANK', status: 'ACTIVE' });
+			const [accounts, o] = await Promise.all([
+				accountApi.list({ type: 'BANK', status: 'ACTIVE' }),
+				orgApi.current().catch(() => null)
+			]);
+			org = o ?? null;
 			rows = await Promise.all(
 				(accounts ?? []).map(async (account) => ({
 					account,
@@ -40,8 +45,17 @@
 		if ($session.tenantId) void load();
 	});
 
+	// Amounts are shown in the organisation's own currency; a per-account code
+	// is only a fallback for the rare account that carries none.
+	const baseCurrency = $derived(org?.BaseCurrency ?? 'USD');
+
+	// Null until the account has a statement balance to compare against, so the
+	// row prints "—" rather than a zero it invented.
 	const unreconciled = (r: Row) =>
-		Number(r.balance?.StatementBalance ?? 0) - Number(r.balance?.LedgerBalance ?? 0);
+		r.balance ? Number(r.balance.StatementBalance) - Number(r.balance.LedgerBalance) : null;
+
+	const money = (value: string | number | null | undefined) =>
+		value === undefined || value === null ? '—' : formatCurrency(Number(value), baseCurrency);
 </script>
 
 <header class="mb-5 flex flex-wrap items-start justify-between gap-3">
@@ -81,7 +95,7 @@
 				</thead>
 				<tbody class="divide-y divide-ink-100">
 					{#each rows as r (r.account.AccountID)}
-						{@const currency = r.account.CurrencyCode ?? 'USD'}
+						{@const currency = r.account.CurrencyCode || baseCurrency}
 						<tr class="hover:bg-ink-50">
 							<td class="px-4 py-2">
 								<div>{r.account.Name}</div>
@@ -93,20 +107,21 @@
 								{r.balance?.LastStatementEnd ? formatDate(r.balance.LastStatementEnd) : '—'}
 							</td>
 							<td class="px-4 py-2 text-right tabular-nums">
-								{formatCurrency(r.balance?.StatementBalance ?? 0, currency)}
+								{money(r.balance?.StatementBalance)}
 							</td>
 							<td class="px-4 py-2 text-right tabular-nums">
-								{formatCurrency(r.balance?.LedgerBalance ?? 0, currency)}
+								{money(r.balance?.LedgerBalance)}
 							</td>
 							<td
-								class="px-4 py-2 text-right tabular-nums {Math.abs(unreconciled(r)) > 0.004
+								class="px-4 py-2 text-right tabular-nums {unreconciled(r) !== null &&
+								Math.abs(unreconciled(r) ?? 0) > 0.004
 									? 'text-amber-700 font-semibold'
 									: 'text-emerald-700'}"
 							>
-								{formatCurrency(unreconciled(r), currency)}
+								{money(unreconciled(r) ?? undefined)}
 							</td>
 							<td class="px-4 py-2 text-right tabular-nums">
-								{r.balance?.ReconciledCount ?? 0}
+								{r.balance ? r.balance.ReconciledCount : '—'}
 							</td>
 							<td class="px-4 py-2 muted">
 								{r.balance?.LastSyncAt ? formatDate(r.balance.LastSyncAt) : 'Not connected'}
