@@ -107,7 +107,11 @@ type Account struct {
 	ReportingCode           string    `json:"ReportingCode,omitempty"`
 	ReportingCodeName       string    `json:"ReportingCodeName,omitempty"`
 	HasAttachments          bool      `json:"HasAttachments"`
-	UpdatedDateUTC          time.Time `json:"UpdatedDateUTC"`
+	// AutoReconcile is the per-bank-account setting behind Xero's
+	// "Turn auto-reconcile on": when set, an import reconciles what it can
+	// without waiting to be asked.
+	AutoReconcile  bool      `json:"AutoReconcile"`
+	UpdatedDateUTC time.Time `json:"UpdatedDateUTC"`
 }
 
 type TaxRate struct {

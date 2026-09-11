@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -13,6 +16,28 @@ var (
 	ErrForbidden     = errors.New("forbidden")
 	ErrInvalidInput  = errors.New("invalid input")
 )
+
+// rowQuerier is satisfied by both *pgxpool.Pool and a pgx.Tx, so a guard such as
+// requireAccountInOrg can run either standalone or inside a transaction.
+type rowQuerier interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+// requireAccountInOrg refuses an account that another tenant owns, so a caller
+// cannot reference it — and, through a posting, move money into or out of it —
+// by passing its UUID. Returns ErrNotFound so the handler masks it as a 404.
+func requireAccountInOrg(ctx context.Context, q rowQuerier, orgID, accountID uuid.UUID) error {
+	var ok bool
+	if err := q.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM accounts WHERE organisation_id=$1 AND account_id=$2)`,
+		orgID, accountID).Scan(&ok); err != nil {
+		return err
+	}
+	if !ok {
+		return ErrNotFound
+	}
+	return nil
+}
 
 // pgErrCodeUniqueViolation is PostgreSQL's SQLSTATE for unique_violation.
 // Centralised so repositories don't sprinkle magic strings.

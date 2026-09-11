@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 
+	"github.com/shurco/goxero/internal/bankcoding"
 	"github.com/shurco/goxero/internal/models"
 )
 
@@ -27,24 +28,85 @@ type BankStatementRepository struct {
 	pool *pgxpool.Pool
 }
 
+// statementLineAccountFor is the SQL for the ledger account a line belongs to,
+// under the given table alias. A feed line carries no bank_account_id of its
+// own — it hangs off a feed account, which is bound to a ledger account
+// separately, and often after the lines arrived — so every read path has to
+// resolve it the same way, the running balance below included.
+func statementLineAccountFor(alias string) string {
+	return `COALESCE(` + alias + `.bank_account_id,
+	         (SELECT fa.account_id FROM bank_feed_accounts fa
+	          WHERE fa.feed_account_id = ` + alias + `.feed_account_id))`
+}
+
 // statementLineColumns is the canonical projection for a statement line. It is
 // shared by every read path so a new column only has to be added once.
-// A feed line has no bank_account_id of its own — it hangs off a feed account,
-// which is bound to a ledger account separately, and often after the lines
-// arrived. The projection resolves it so every caller sees which ledger account
-// a line belongs to, whichever source it came from.
-const statementLineColumns = `
+//
+// The balance is Xero's running balance rather than the bank's raw figure: the
+// bank's own number when the statement printed one, otherwise the account's
+// running total at this line, computed in statementLineFrom. A reader of one
+// line therefore sees the same number whichever page it was fetched on.
+var statementLineColumns = `
 	l.statement_line_id, l.feed_account_id,
-	COALESCE(l.bank_account_id,
-	         (SELECT fa.account_id FROM bank_feed_accounts fa
-	          WHERE fa.feed_account_id = l.feed_account_id)) AS bank_account_id,
+	` + statementLineAccountFor("l") + ` AS bank_account_id,
 	l.import_id, l.source,
-	COALESCE(l.provider_tx_id,''), l.posted_at, l.amount, l.balance, COALESCE(l.currency_code,''),
+	COALESCE(l.provider_tx_id,''), l.posted_at, l.amount,
+	COALESCE(l.balance, lb.running_balance), COALESCE(l.currency_code,''),
 	COALESCE(l.payee,''), COALESCE(l.description,''), COALESCE(l.counterparty,''),
 	COALESCE(l.reference,''), COALESCE(l.cheque_number,''), l.status, l.bank_transaction_id,
-	l.coded_at, l.coded_by, l.imported_at, l.created_at`
+	l.coded_at, l.coded_by, l.imported_at, l.created_at, l.auto_reconciled_at,
+	COALESCE(cli.account_code,''), COALESCE(ca.name,''),
+	(SELECT COUNT(*) FROM bank_statement_line_comments bslc
+	  WHERE bslc.statement_line_id = l.statement_line_id)`
 
-const statementLineFrom = ` FROM bank_statement_lines l`
+// statementLineFrom reaches the coding of the transaction a line became and
+// gives the line its running balance.
+//
+// The balance window runs over the account's lines up to and including this
+// one, ordered by posted_at then statement_line_id, and is anchored on the
+// opening balance the account's earliest statement recorded. Running it here,
+// over the account, rather than over the page the caller asked for is the whole
+// point: a line's balance must not change because the caller paged.
+//
+// The opening balance comes from bank_statement_imports rather than from the
+// first line because the first line only knows the balance *after* itself, and
+// only when the file carried one at all; when no statement recorded an opening
+// balance the running total starts from the account's first line, which is what
+// the reconcile screen showed before there was a server-side number.
+//
+// The coding join is the line's own Code column on Xero's Bank statements tab,
+// and reading it here rather than from the caller's transaction list means it
+// survives the paging of that list.
+var statementLineFrom = ` FROM bank_statement_lines l
+	LEFT JOIN LATERAL (
+	    SELECT w.running + COALESCE((
+	               SELECT i.opening_balance
+	                 FROM bank_statement_imports i
+	                WHERE i.organisation_id = l.organisation_id
+	                  AND i.bank_account_id = ` + statementLineAccountFor("l") + `
+	                  AND i.opening_balance IS NOT NULL
+	                ORDER BY i.statement_start NULLS LAST, i.created_at
+	                LIMIT 1), 0) AS running_balance
+	      FROM (
+	            SELECT p.statement_line_id,
+	                   SUM(p.amount) OVER (ORDER BY p.posted_at, p.statement_line_id
+	                                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running
+	              FROM bank_statement_lines p
+	             WHERE p.organisation_id = l.organisation_id
+	               AND ` + statementLineAccountFor("p") + ` = ` + statementLineAccountFor("l") + `
+	               AND (p.posted_at, p.statement_line_id)
+	                   <= (l.posted_at, l.statement_line_id)
+	           ) w
+	     WHERE w.statement_line_id = l.statement_line_id
+	) lb ON TRUE
+	LEFT JOIN LATERAL (
+	    SELECT li.account_code
+	      FROM bank_transaction_line_items li
+	     WHERE li.bank_transaction_id = l.bank_transaction_id
+	     ORDER BY li.line_item_id
+	     LIMIT 1
+	) cli ON TRUE
+	LEFT JOIN accounts ca ON ca.organisation_id = l.organisation_id AND ca.code = cli.account_code`
 
 func scanStatementLine(row pgx.Row) (*models.BankStatementLine, error) {
 	s := &models.BankStatementLine{}
@@ -53,7 +115,9 @@ func scanStatementLine(row pgx.Row) (*models.BankStatementLine, error) {
 		&s.ProviderTxID, &s.PostedAt, &s.Amount, &s.Balance, &s.CurrencyCode,
 		&s.Payee, &s.Description, &s.Counterparty,
 		&s.Reference, &s.ChequeNumber, &s.Status, &s.BankTransactionID,
-		&s.CodedAt, &s.CodedBy, &s.ImportedAt, &s.CreatedAt,
+		&s.CodedAt, &s.CodedBy, &s.ImportedAt, &s.CreatedAt, &s.AutoReconciledAt,
+		&s.CodedAccountCode, &s.CodedAccountName,
+		&s.CommentCount,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -62,6 +126,85 @@ func scanStatementLine(row pgx.Row) (*models.BankStatementLine, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+// codingHistoryLimit bounds how far back "suggest previous entries" looks. A
+// payee nobody has coded in the last few hundred entries is not a habit worth
+// inferring a code from, and the cap keeps the lookup a single small query.
+const codingHistoryLimit = 500
+
+// CodingHistory reads the account's previously coded entries, oldest first.
+//
+// An entry is any transaction on the account that already carries a coding —
+// whether it was created from a reconciled statement line or entered straight
+// into Xero — because both are "a previous entry" to the person looking at the
+// next line. The payee an entry is remembered by is the bank's own payee text
+// when there is one: it is what the next statement line will also say.
+func (r *BankStatementRepository) CodingHistory(ctx context.Context, orgID, bankAccountID uuid.UUID, limit int) ([]bankcoding.Entry, error) {
+	if limit <= 0 {
+		limit = codingHistoryLimit
+	}
+	const q = `
+		SELECT t.bank_transaction_id,
+		       COALESCE(NULLIF(btrim(l.payee), ''), c.name, COALESCE(t.reference, '')) AS payee,
+		       COALESCE(t.reference, ''),
+		       COALESCE(l.posted_at, t.date::timestamptz) AS used_at,
+		       t.contact_id, COALESCE(c.name, ''),
+		       COALESCE(li.account_code, ''), li.account_id, COALESCE(a.name, ''),
+		       COALESCE(li.tax_type, ''), COALESCE(li.description, '')
+		  FROM bank_transactions t
+		  LEFT JOIN bank_statement_lines l ON l.bank_transaction_id = t.bank_transaction_id
+		  LEFT JOIN contacts c ON c.contact_id = t.contact_id
+		  LEFT JOIN LATERAL (
+		      SELECT li.account_code, li.account_id, li.tax_type, li.description
+		        FROM bank_transaction_line_items li
+		       WHERE li.bank_transaction_id = t.bank_transaction_id
+		       ORDER BY li.line_item_id
+		       LIMIT 1
+		  ) li ON TRUE
+		  -- The account is resolved by code, not by the line item's account_id:
+		  -- the code is the key every other part of this feature speaks in, and
+		  -- older line items carry a code without the id that goes with it.
+		  LEFT JOIN accounts a ON a.organisation_id = t.organisation_id AND a.code = li.account_code
+		 WHERE t.organisation_id = $1
+		   AND t.bank_account_id = $2
+		 ORDER BY used_at DESC, t.created_at DESC
+		 LIMIT $3`
+
+	rows, err := r.pool.Query(ctx, q, orgID, bankAccountID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Newest first is what the LIMIT needs; the history is handed back oldest
+	// first so "the most recent match" is simply the last one appended.
+	out := make([]bankcoding.Entry, 0, 64)
+	seen := make(map[uuid.UUID]bool, 64)
+	for rows.Next() {
+		var (
+			txID uuid.UUID
+			e    bankcoding.Entry
+		)
+		if err := rows.Scan(&txID, &e.Payee, &e.Reference, &e.UsedAt, &e.ContactID, &e.ContactName,
+			&e.AccountCode, &e.AccountID, &e.AccountName, &e.TaxType, &e.Description); err != nil {
+			return nil, err
+		}
+		// Several lines can be matched to one transaction; that is one entry,
+		// not several, and counting it twice would overstate the evidence.
+		if seen[txID] {
+			continue
+		}
+		seen[txID] = true
+		out = append(out, e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	for i, j := 0, len(out)-1; i < j; i, j = i+1, j-1 {
+		out[i], out[j] = out[j], out[i]
+	}
+	return out, nil
 }
 
 // StatementLineFilter narrows the inbox. Zero values mean "no restriction".
@@ -74,6 +217,11 @@ type StatementLineFilter struct {
 	Search        string
 	From          *time.Time
 	To            *time.Time
+	// MinAmount and MaxAmount are Xero's amount range. They compare the
+	// magnitude, because "between 10 and 50" is about how big the movement was
+	// and nobody means to exclude the debits by it.
+	MinAmount *decimal.Decimal
+	MaxAmount *decimal.Decimal
 	// UnreconciledOnly is the inbox default: only lines still awaiting a
 	// decision. It is expressed separately from Status because Xero's "show
 	// unreconciled" also hides lines the user ignored.
@@ -97,7 +245,7 @@ func (f StatementLineFilter) where() (string, []any) {
 		// lines for this bank account".
 		add(" AND (l.bank_account_id=", *f.BankAccountID)
 		sb.WriteString(" OR l.feed_account_id IN (SELECT feed_account_id FROM bank_feed_accounts WHERE account_id=$" +
-			strconv.Itoa(len(args)) + "))")
+			strconv.Itoa(len(args)+1) + "))")
 	}
 	if f.ImportID != nil {
 		add(" AND l.import_id=", *f.ImportID)
@@ -113,16 +261,28 @@ func (f StatementLineFilter) where() (string, []any) {
 	if f.Search != "" {
 		args = append(args, "%"+escapeLikePattern(f.Search)+"%")
 		n := strconv.Itoa(len(args) + 1)
+		// The amount is compared both ways round so that the number printed on
+		// the statement finds the line whether or not the user typed the sign:
+		// a debit is stored negative, but nobody searches for "-42.50".
 		sb.WriteString(" AND (COALESCE(l.payee,'') ILIKE $" + n +
 			" OR COALESCE(l.description,'') ILIKE $" + n +
 			" OR COALESCE(l.reference,'') ILIKE $" + n +
-			" OR COALESCE(l.counterparty,'') ILIKE $" + n + ")")
+			" OR COALESCE(l.counterparty,'') ILIKE $" + n +
+			" OR COALESCE(l.cheque_number,'') ILIKE $" + n +
+			" OR l.amount::text ILIKE $" + n +
+			" OR abs(l.amount)::text ILIKE $" + n + ")")
 	}
 	if f.From != nil {
 		add(" AND l.posted_at>=", *f.From)
 	}
 	if f.To != nil {
 		add(" AND l.posted_at<=", *f.To)
+	}
+	if f.MinAmount != nil {
+		add(" AND abs(l.amount)>=", *f.MinAmount)
+	}
+	if f.MaxAmount != nil {
+		add(" AND abs(l.amount)<=", *f.MaxAmount)
 	}
 	return sb.String(), args
 }
@@ -138,13 +298,20 @@ func (r *BankStatementRepository) ListLines(ctx context.Context, orgID uuid.UUID
 	where, args := f.where()
 	args = append([]any{orgID}, args...)
 
+	// Counted off the bare table: where() only ever speaks about `l`, and the
+	// coding join adds nothing to a count but work.
 	var total int
 	if err := r.pool.QueryRow(ctx, "SELECT COUNT(*) FROM bank_statement_lines l"+where, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 	args = append(args, p.PageSize, p.Offset())
+	// `created_at` is the same for every line of an import, so on its own it
+	// does not order a statement: two pages of the same account could repeat a
+	// line and drop another, and the balance a client reads off a line would
+	// depend on which page it happened to arrive on. The line id breaks the tie,
+	// the same key the running balance accumulates in.
 	q := "SELECT " + statementLineColumns + statementLineFrom + where +
-		" ORDER BY posted_at DESC, created_at DESC" +
+		" ORDER BY posted_at DESC, created_at DESC, l.statement_line_id DESC" +
 		" LIMIT $" + strconv.Itoa(len(args)-1) + " OFFSET $" + strconv.Itoa(len(args))
 	rows, err := r.pool.Query(ctx, q, args...)
 	if err != nil {
@@ -171,26 +338,37 @@ func (r *BankStatementRepository) GetLine(ctx context.Context, orgID, lineID uui
 	return scanStatementLine(r.pool.QueryRow(ctx, q, orgID, lineID))
 }
 
-// rowQuerier is satisfied by both *pgxpool.Pool and a pgx.Tx, so a guard like
-// requireAccountInOrg can run either standalone or inside a transaction.
-type rowQuerier interface {
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-}
-
-// requireAccountInOrg refuses to touch a bank account that does not belong to
-// the tenant, so a caller cannot attach an import or a reconcile period to
-// another organisation's account by passing its UUID.
-func (r *BankStatementRepository) requireAccountInOrg(ctx context.Context, q rowQuerier, orgID, accountID uuid.UUID) error {
-	var ok bool
-	if err := q.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM accounts WHERE organisation_id=$1 AND account_id=$2)`,
-		orgID, accountID).Scan(&ok); err != nil {
-		return err
+// GetLines loads the named lines in one query. The cash-coding grid sends a page
+// of ids at a time, so loading them one by one would be a query per row.
+//
+// Ids are expected to be unique — they identify grid rows — which is what lets a
+// short result mean one of them is not in this organisation.
+func (r *BankStatementRepository) GetLines(ctx context.Context, orgID uuid.UUID, lineIDs []uuid.UUID) ([]models.BankStatementLine, error) {
+	if len(lineIDs) == 0 {
+		return nil, nil
 	}
-	if !ok {
-		return ErrNotFound
+	q := "SELECT " + statementLineColumns + statementLineFrom +
+		" WHERE l.organisation_id=$1 AND l.statement_line_id = ANY($2::uuid[])"
+	rows, err := r.pool.Query(ctx, q, orgID, lineIDs)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	defer rows.Close()
+	out := make([]models.BankStatementLine, 0, len(lineIDs))
+	for rows.Next() {
+		s, err := scanStatementLine(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(out) != len(lineIDs) {
+		return nil, ErrNotFound
+	}
+	return out, nil
 }
 
 // staleClaim is how long a claim may sit before another request may take it
@@ -363,7 +541,7 @@ func scanStatementImport(row pgx.Row) (*models.BankStatementImport, error) {
 // until the user confirms the mapping in step 2, so no statement line is
 // created until they press Import.
 func (r *BankStatementRepository) CreateImport(ctx context.Context, orgID uuid.UUID, imp *models.BankStatementImport, payload []byte) error {
-	if err := r.requireAccountInOrg(ctx, r.pool, orgID, imp.BankAccountID); err != nil {
+	if err := requireAccountInOrg(ctx, r.pool, orgID, imp.BankAccountID); err != nil {
 		return err
 	}
 	return r.pool.QueryRow(ctx,
@@ -542,16 +720,6 @@ func (r *BankStatementRepository) CommitImport(ctx context.Context, orgID, impor
 	return imported, skipped, tx.Commit(ctx)
 }
 
-// FailImport records why an import could not be committed so the wizard can
-// show the user the file's problem instead of a blank failure.
-func (r *BankStatementRepository) FailImport(ctx context.Context, orgID, importID uuid.UUID, reason string) error {
-	_, err := r.pool.Exec(ctx,
-		`UPDATE bank_statement_imports SET status='FAILED', last_error=$3
-		 WHERE organisation_id=$1 AND import_id=$2 AND status='STAGED'`,
-		orgID, importID, reason)
-	return err
-}
-
 // DeleteImport undoes an import: the statement lines it created go with it, but
 // only while none of them has been reconciled into a bank transaction. Xero
 // refuses to undo an import that has already been coded, and so do we — the
@@ -599,7 +767,7 @@ func (r *BankStatementRepository) DeleteImport(ctx context.Context, orgID, impor
 // CreatePeriod locks a reconciled range on one bank account. Overlapping
 // periods are rejected: they would make the lock ambiguous.
 func (r *BankStatementRepository) CreatePeriod(ctx context.Context, orgID uuid.UUID, p *models.BankReconcilePeriod, createdBy *uuid.UUID) error {
-	if err := r.requireAccountInOrg(ctx, r.pool, orgID, p.BankAccountID); err != nil {
+	if err := requireAccountInOrg(ctx, r.pool, orgID, p.BankAccountID); err != nil {
 		return err
 	}
 	var overlap int
@@ -733,6 +901,76 @@ func (r *BankStatementRepository) AccountBalance(ctx context.Context, orgID, ban
 	return sb, nil
 }
 
+// ---------------------------------------------------------------------------
+// Balance graph
+// ---------------------------------------------------------------------------
+
+// LedgerBalancePoint is one day of the balance graph Xero draws on each bank
+// account card: the account's ledger balance — Xero's "Balance in Xero" —
+// carried forward to the end of that day.
+type LedgerBalancePoint struct {
+	Date    string          `json:"Date"`
+	Balance decimal.Decimal `json:"Balance"`
+}
+
+// BalanceSeriesDays is the width of Xero's balance graph: a month ending today.
+const BalanceSeriesDays = 31
+
+// BalanceSeries is the line behind the card's balance graph. It is one point
+// per calendar day over the window ending today, holding the previous day's
+// balance forward over days nothing posted — that is what makes the graph a
+// staircase rather than a scatter of the days that happened to move.
+//
+// The figure plotted is the ledger balance, not the bank's. Xero's graph ends
+// on the card's "Balance in Xero" and not on its "Statement balance", and the
+// same account can hold both at once (the demo's 090 reads 7,430.22 in the
+// graph against 13,985.32 on the statement), so the graph is drawn from the GL
+// and not from the statement lines.
+//
+// The running total is taken over every journal, not only those inside the
+// window. That is what makes the last point equal AccountBalance's
+// LedgerBalance by construction — including when a journal is dated after
+// today, which would otherwise fall outside the window and go missing.
+func (r *BankStatementRepository) BalanceSeries(ctx context.Context, orgID, bankAccountID uuid.UUID, days int) ([]LedgerBalancePoint, error) {
+	if days < 2 {
+		days = BalanceSeriesDays
+	}
+	if days > 366 {
+		days = 366
+	}
+	rows, err := r.pool.Query(ctx,
+		`WITH posting AS (
+		     SELECT j.journal_date AS day, SUM(l.net_amount) AS net
+		     FROM gl_journals j
+		     JOIN gl_journal_lines l ON l.journal_id = j.journal_id
+		     WHERE j.organisation_id = $1 AND l.account_id = $2
+		     GROUP BY j.journal_date
+		 ),
+		 span AS (
+		     SELECT generate_series(CURRENT_DATE - ($3::int - 1), CURRENT_DATE,
+		                            interval '1 day')::date AS day
+		 )
+		 SELECT span.day,
+		        COALESCE((SELECT SUM(net) FROM posting WHERE posting.day <= span.day), 0)
+		 FROM span
+		 ORDER BY span.day`, orgID, bankAccountID, days)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]LedgerBalancePoint, 0, days)
+	for rows.Next() {
+		var day time.Time
+		var balance decimal.Decimal
+		if err := rows.Scan(&day, &balance); err != nil {
+			return nil, err
+		}
+		out = append(out, LedgerBalancePoint{Date: day.Format("2006-01-02"), Balance: balance})
+	}
+	return out, rows.Err()
+}
+
 // UnreconciledLinesForAccount returns the inbox of one bank account: the lines
 // still awaiting a decision, reached either directly (an import) or through the
 // feed account bound to it.
@@ -756,4 +994,121 @@ func (r *BankStatementRepository) UnreconciledLinesForAccount(ctx context.Contex
 		out = append(out, *s)
 	}
 	return out, rows.Err()
+}
+
+// ---------------------------------------------------------------------------
+// Discuss — the notes left on a statement line
+// ---------------------------------------------------------------------------
+
+// Comments lists a line's discussion oldest first, which is the order a
+// conversation is read in.
+func (r *BankStatementRepository) Comments(ctx context.Context, orgID, lineID uuid.UUID) ([]models.BankStatementLineComment, error) {
+	// The line is looked up first so a comment list for someone else's line is
+	// a not-found rather than an empty thread.
+	if _, err := r.GetLine(ctx, orgID, lineID); err != nil {
+		return nil, err
+	}
+	rows, err := r.pool.Query(ctx,
+		`SELECT comment_id, statement_line_id, user_id, COALESCE(author_name,''), body, created_at
+		   FROM bank_statement_line_comments
+		  WHERE organisation_id=$1 AND statement_line_id=$2
+		  ORDER BY created_at, comment_id`, orgID, lineID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []models.BankStatementLineComment
+	for rows.Next() {
+		var c models.BankStatementLineComment
+		if err := rows.Scan(&c.CommentID, &c.StatementLineID, &c.UserID, &c.AuthorName, &c.Body, &c.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// AddComment records one note against a statement line.
+func (r *BankStatementRepository) AddComment(ctx context.Context, orgID, lineID uuid.UUID, userID *uuid.UUID, authorName, body string) (*models.BankStatementLineComment, error) {
+	if _, err := r.GetLine(ctx, orgID, lineID); err != nil {
+		return nil, err
+	}
+	c := &models.BankStatementLineComment{
+		StatementLineID: lineID,
+		UserID:          userID,
+		AuthorName:      authorName,
+		Body:            body,
+	}
+	err := r.pool.QueryRow(ctx,
+		`INSERT INTO bank_statement_line_comments
+		     (organisation_id, statement_line_id, user_id, author_name, body)
+		 VALUES ($1,$2,$3,$4,$5)
+		 RETURNING comment_id, created_at`,
+		orgID, lineID, userID, authorName, body).Scan(&c.CommentID, &c.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+// ---------------------------------------------------------------------------
+// Options — deleting a line, and the auto-reconcile report
+// ---------------------------------------------------------------------------
+
+// DeleteLine removes a statement line the user does not want. A reconciled line
+// is refused: it is the evidence behind a ledger entry, and deleting it would
+// leave that entry unexplained.
+func (r *BankStatementRepository) DeleteLine(ctx context.Context, orgID, lineID uuid.UUID) error {
+	cmd, err := r.pool.Exec(ctx,
+		`DELETE FROM bank_statement_lines
+		  WHERE organisation_id=$1 AND statement_line_id=$2 AND bank_transaction_id IS NULL
+		    AND status <> 'IMPORTED'`, orgID, lineID)
+	if err != nil {
+		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		// Zero rows means either the line is not there at all or it exists but
+		// is protected. The two deserve different answers, so ask which it is.
+		if _, err := r.GetLine(ctx, orgID, lineID); err != nil {
+			return err
+		}
+		return ErrForbidden
+	}
+	return nil
+}
+
+// MarkAutoReconciled stamps the lines AutoReconcile dealt with on its own. It
+// is separate from AttachLineTransaction so that a hand-made match is never
+// counted as the button's work.
+func (r *BankStatementRepository) MarkAutoReconciled(ctx context.Context, orgID uuid.UUID, lineIDs []uuid.UUID) error {
+	if len(lineIDs) == 0 {
+		return nil
+	}
+	_, err := r.pool.Exec(ctx,
+		`UPDATE bank_statement_lines SET auto_reconciled_at=now()
+		  WHERE organisation_id=$1 AND statement_line_id = ANY($2::uuid[])`, orgID, lineIDs)
+	return err
+}
+
+// AutoReconcileReport counts what the auto-reconcile banner reports: of the
+// statement lines that arrived on this account in the last `days`, how many the
+// button reconciled by itself, and how many are still waiting.
+func (r *BankStatementRepository) AutoReconcileReport(ctx context.Context, orgID, accountID uuid.UUID, days int) (*models.AutoReconcileReport, error) {
+	rep := &models.AutoReconcileReport{Days: days}
+	err := r.pool.QueryRow(ctx,
+		`SELECT COUNT(*),
+		        COUNT(*) FILTER (WHERE l.auto_reconciled_at IS NOT NULL),
+		        COUNT(*) FILTER (WHERE l.status = 'NEW'),
+		        (SELECT a.auto_reconcile FROM accounts a
+		          WHERE a.organisation_id=$1 AND a.account_id=$2)
+		   FROM bank_statement_lines l
+		  WHERE l.organisation_id=$1
+		    AND l.created_at >= now() - make_interval(days => $3)
+		    AND (l.bank_account_id=$2
+		         OR l.feed_account_id IN (SELECT feed_account_id FROM bank_feed_accounts WHERE account_id=$2))`,
+		orgID, accountID, days).Scan(&rep.Total, &rep.AutoReconciled, &rep.UnreconciledLeft, &rep.Enabled)
+	if err != nil {
+		return nil, err
+	}
+	return rep, nil
 }

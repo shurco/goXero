@@ -52,6 +52,40 @@
 		       focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:opacity-50 disabled:cursor-not-allowed;
 	}
 
+	/*
+		Xero's reconcile screen has its own controls, and they are not ours: a
+		squared blue button, a bordered secondary beside it, and text links that
+		are blue for the action being taken and grey for the rest. They live
+		apart from the .btn-* family so that matching Xero here does not change
+		how a button looks anywhere else in the app.
+	*/
+	.btn-xero {
+		@apply inline-flex items-center justify-center rounded-[3px] px-3 py-1.5 text-[13px] font-medium
+		       bg-xero-blue text-white hover:bg-xero-blueDark transition
+		       focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:opacity-50 disabled:cursor-not-allowed;
+	}
+	.btn-xero-secondary {
+		@apply inline-flex items-center justify-center rounded-[3px] px-3 py-1.5 text-[13px] font-medium
+		       bg-white text-xero-ink border border-xero-border hover:bg-xero-band transition
+		       focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:opacity-50 disabled:cursor-not-allowed;
+	}
+	/* The OK between the two sides of a row: Xero's blue, bold, upper case. */
+	.btn-xero-ok {
+		@apply inline-flex items-center justify-center rounded-[3px] px-3 py-1.5 text-[13px] font-bold leading-5
+		       uppercase bg-xero-blue text-white hover:bg-xero-blueDark transition
+		       focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:opacity-50 disabled:cursor-not-allowed;
+	}
+	.link-xero {
+		@apply text-xero-blue hover:underline transition disabled:opacity-50 disabled:cursor-not-allowed;
+	}
+
+	/* Xero's controls are smaller and squarer than ours. The reconcile screen
+	   uses these so its panels read like Xero's without restyling .input. */
+	.input-xero {
+		@apply w-full rounded-[3px] border-xero-border bg-white px-2 py-1 text-[13px] text-xero-ink
+		       focus:border-xero-blue focus:ring-1 focus:ring-xero-blue;
+	}
+
 	.input {
 		@apply w-full rounded-md border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 shadow-sm
 		       focus:border-brand-500 focus:ring-2 focus:ring-brand-100;

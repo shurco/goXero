@@ -128,7 +128,7 @@ func (r *AccountRepository) Update(ctx context.Context, orgID uuid.UUID, a *mode
 		a.BankAccountNumber, a.BankAccountType, a.CurrencyCode,
 		a.Status, a.Description, a.TaxType,
 		a.EnablePaymentsToAccount, a.ShowInExpenseClaims,
-		a.Class, a.ReportingCode, a.ReportingCodeName,
+		a.Class, a.ReportingCode, a.ReportingCodeName, a.AutoReconcile,
 	).Scan(&a.UpdatedDateUTC)
 }
 
@@ -233,6 +233,23 @@ func (r *TaxRateRepository) Delete(ctx context.Context, orgID, id uuid.UUID) err
 	cmd, err := r.pool.Exec(ctx,
 		`UPDATE tax_rates SET status='DELETED', updated_at=now()
 		 WHERE organisation_id=$1 AND tax_rate_id=$2`, orgID, id)
+	if err != nil {
+		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// SetAutoReconcile flips the per-account setting behind Xero's "Turn
+// auto-reconcile on". It is deliberately its own statement rather than a pass
+// through Update: the toggle in the reconcile banner must not be able to
+// rewrite the account's name as a side effect.
+func (r *AccountRepository) SetAutoReconcile(ctx context.Context, orgID, accountID uuid.UUID, enabled bool) error {
+	cmd, err := r.pool.Exec(ctx,
+		`UPDATE accounts SET auto_reconcile=$3, updated_date_utc=now()
+		 WHERE organisation_id=$1 AND account_id=$2`, orgID, accountID, enabled)
 	if err != nil {
 		return err
 	}

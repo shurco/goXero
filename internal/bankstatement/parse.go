@@ -166,9 +166,7 @@ func parseAmount(s, decimalSep string) (decimal.Decimal, error) {
 		negative = true
 		raw = strings.TrimPrefix(raw, "-")
 	}
-	if strings.HasPrefix(raw, "+") {
-		raw = strings.TrimPrefix(raw, "+")
-	}
+	raw = strings.TrimPrefix(raw, "+")
 	raw = strings.Trim(raw, " \t")
 	raw = strings.Map(func(r rune) rune {
 		if strings.ContainsRune(currencySymbols, r) {

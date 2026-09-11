@@ -4,15 +4,18 @@ import { session } from './stores/session';
 import { get } from 'svelte/store';
 import type {
 	Account,
+	AutoReconcileReport,
 	BankReconcilePeriod,
 	BankRule,
 	BankStatementLine,
+	BankStatementLineComment,
 	BankTransaction,
 	Contact,
 	Currency,
 	Invoice,
 	InvoiceSummary,
 	Item,
+	LedgerBalancePoint,
 	LoginResponse,
 	ManualJournal,
 	OrgFile,
@@ -454,6 +457,11 @@ export const statementApi = {
 		request<{ Balance: StatementBalance }>(
 			`/api/v1/statement-lines/balance?bankAccountId=${encodeURIComponent(bankAccountId)}`
 		),
+	/** The line behind the card's balance graph: one point per day, ending today. */
+	balanceSeries: (bankAccountId: string, days = 31) =>
+		request<{ BalanceSeries: LedgerBalancePoint[] }>(
+			`/api/v1/statement-lines/balance-series?bankAccountId=${encodeURIComponent(bankAccountId)}&days=${days}`
+		),
 	ignore: (id: string) =>
 		request<void>(`/api/v1/statement-lines/${id}/ignore`, { method: 'POST' }),
 	unignore: (id: string) =>
@@ -466,7 +474,15 @@ export const statementApi = {
 	/** Turn one line into a new bank transaction. */
 	create: (
 		id: string,
-		payload: { AccountCode: string; TaxType?: string; ContactID?: string; Reference?: string; Description?: string }
+		payload: {
+			AccountCode: string;
+			TaxType?: string;
+			ContactID?: string;
+			Reference?: string;
+			Description?: string;
+			/** false posts the transaction unreconciled, for a Match selection. */
+			Reconcile?: boolean;
+		}
 	) =>
 		request<{ BankTransactions: BankTransaction[] }>(`/api/v1/statement-lines/${id}/create`, {
 			method: 'POST',
@@ -478,13 +494,53 @@ export const statementApi = {
 			method: 'POST',
 			body: JSON.stringify({ BankTransactionID: bankTransactionId })
 		}),
-	/** Candidates for Find & match, best first. */
-	matches: (id: string, search = '') => {
-		const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+	/**
+	 * Candidates for Find & match, best first. Each of the four filters on the
+	 * form is passed straight through: the server narrows the same list rather
+	 * than the client filtering a page of it, so the paging total stays true.
+	 */
+	matches: (
+		id: string,
+		params: {
+			search?: string;
+			showSpent?: boolean;
+			currency?: string;
+			amount?: string;
+			page?: number;
+			pageSize?: number;
+		} = {}
+	) => {
+		const q = new URLSearchParams();
+		if (params.search) q.set('search', params.search);
+		if (params.showSpent) q.set('showSpent', 'true');
+		if (params.currency) q.set('currency', params.currency);
+		if (params.amount) q.set('amount', params.amount);
+		if (params.page && params.page > 1) q.set('page', String(params.page));
+		if (params.pageSize) q.set('pageSize', String(params.pageSize));
+		const qs = q.toString();
 		return request<{ BankTransactions: BankTransaction[]; Pagination: Pagination }>(
-			`/api/v1/statement-lines/${id}/matches${qs}`
+			`/api/v1/statement-lines/${id}/matches${qs ? `?${qs}` : ''}`
 		);
 	},
+	/**
+	 * Add a bank fee or a minor adjustment to a line's selection. The
+	 * transaction it posts is unreconciled and unattached, so it joins the
+	 * selection like any other candidate.
+	 */
+	adjustment: (
+		id: string,
+		payload: { Kind: 'BANK_FEE' | 'MINOR_ADJUSTMENT'; Amount: string; AccountCode?: string }
+	) =>
+		request<{ BankTransactions: BankTransaction[] }>(`/api/v1/statement-lines/${id}/adjustment`, {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	/** Commit a line against every transaction the user selected. */
+	reconcileSelection: (id: string, bankTransactionIds: string[]) =>
+		request<{ BankTransactions: BankTransaction[] }>(`/api/v1/statement-lines/${id}/reconcile`, {
+			method: 'POST',
+			body: JSON.stringify({ BankTransactionIDs: bankTransactionIds })
+		}),
 	transfer: (id: string, payload: { FromBankAccountID?: string; ToBankAccountID: string; Reference?: string }) =>
 		request<{ BankTransfers: unknown[] }>(`/api/v1/statement-lines/${id}/transfer`, {
 			method: 'POST',
@@ -507,7 +563,29 @@ export const statementApi = {
 		request<{ Matched: number; Scanned: number; Remaining: number }>(
 			`/api/v1/statement-lines/auto-reconcile?bankAccountId=${encodeURIComponent(bankAccountId)}`,
 			{ method: 'POST' }
-		)
+		),
+	/** The numbers behind the auto-reconcile banner, and the setting itself. */
+	autoReconcileStatus: (bankAccountId: string, days = 30) =>
+		request<{ AutoReconcile: AutoReconcileReport }>(
+			`/api/v1/statement-lines/auto-reconcile?bankAccountId=${encodeURIComponent(bankAccountId)}&days=${days}`
+		),
+	/** Turn automatic reconciliation on or off for one bank account. */
+	setAutoReconcile: (bankAccountId: string, enabled: boolean) =>
+		request<{ AutoReconcile: AutoReconcileReport }>('/api/v1/statement-lines/auto-reconcile-settings', {
+			method: 'POST',
+			body: JSON.stringify({ BankAccountID: bankAccountId, Enabled: enabled })
+		}),
+	/** Remove a line nobody wants. A reconciled line refuses to go. */
+	remove: (id: string) =>
+		request<void>(`/api/v1/statement-lines/${id}`, { method: 'DELETE' }),
+	/** The line's Discuss thread, oldest note first. */
+	comments: (id: string) =>
+		request<{ Comments: BankStatementLineComment[] }>(`/api/v1/statement-lines/${id}/comments`),
+	addComment: (id: string, body: string) =>
+		request<{ Comments: BankStatementLineComment[] }>(`/api/v1/statement-lines/${id}/comments`, {
+			method: 'POST',
+			body: JSON.stringify({ Body: body })
+		})
 };
 
 // ── Manual statement import (upload → import settings → review) ────────────
@@ -542,7 +620,7 @@ export const statementImportApi = {
 	},
 	/** Step 3: materialise the lines. Duplicates are skipped unless told otherwise. */
 	commit: (importId: string, includeDuplicates = false) =>
-		request<{ Import: StatementImport; Imported: number; Skipped: number }>(
+		request<{ Import: StatementImport; Imported: number; Skipped: number; AutoMatched?: number }>(
 			`/api/v1/statement-imports/${importId}/commit`,
 			{ method: 'POST', body: JSON.stringify({ IncludeDuplicates: includeDuplicates }) }
 		),

@@ -2,7 +2,6 @@ package bankstatement
 
 import (
 	"testing"
-	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -286,10 +285,9 @@ func TestApplyCSVWithoutHeader(t *testing.T) {
 	if st.HasHeader {
 		t.Fatal("did not expect a header row")
 	}
-	m := DetectMapping(st.Columns)
 	// A headerless file gives numeric column refs; the wizard's user picks
 	// them, and ApplyCSV must resolve them positionally.
-	m = Mapping{AmountMode: "SIGNED", Date: "0", Amount: "1", Payee: "2"}
+	m := Mapping{AmountMode: "SIGNED", Date: "0", Amount: "1", Payee: "2"}
 	lines, err := ApplyCSV(st, m)
 	if err != nil {
 		t.Fatalf("ApplyCSV: %v", err)
@@ -414,28 +412,6 @@ func TestParseDetectsQBOByExtension(t *testing.T) {
 	if !ok || got != FormatQBO {
 		t.Fatalf("format = %q, ok=%v, want QBO", got, ok)
 	}
-}
-
-func TestFingerprintIgnoresCaseAndSpacing(t *testing.T) {
-	l1 := Line{Date: mustDate(t, "2026-01-15"), Amount: decimal.RequireFromString("-42.50"), Payee: "Coffee  Shop"}
-	l2 := Line{Date: mustDate(t, "2026-01-15"), Amount: decimal.RequireFromString("-42.5"), Payee: "coffee shop"}
-	if Fingerprint("acct", l1) != Fingerprint("acct", l2) {
-		t.Error("fingerprints should match for equivalent lines")
-	}
-	l3 := l2
-	l3.Amount = decimal.RequireFromString("-42.51")
-	if Fingerprint("acct", l1) == Fingerprint("acct", l3) {
-		t.Error("a different amount must change the fingerprint")
-	}
-}
-
-func mustDate(t *testing.T, s string) time.Time {
-	t.Helper()
-	d, err := parseDate(s, "2006-01-02")
-	if err != nil {
-		t.Fatalf("parseDate(%q): %v", s, err)
-	}
-	return d
 }
 
 // A statement's balance column is the balance after each line, so the balance

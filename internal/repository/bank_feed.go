@@ -250,30 +250,6 @@ func (r *BankFeedRepository) UpsertStatementLine(ctx context.Context, orgID, fee
 	return inserted, err
 }
 
-// GetFeedAccount is used by the import handler to resolve a line back to its
-// mapped ledger account.
-func (r *BankFeedRepository) GetFeedAccount(ctx context.Context, orgID, feedAccountID uuid.UUID) (*models.BankFeedAccount, error) {
-	var a models.BankFeedAccount
-	var bal *decimal.Decimal
-	err := r.pool.QueryRow(ctx,
-		`SELECT feed_account_id, connection_id, account_id, external_account_id,
-		        COALESCE(display_name,''), COALESCE(iban,''),
-		        COALESCE(currency_code,''), balance, updated_at
-		 FROM bank_feed_accounts
-		 WHERE organisation_id = $1 AND feed_account_id = $2`, orgID, feedAccountID).Scan(
-		&a.FeedAccountID, &a.ConnectionID, &a.AccountID, &a.ExternalAccountID,
-		&a.DisplayName, &a.IBAN, &a.CurrencyCode, &bal, &a.UpdatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-	a.Balance = bal
-	return &a, nil
-}
-
 // ScheduledConnection is one row of the background sync sweep: which tenant
 // owns a connection and what has to be pulled for it.
 type ScheduledConnection struct {

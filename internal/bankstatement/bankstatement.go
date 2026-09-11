@@ -9,8 +9,6 @@
 package bankstatement
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -144,25 +142,6 @@ func OpeningBalance(lines []Line) *decimal.Decimal {
 	}
 	opening := lines[0].Balance.Sub(lines[0].Amount)
 	return &opening
-}
-
-// Fingerprint is the duplicate-detection key for a manually imported line.
-// It deliberately mirrors what Xero compares when it warns about duplicates:
-// the account, the date, the amount and the payee. Two genuinely identical
-// coffees on one day therefore collide — which is why callers treat a match as
-// a warning to skip rather than a hard unique constraint.
-func Fingerprint(bankAccountID string, l Line) string {
-	h := sha1.New()
-	fmt.Fprintf(h, "%s|%s|%s|%s|%s", bankAccountID,
-		l.Date.UTC().Format("2006-01-02"),
-		l.Amount.StringFixed(4),
-		normalise(l.Payee),
-		normalise(l.Reference))
-	return hex.EncodeToString(h.Sum(nil))
-}
-
-func normalise(s string) string {
-	return strings.ToLower(strings.Join(strings.Fields(s), " "))
 }
 
 func firstLine(s string) string {

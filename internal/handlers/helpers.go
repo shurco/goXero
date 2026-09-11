@@ -136,6 +136,12 @@ func parseOptionalUUID(raw, label string) (*uuid.UUID, error) {
 	return &id, nil
 }
 
+// optionalQueryUUID reads an optional UUID query parameter, returning (nil, nil)
+// when it is absent and a 400 when it is present but malformed.
+func optionalQueryUUID(c fiber.Ctx, key string) (*uuid.UUID, error) {
+	return parseOptionalUUID(strings.TrimSpace(c.Query(key)), key)
+}
+
 // parseUUIDList converts a slice of raw strings (typically from JSON request
 // bodies like {"AttachmentIDs":[...]}) into uuid.UUIDs, returning a 400 Fiber
 // error when the list is empty or any entry is malformed.

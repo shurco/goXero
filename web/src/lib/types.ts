@@ -133,6 +133,8 @@ export interface Account {
 	Class?: string;
 	SystemAccount?: string;
 	UpdatedDateUTC?: string;
+	/** Whether this bank account reconciles imports by itself. */
+	AutoReconcile?: boolean;
 }
 
 export interface Address {
@@ -429,6 +431,27 @@ export interface BankRuleSuggestion {
 	ContactID?: string;
 }
 
+/**
+ * Xero's "suggest previous entries": the coding this bank account used the last
+ * time it saw the same payee. Advisory — the Create panel opens with it filled
+ * in and every field can be changed before saving.
+ */
+export interface PreviousEntrySuggestion {
+	/** The payee the previous entries were filed under. */
+	Payee?: string;
+	/** How many previous entries share this payee. */
+	MatchCount: number;
+	LastUsedAt?: string;
+	ContactID?: string;
+	ContactName?: string;
+	AccountCode?: string;
+	AccountID?: string;
+	AccountName?: string;
+	TaxType?: string;
+	Description?: string;
+	Reference?: string;
+}
+
 export interface BankStatementLine {
 	StatementLineID: string;
 	FeedAccountID?: string;
@@ -458,7 +481,60 @@ export interface BankStatementLine {
 	AccountCode?: string;
 	AccountID?: string;
 	TaxType?: string;
+	/** Read-only: where the transaction this line became was coded. */
+	CodedAccountCode?: string;
+	CodedAccountName?: string;
+	/**
+	 * How many notes the line carries. Xero marks the Discuss tab with a
+	 * " *" whenever there is one, so the count has to arrive with the line
+	 * rather than with the thread, which is only read once the tab is opened.
+	 */
+	CommentCount?: number;
 	Suggestions?: BankRuleSuggestion[];
+	/** Suggested coding from history, when the caller asked for it. */
+	PreviousEntry?: PreviousEntrySuggestion;
+	/**
+	 * Set only when AutoReconcile itself dealt with the line — it is what lets
+	 * the banner count its own work rather than every reconciled line.
+	 */
+	AutoReconciledAt?: string;
+	/** The Discuss thread, when the caller asked for it. */
+	Comments?: BankStatementLineComment[];
+}
+
+/** One note on a statement line — Xero's "Discuss". */
+export interface BankStatementLineComment {
+	CommentID: string;
+	StatementLineID: string;
+	UserID?: string;
+	AuthorName?: string;
+	Body: string;
+	CreatedDateUTC: string;
+}
+
+/**
+ * The number over the reconcile inbox: how many of the lines that arrived in
+ * the window were reconciled by AutoReconcile rather than by hand, plus the
+ * per-account setting the banner is where you turn on.
+ */
+export interface AutoReconcileReport {
+	Days: number;
+	Total: number;
+	AutoReconciled: number;
+	Enabled: boolean;
+	UnreconciledLeft: number;
+}
+
+/**
+ * One day of a bank account's balance graph: the account's ledger balance —
+ * "Balance in Xero" — at the end of that calendar day. Days nothing posted
+ * carry the previous day's figure forward, so there is always one point per
+ * day and the last one is the figure printed above the graph.
+ */
+export interface LedgerBalancePoint {
+	/** YYYY-MM-DD. */
+	Date: string;
+	Balance: string | number;
 }
 
 export interface StatementBalance {

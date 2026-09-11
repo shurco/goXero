@@ -1,21 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { accountApi, bankTransactionApi, orgApi } from '$lib/api';
+	import { accountApi, orgApi, statementApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
-	import { runningBalanceSeries } from '$lib/bank-balance-chart';
-	import { bankBalancesFromTransactions } from '$lib/dashboard-utils';
 	import BankBalanceChart from '$lib/components/BankBalanceChart.svelte';
-	import { formatCurrency, formatDate } from '$lib/utils/format';
-	import type { Account, BankTransaction, Organisation } from '$lib/types';
+	import { formatAmount, formatCurrency, xeroDate } from '$lib/utils/format';
+	import type { Account, LedgerBalancePoint, Organisation, StatementBalance } from '$lib/types';
 
 	interface BankAccountRow {
 		account: Account;
-		reconcileCount: number;
-		statementBalance: number;
-		xeroBalance: number;
-		chartSeries: { t: number; balance: number }[];
-		lastActivityDate?: string;
-		hasTransactions: boolean;
+		balance: StatementBalance | null;
+		chartSeries: LedgerBalancePoint[];
 	}
 
 	let accounts = $state<Account[]>([]);
@@ -26,11 +20,12 @@
 	let headerMenuOpen = $state(false);
 	let cardMenuId = $state<string | null>(null);
 
-	function fmtBal(value: number, cur: string) {
-		const abs = formatCurrency(Math.abs(value), cur);
-		return value < 0 ? `(${abs})` : abs;
-	}
-
+	/**
+	 * The card's two figures are the two the reconcile screen already shows, so
+	 * they are read from the endpoint that computes them rather than re-derived
+	 * here from a page of bank transactions. Xero's card is the same two numbers
+	 * for the same reason.
+	 */
 	async function reload() {
 		loading = true;
 		err = '';
@@ -41,44 +36,28 @@
 			]);
 			accounts = accs.filter((a) => a.Type === 'BANK');
 			org = o ?? null;
-			const cur = org?.BaseCurrency || 'USD';
 
-			const results = await Promise.all(
+			rows = await Promise.all(
 				accounts.map(async (a) => {
-					try {
-						const res = await bankTransactionApi.list({
-							accountId: a.AccountID ?? '',
-							pageSize: '500'
-						});
-						const txs = (res?.BankTransactions ?? []) as BankTransaction[];
-						const unrec = txs.filter((t) => !t.IsReconciled).length;
-						const { statement, xero } = bankBalancesFromTransactions(txs, cur);
-						const dated = txs.filter((t) => t.Date).sort((x, y) => new Date(x.Date!).getTime() - new Date(y.Date!).getTime());
-						const lastActivityDate = dated[dated.length - 1]?.Date;
-						const chartSeries = runningBalanceSeries(txs);
-						const hasTransactions = txs.length > 0;
-						return {
-							account: a,
-							reconcileCount: unrec,
-							statementBalance: statement,
-							xeroBalance: xero,
-							chartSeries,
-							lastActivityDate,
-							hasTransactions
-						} satisfies BankAccountRow;
-					} catch {
-						return {
-							account: a,
-							reconcileCount: 0,
-							statementBalance: 0,
-							xeroBalance: 0,
-							chartSeries: [],
-							hasTransactions: false
-						} satisfies BankAccountRow;
-					}
+					const id = a.AccountID ?? '';
+					if (!id) return { account: a, balance: null, chartSeries: [] } satisfies BankAccountRow;
+					const [bal, series] = await Promise.all([
+						statementApi
+							.balance(id)
+							.then((r) => r?.Balance ?? null)
+							.catch(() => null),
+						statementApi
+							.balanceSeries(id)
+							.then((r) => r?.BalanceSeries ?? [])
+							.catch(() => [] as LedgerBalancePoint[])
+					]);
+					return {
+						account: a,
+						balance: bal,
+						chartSeries: series
+					} satisfies BankAccountRow;
 				})
 			);
-			rows = results;
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Failed to load bank accounts';
 		} finally {
@@ -87,7 +66,6 @@
 	}
 
 	onMount(() => {
-		void reload();
 		function closeMenus(e: MouseEvent) {
 			const el = e.target as HTMLElement;
 			if (!el.closest('[data-bank-acct-menu]')) cardMenuId = null;
@@ -101,169 +79,233 @@
 	});
 
 	const currency = $derived(org?.BaseCurrency || 'USD');
-	const totalReconcile = $derived(rows.reduce((s, r) => s + r.reconcileCount, 0));
+
+	/**
+	 * Xero prints a balance held in the organisation's base currency as a bare
+	 * number — "7,430.22", not "US$7,430.22" — and names the currency only once
+	 * the account is held in something else. The shared formatCurrency always
+	 * prefixes, so the card formats its own two figures rather than changing
+	 * what every other page shows.
+	 */
+	function formatBalance(value: number | string | undefined, accountCurrency: string) {
+		if (accountCurrency !== currency) return formatCurrency(value, accountCurrency);
+		return formatAmount(value);
+	}
+
+	/**
+	 * Xero's empty card stands for an account the bank has sent nothing for.
+	 * The statement-line counts are the test: an account with no reconciled and
+	 * no unreconciled lines has had nothing imported into it.
+	 */
+	function isEmpty(row: BankAccountRow) {
+		const b = row.balance;
+		if (!b) return false;
+		return Number(b.ReconciledCount ?? 0) + Number(b.UnreconciledCount ?? 0) === 0;
+	}
+
 </script>
 
-<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-	<div>
-		<h1 class="section-title">Bank accounts</h1>
-	</div>
-	<div class="flex flex-wrap items-center gap-2" data-bank-header-menu>
-		<a href="/app/accounting/bank-rules" class="btn-secondary">Manage bank rules</a>
-		<a href="/app/accounting/bank-accounts/new" class="btn-primary">Add bank account</a>
-		<div class="relative">
-			<button
-				type="button"
-				class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-ink-200 bg-white text-ink-600 hover:bg-ink-50"
-				aria-label="More actions"
-				aria-expanded={headerMenuOpen}
-				onclick={() => (headerMenuOpen = !headerMenuOpen)}
-			>
-				<svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-					<circle cx="12" cy="6" r="1.5" />
-					<circle cx="12" cy="12" r="1.5" />
-					<circle cx="12" cy="18" r="1.5" />
-				</svg>
-			</button>
-			{#if headerMenuOpen}
-				<div
-					class="absolute right-0 z-40 mt-1 min-w-[200px] rounded-lg border border-ink-100 bg-white py-1 shadow-pop"
-					role="menu"
+<!-- Xero's page surface (rgb(242,243,244)), bled to the viewport so the grey is
+     the page and not a panel sitting on goXero's own background. -->
+<div
+	class="-mt-6 -mb-6 ml-[calc(50%-50vw)] w-screen min-h-[calc(100vh-3.5rem)] bg-[#f2f3f4] px-5 pt-6 pb-6 lg:-mt-8 lg:-mb-8 lg:pt-8 lg:pb-8"
+>
+	<div class="mx-auto w-full max-w-[1360px]">
+		<div class="mb-5 flex h-[60px] items-center justify-between">
+			<h1 class="pr-3 text-[17px] leading-6 font-bold text-xero-ink">Bank accounts</h1>
+			<div class="flex items-center gap-3" data-bank-header-menu>
+				<a
+					href="/app/accounting/bank-rules"
+					class="inline-flex h-8 items-center justify-center rounded-[3px] border border-[#a6a9b0] bg-white px-3 py-[5px] text-[13px] leading-5 font-bold text-xero-blue hover:bg-[#f5f7f9]"
 				>
-					<a class="nav-dropdown-item block" href="/app/bank-feeds" role="menuitem">Bank feeds</a>
-					<a class="nav-dropdown-item block" href="/app/reports/bank-summary" role="menuitem">Bank summary report</a>
-				</div>
-			{/if}
-		</div>
-	</div>
-</div>
-
-{#if err}
-	<p class="mb-3 text-sm text-red-700" role="alert">{err}</p>
-{/if}
-
-{#if loading}
-	<div class="card p-12 text-center text-ink-500">Loading…</div>
-{:else if rows.length === 0}
-	<div class="card p-12 text-center">
-		<h2 class="content-section-title mb-1">No bank accounts yet</h2>
-		<p class="mb-6 text-sm text-ink-600">Connect a bank or add one manually to start reconciling transactions.</p>
-		<a href="/app/accounting/bank-accounts/new" class="btn-primary">Add bank account</a>
-	</div>
-{:else}
-	<p class="mb-4 text-xs text-ink-600">
-		{rows.length} account{rows.length === 1 ? '' : 's'}
-		{#if totalReconcile > 0}
-			<span class="text-ink-400"> · </span>
-			{totalReconcile} item{totalReconcile === 1 ? '' : 's'} to reconcile
-		{/if}
-	</p>
-
-	<div class="flex w-full min-w-0 flex-col gap-4">
-		{#each rows as r (r.account.AccountID)}
-			{@const id = r.account.AccountID ?? ''}
-			{@const cur = r.account.CurrencyCode ?? currency}
-			<article
-				class="overflow-hidden rounded-md border border-ink-200 bg-white shadow-sm"
-			>
-				<div class="flex items-start justify-between gap-2 border-b border-ink-200 px-4 py-3">
-					<div class="min-w-0">
-						<a
-							class="text-sm font-semibold leading-snug text-brand-500 hover:underline"
-							href={`/app/accounting/bank-accounts/${id}`}
-						>
-							{r.account.Name}
-						</a>
-						<div class="mt-0.5 text-[11px] leading-normal text-ink-600">
-							{r.account.BankAccountNumber || r.account.Code || '—'}
-						</div>
-					</div>
-					<div class="relative shrink-0" data-bank-acct-menu>
-						<button
-							type="button"
-							class="rounded p-1 text-ink-400 hover:bg-ink-50 hover:text-ink-500"
-							aria-label="Account menu"
-							aria-expanded={cardMenuId === id}
-							onclick={(e) => {
-								e.stopPropagation();
-								cardMenuId = cardMenuId === id ? null : id;
-							}}
-						>
-							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-								<circle cx="12" cy="6" r="1.5" />
-								<circle cx="12" cy="12" r="1.5" />
-								<circle cx="12" cy="18" r="1.5" />
-							</svg>
-						</button>
-						{#if cardMenuId === id}
-							<div
-								class="absolute right-0 z-30 mt-1 w-[min(100vw-2rem,220px)] rounded-xl border border-ink-100 bg-white py-1 shadow-pop"
-								role="menu"
-							>
-								<a class="nav-dropdown-item" href={`/app/bank-transactions?accountId=${id}`}>Account transactions</a>
-								<a class="nav-dropdown-item" href="/app/bank-feeds">Manage bank feeds</a>
-								<a class="nav-dropdown-item" href={`/app/accounting/bank-accounts/${id}?tab=statements`}>Import bank statement</a>
-								<a class="nav-dropdown-item" href={`/app/accounting/bank-accounts/${id}/edit`}>Edit account details</a>
-								<a class="nav-dropdown-item" href="/app/reports/bank-summary">Bank summary report</a>
-							</div>
-						{/if}
-					</div>
-				</div>
-
-				{#if !r.hasTransactions}
-					<div class="flex flex-col items-center px-5 py-12 text-center">
-						<p class="text-base font-semibold text-ink-900">No transactions imported</p>
-						<a
-							href={`/app/accounting/bank-accounts/${id}?tab=statements`}
-							class="btn-primary mt-5"
-						>
-							Import a bank statement
-						</a>
-					</div>
-				{:else}
-					<div
-						class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+					Manage bank rules
+				</a>
+				<a
+					href="/app/accounting/bank-accounts/new"
+					class="inline-flex h-8 items-center justify-center rounded-[3px] border border-xero-blue bg-xero-blue px-3 py-[5px] text-[13px] leading-5 font-bold text-white hover:bg-xero-blueDark"
+				>
+					Add bank account
+				</a>
+				<div class="relative -mr-1">
+					<button
+						type="button"
+						class="flex h-8 w-8 items-center justify-center rounded-full text-[rgba(0,10,30,0.65)] hover:bg-black/5"
+						aria-label="Additional actions"
+						aria-expanded={headerMenuOpen}
+						onclick={() => (headerMenuOpen = !headerMenuOpen)}
 					>
-						<div class="flex min-w-0 shrink-0 flex-col">
-							{#if r.reconcileCount > 0}
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+							<circle cx="12" cy="6" r="1.5" />
+							<circle cx="12" cy="12" r="1.5" />
+							<circle cx="12" cy="18" r="1.5" />
+						</svg>
+					</button>
+					{#if headerMenuOpen}
+						<div
+							class="absolute right-0 z-40 mt-1 min-w-[200px] rounded-[3px] border border-[#ccced2] bg-white py-1 shadow-pop"
+							role="menu"
+						>
+							<a class="nav-dropdown-item block" href="/app/bank-feeds" role="menuitem">Bank feeds</a>
+							<a class="nav-dropdown-item block" href="/app/reports/bank-summary" role="menuitem"
+								>Bank summary report</a
+							>
+						</div>
+					{/if}
+				</div>
+			</div>
+		</div>
+
+		{#if err}
+			<p class="mb-3 text-[13px] text-red-700" role="alert">{err}</p>
+		{/if}
+
+		{#if loading}
+			<div
+				class="rounded-[3px] bg-white p-12 text-center text-[13px] text-[rgba(0,10,30,0.65)] shadow-[0_0_0_1px_rgba(0,10,30,0.2)]"
+			>
+				Loading…
+			</div>
+		{:else if rows.length === 0}
+			<div
+				class="rounded-[3px] bg-white p-12 text-center shadow-[0_0_0_1px_rgba(0,10,30,0.2)]"
+			>
+				<h2 class="mb-1 text-[15px] leading-6 font-bold text-xero-ink">No bank accounts yet</h2>
+				<p class="mb-6 text-[13px] leading-5 text-[rgb(50,70,90)]">
+					Connect a bank or add one manually to start reconciling transactions.
+				</p>
+				<a
+					href="/app/accounting/bank-accounts/new"
+					class="inline-flex h-8 items-center justify-center rounded-[3px] border border-xero-blue bg-xero-blue px-3 py-[5px] text-[13px] leading-5 font-bold text-white hover:bg-xero-blueDark"
+				>
+					Add bank account
+				</a>
+			</div>
+		{:else}
+			<div class="flex w-full min-w-0 flex-col gap-6">
+				{#each rows as r (r.account.AccountID)}
+					{@const id = r.account.AccountID ?? ''}
+					{@const cur = r.account.CurrencyCode ?? currency}
+					{@const bal = r.balance}
+					{@const empty = isEmpty(r)}
+					<article class="rounded-[3px] bg-white shadow-[0_0_0_1px_rgba(0,10,30,0.2)]">
+						<div class="flex h-[90px] px-5 py-4">
+							<div class="min-w-0 flex-1">
 								<a
-									href={`/app/accounting/bank-accounts/${id}?tab=reconcile`}
-									class="inline-flex w-fit items-center rounded bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-brand-600"
+									class="block truncate text-[17px] leading-7 font-bold text-xero-blue hover:underline"
+									href={`/app/accounting/bank-accounts/${id}`}
 								>
-									Reconcile {r.reconcileCount} item{r.reconcileCount === 1 ? '' : 's'}
+									{r.account.Name}
 								</a>
-							{:else}
-								<span
-									class="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800"
-								>
-									<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
-										><path
-											d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 14.5-4.5-4.5 1.4-1.4 3.1 3 6.6-6.6 1.4 1.4-8 8z"
-										/></svg
-									>
-									Up to date
+								<span class="mt-2 block text-[13px] leading-4 font-bold text-[rgba(0,10,30,0.75)]">
+									{r.account.BankAccountNumber || r.account.Code || '—'}
 								</span>
+							</div>
+							<div class="relative shrink-0 self-center" data-bank-acct-menu>
+								<button
+									type="button"
+									class="flex h-10 w-10 items-center justify-center rounded-full text-[rgba(0,10,30,0.65)] hover:bg-black/5"
+									aria-label="Account menu"
+									aria-expanded={cardMenuId === id}
+									onclick={(e) => {
+										e.stopPropagation();
+										cardMenuId = cardMenuId === id ? null : id;
+									}}
+								>
+									<svg class="h-[13px] w-[3px]" viewBox="0 0 3 13" fill="currentColor" aria-hidden="true">
+										<circle cx="1.5" cy="1.5" r="1.5" />
+										<circle cx="1.5" cy="6.5" r="1.5" />
+										<circle cx="1.5" cy="11.5" r="1.5" />
+									</svg>
+								</button>
+								{#if cardMenuId === id}
+									<div
+										class="absolute right-0 z-30 mt-1 w-[min(100vw-2rem,220px)] rounded-[3px] border border-[#ccced2] bg-white py-1 shadow-pop"
+										role="menu"
+									>
+										<a class="nav-dropdown-item" href={`/app/bank-transactions?accountId=${id}`}
+											>Account transactions</a
+										>
+										<a class="nav-dropdown-item" href="/app/bank-feeds">Manage bank feeds</a>
+										<a class="nav-dropdown-item" href={`/app/accounting/bank-accounts/${id}?tab=statements`}
+											>Import bank statement</a
+										>
+										<a class="nav-dropdown-item" href={`/app/accounting/bank-accounts/${id}/edit`}
+											>Edit account details</a
+										>
+										<a class="nav-dropdown-item" href="/app/reports/bank-summary">Bank summary report</a>
+									</div>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Xero rules off the 90px header with a 1px line across the whole card,
+						     so the card reads as header + body rather than one block. -->
+						<div class="border-t border-[#ccced2]">
+							<div class="p-5">
+								{#if empty}
+									<div class="pt-0">
+										<div class="text-[15px] leading-6 font-bold text-xero-ink">No transactions imported</div>
+										<a
+											href={`/app/accounting/bank-accounts/${id}?tab=statements`}
+											class="mt-3 inline-flex h-8 items-center justify-center rounded-[3px] border border-xero-blue bg-xero-blue px-3 py-[5px] text-[13px] leading-5 font-bold text-white hover:bg-xero-blueDark"
+										>
+											Import a bank statement
+										</a>
+									</div>
+								{:else}
+									<div>
+										{#if bal && Number(bal.UnreconciledCount) > 0}
+											<a
+												href={`/app/accounting/bank-accounts/${id}?tab=reconcile`}
+												class="mb-3 inline-flex h-8 items-center justify-center rounded-[3px] border border-xero-blue bg-xero-blue px-3 py-[5px] text-[13px] leading-5 font-bold text-white hover:bg-xero-blueDark"
+											>
+												Reconcile {bal.UnreconciledCount} item{Number(bal.UnreconciledCount) === 1
+													? ''
+													: 's'}
+											</a>
+										{/if}
+										<table class="w-full border-collapse">
+											<tbody>
+												<tr class="h-6">
+													<td
+														class="w-[615px] pt-0 pr-[25px] pb-2 pl-0 text-left align-middle text-[13px] leading-4 font-normal whitespace-nowrap text-[rgb(50,70,90)]"
+													>
+														Balance in goXero
+													</td>
+													<td class="w-[187px] pt-0 pr-0 pb-2 pl-0 text-right align-middle text-[13px] leading-4 font-normal text-[rgb(50,70,90)]">
+														{formatBalance(Number(bal?.LedgerBalance ?? 0), cur)}
+													</td>
+												</tr>
+												<tr class="h-6">
+													<td
+														class="w-[615px] pt-0 pr-[25px] pb-2 pl-0 text-left align-middle text-[13px] leading-4 font-normal text-[rgb(50,70,90)]"
+													>
+														Statement balance{#if bal?.LastStatementEnd}{' '}<span>({xeroDate(
+																bal.LastStatementEnd
+															)})</span>{/if}
+													</td>
+													<td class="w-[187px] pt-0 pr-0 pb-2 pl-0 text-right align-middle text-[13px] leading-4 font-normal text-[rgb(50,70,90)]">
+														{formatBalance(Number(bal?.StatementBalance ?? 0), cur)}
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								{/if}
+							</div>
+
+							<!-- Xero draws one balance graph per account, from the ledger balance and
+							     not from the statement lines: the two are different numbers on any
+							     account with an unworked inbox. -->
+							{#if !empty}
+								<div class="px-5">
+									<BankBalanceChart series={r.chartSeries} currency={cur} baseCurrency={currency} />
+								</div>
 							{/if}
 						</div>
-						<div
-							class="grid w-full min-w-0 flex-1 grid-cols-[1fr_auto] gap-x-4 gap-y-1 sm:ml-auto sm:max-w-[17rem]"
-						>
-							<span class="text-[11px] leading-tight text-ink-600">Balance in goXero</span>
-							<span class="text-right text-xs font-semibold tabular-nums text-ink-900">{fmtBal(r.xeroBalance, cur)}</span>
-							<span class="text-[11px] leading-tight text-ink-600">
-								Statement balance{#if r.lastActivityDate}<span class="text-ink-500">
-										({formatDate(r.lastActivityDate, 'MMM D')})</span
-									>{/if}
-							</span>
-							<span class="text-right text-xs font-semibold tabular-nums text-ink-900">
-								{formatCurrency(r.statementBalance, cur)}
-							</span>
-						</div>
-					</div>
-
-					<BankBalanceChart series={r.chartSeries} compact={true} />
-				{/if}
-			</article>
-		{/each}
+					</article>
+				{/each}
+			</div>
+		{/if}
 	</div>
-{/if}
+</div>
