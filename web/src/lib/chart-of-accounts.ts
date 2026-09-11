@@ -1,4 +1,4 @@
-import type { Account } from '$lib/types';
+import type { Account, Report, ReportRow } from '$lib/types';
 
 export type CoaTabId =
 	| 'all'
@@ -42,65 +42,84 @@ export const ACCOUNT_TYPE_OPTIONS: { value: string; label: string }[] = [
 	{ value: 'WAGESEXPENSE', label: 'Wages' }
 ];
 
-const ASSET = new Set([
-	'BANK',
-	'CURRENT',
-	'FIXED',
-	'INVENTORY',
-	'NONCURRENT',
-	'PREPAYMENT'
-]);
-const LIABILITY = new Set([
-	'CURRLIAB',
-	'LIABILITY',
-	'TERMLIAB',
-	'PAYGLIABILITY',
-	'SUPERANNUATIONLIABILITY'
-]);
-const EXPENSE = new Set(['EXPENSE', 'OVERHEADS', 'DEPRECIATN', 'DIRECTCOSTS', 'WAGESEXPENSE']);
-const REV = new Set(['REVENUE', 'SALES']);
-
-/** YTD column — illustrative values until GL balances are exposed via API (aligned with US Xero-style demo chart codes). */
-export const YTD_BY_CODE: Record<string, number> = {
-	'090': 2045,
-	'091': 0,
-	'120': 9542.39,
-	'130': 0,
-	'140': 0,
-	'150': 1475,
-	'151': -525,
-	'160': 850,
-	'200': 10254.11,
-	'210': 0,
-	'220': 3477.11,
-	'260': 0,
-	'310': 0,
-	'320': 0,
-	'400': 28942.57,
-	'460': 0,
-	'500': 2345.22,
-	'600': 1043.12,
-	'604': 20,
-	'608': 150,
-	'612': 80,
-	'620': 125,
-	'624': 225,
-	'632': 250,
-	'668': 12500,
-	'680': 150,
-	'684': 1123.5,
-	'800': 240.12
-};
-
-export function ytdForAccount(a: Account): number | null {
-	const v = YTD_BY_CODE[a.Code?.trim()];
-	return v !== undefined ? v : null;
+/**
+ * YTD balances for the Accounts screen, read from the Trial Balance rather than
+ * carried here.
+ *
+ * Xero's chart of accounts prints a YTD column, and this file used to answer it
+ * with a `YTD_BY_CODE` table: thirty-odd balances written into the source and
+ * describing no organisation's books at all ("illustrative values", its own
+ * comment said). A made-up figure in a column headed YTD is worse than an empty
+ * one, because nothing distinguishes it from a real one, and the ledger already
+ * answers the question.
+ *
+ * The answer used is the Trial Balance, which is where this application measures
+ * YTD and the one report whose per-account figures are checked against Xero's own
+ * capture (`docs/reports-xero-parity-summary.md`). Its third and fourth figures
+ * are Xero's YTD Debit and YTD Credit: the year-to-date movement for a profit and
+ * loss account, the balance carried as at the report date for a balance sheet
+ * account.
+ *
+ * Xero prints that column unsigned — of the 58 accounts in its captured chart, 27
+ * carry a non-zero YTD and all 27 are positive, including the twelve that are
+ * credit balances (`migrations/data/xero/accounts.csv`, e.g. Accounts Payable
+ * 8,386.76 and Sales Tax 422.59). The magnitude is therefore what is printed, so
+ * that this column reads as Xero's does. An account the Trial Balance does not
+ * list has no movement to show and is left blank rather than shown as zero.
+ */
+export function ytdByCode(report: Report | undefined): Record<string, number> {
+	const out: Record<string, number> = {};
+	for (const row of flattenReportRows(report?.Rows ?? [])) {
+		const cells = (row.Cells ?? []).map((c) => c.Value ?? '');
+		if (cells.length < 5) continue;
+		const code = codeFromAccountCell(cells[0]);
+		if (!code) continue;
+		out[code] = Math.abs(printedAmount(cells[3]) - printedAmount(cells[4]));
+	}
+	return out;
 }
 
+/** Every row of a report, at whatever depth Xero nested it. */
+function flattenReportRows(rows: ReportRow[]): ReportRow[] {
+	return rows.flatMap((row) => [row, ...flattenReportRows(row.Rows ?? [])]);
+}
+
+/** Xero names a Trial Balance account "Accounts Receivable (610)". */
+function codeFromAccountCell(cell: string): string {
+	const match = /\(([^()]+)\)\s*$/.exec(cell.trim());
+	return match ? match[1].trim() : '';
+}
+
+/** A printed figure as a number: separators dropped, parentheses as negative. */
+function printedAmount(cell: string): number {
+	const text = cell.trim().replace(/,/g, '');
+	const bracketed = text.startsWith('(') && text.endsWith(')');
+	const value = Number(bracketed ? text.slice(1, -1) : text);
+	if (!Number.isFinite(value)) return 0;
+	return bracketed ? -value : value;
+}
+
+/**
+ * The classes a balance sheet is made of — Xero's Account.Class, ASSET /
+ * LIABILITY / EQUITY, as opposed to the profit and loss classes. The server
+ * derives Class from the account's type (models.AccountClassForType) and sends
+ * it, so this is the same value the tabs below read.
+ */
+export const BALANCE_SHEET_CLASSES = ['ASSET', 'LIABILITY', 'EQUITY'];
+
+/**
+ * The label Xero's chart of accounts prints in its Type column.
+ *
+ * The two rows that are not simply the account's type come from the server's own
+ * facts rather than from the name: a tax account is the one the organisation
+ * tagged with the GST role, and every profit-and-loss expense type (Overheads,
+ * Depreciation, Direct Costs, Wages) is printed as "Expense". Both used to be
+ * re-derived here — the first by matching the account's *name* against "GST" and
+ * "sales tax", which mislabels any other account so named and misses a tax
+ * account called anything else.
+ */
 export function displayTypeColumn(a: Account): string {
-	const code = a.Code?.trim();
-	const name = (a.Name || '').toLowerCase();
-	if (name === 'gst' || name.includes('sales tax')) return 'GST';
+	if (a.SystemAccount === 'GST') return 'GST';
 	const t = a.Type;
 	if (t === 'BANK') return 'Bank';
 	if (t === 'CURRENT') return 'Current Asset';
@@ -108,58 +127,27 @@ export function displayTypeColumn(a: Account): string {
 	if (t === 'CURRLIAB') return 'Current Liability';
 	if (t === 'EQUITY') return 'Equity';
 	if (t === 'REVENUE' || t === 'SALES') return 'Revenue';
-	if (EXPENSE.has(t) || t === 'EXPENSE' || t === 'OVERHEADS') return 'Expense';
-	if (ACCOUNT_TYPE_OPTIONS.find((o) => o.value === t)) {
-		return ACCOUNT_TYPE_OPTIONS.find((o) => o.value === t)!.label;
-	}
-	return t;
+	if (a.Class === 'EXPENSE') return 'Expense';
+	return ACCOUNT_TYPE_OPTIONS.find((o) => o.value === t)?.label ?? t;
 }
 
 export function tabMatches(tab: CoaTabId, a: Account): boolean {
 	if (tab === 'archive') return a.Status === 'ARCHIVED';
 	if (a.Status === 'ARCHIVED') return false;
-	const t = a.Type;
 	switch (tab) {
 		case 'all':
 			return true;
 		case 'assets':
-			return ASSET.has(t);
+			return a.Class === 'ASSET';
 		case 'liabilities':
-			return LIABILITY.has(t);
+			return a.Class === 'LIABILITY';
 		case 'equity':
-			return t === 'EQUITY';
+			return a.Class === 'EQUITY';
 		case 'expenses':
-			return EXPENSE.has(t);
+			return a.Class === 'EXPENSE';
 		case 'revenue':
-			return REV.has(t);
+			return a.Class === 'REVENUE';
 		default:
 			return true;
 	}
 }
-
-/** Rows to offer in “Import standard chart” — aligns with US Xero-style demo (see migrations/data/ChartOfAccounts.csv). */
-export const STANDARD_CHART_IMPORT: Partial<Account>[] = [
-	{
-		Code: '090',
-		Name: 'Checking Account',
-		Type: 'BANK',
-		Status: 'ACTIVE',
-		BankAccountNumber: '12-3456-7890123-00'
-	},
-	{ Code: '091', Name: 'Savings Account', Type: 'BANK', Status: 'ACTIVE' },
-	{ Code: '120', Name: 'Accounts Receivable', Type: 'CURRENT', Status: 'ACTIVE' },
-	{ Code: '130', Name: 'Prepayments', Type: 'CURRENT', Status: 'ACTIVE' },
-	{ Code: '150', Name: 'Office Equipment', Type: 'FIXED', Status: 'ACTIVE' },
-	{
-		Code: '151',
-		Name: 'Less Accumulated Depreciation on Office Equipment',
-		Type: 'FIXED',
-		Status: 'ACTIVE'
-	},
-	{ Code: '200', Name: 'Accounts Payable', Type: 'CURRLIAB', Status: 'ACTIVE' },
-	{ Code: '220', Name: 'Sales Tax', Type: 'CURRLIAB', Status: 'ACTIVE' },
-	{ Code: '400', Name: 'Sales', Type: 'SALES', Status: 'ACTIVE' },
-	{ Code: '600', Name: 'Advertising', Type: 'EXPENSE', Status: 'ACTIVE' },
-	{ Code: '620', Name: 'Entertainment', Type: 'EXPENSE', Status: 'ACTIVE' },
-	{ Code: '628', Name: 'General Expenses', Type: 'EXPENSE', Status: 'ACTIVE' }
-];

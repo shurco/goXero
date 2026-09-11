@@ -1,0 +1,5 @@
+asset_number,name,type,purchase_date,cost,asset_account,accumulated_depreciation_account,depreciation_expense_account,depreciation_start_date,depreciation_method,rate,register,book_value,accumulated_depreciation,ytd_depreciation
+FA-0001,Laptop (Tracy),Computer Equipment,11 Sept 2026,1969.99,720 - Computer Equipment,721 - Less Accumulated Depreciation on Computer Equipment,416 - Depreciation,11 Sept 2026,Declining balance,40.00,draft,,,
+FA-0002,Photocopier,Office Equipment,11 Sept 2026,12000.00,710 - Office Equipment,711 - Less Accumulated Depreciation on Office Equipment,416 - Depreciation,11 Sept 2026,Declining balance,40.00,registered,12000.00,0.00,
+FA-0003,LCD Display,Computer Equipment,11 Sept 2026,6500.00,720 - Computer Equipment,721 - Less Accumulated Depreciation on Computer Equipment,416 - Depreciation,11 Sept 2026,Declining balance,40.00,registered,6500.00,0.00,
+FA-0004,"Desks, chairs, reception furniture for office",Office Equipment,11 Sept 2026,6300.00,710 - Office Equipment,711 - Less Accumulated Depreciation on Office Equipment,416 - Depreciation,11 Sept 2026,Declining balance,40.00,draft,,,

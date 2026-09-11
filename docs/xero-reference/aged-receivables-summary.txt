@@ -1,0 +1,18 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1001
+
+Aged Receivables Summary
+Demo Company (Global)
+As at 31 December 2026
+Ageing by due date
+
+--- report output (tab-separated) ---
+
+Contact	< 1 Month	1 Month	2 Months	3 Months	Older	Total
+Basket Case	-	-	-	914.55	-	914.55
+Bayside Club	-	-	-	234.00	-	234.00
+City Limousines	-	-	-	703.63	488.20	1,191.83
+DIISR - Small Business Services	-	-	-	-	270.63	270.63
+Marine Systems	-	-	-	396.00	-	396.00
+Ridgeway University	-	-	-	6,187.50	-	6,187.50
+Total	-	-	-	8,435.68	758.83	9,194.51
+Percentage of total	-	-	-	91.75%	8.25%	100.00%

@@ -115,3 +115,17 @@ func (r *UserRepository) HasOrganisationAccess(ctx context.Context, userID, orgI
 		)`, userID, orgID).Scan(&exists)
 	return exists, err
 }
+
+// OrganisationRole returns the user's role in the organisation, or "" when the
+// user is not a member. It is how a lock that only some members may lift finds
+// out whether this caller is one of them.
+func (r *UserRepository) OrganisationRole(ctx context.Context, userID, orgID uuid.UUID) (string, error) {
+	var role string
+	err := r.pool.QueryRow(ctx,
+		`SELECT role FROM organisation_users
+		  WHERE user_id=$1 AND organisation_id=$2`, userID, orgID).Scan(&role)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", nil
+	}
+	return role, err
+}

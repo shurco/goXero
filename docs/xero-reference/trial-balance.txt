@@ -1,0 +1,35 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1005
+
+Trial Balance
+Demo Company (Global)
+As at 31 December 2026
+
+--- report output (tab-separated) ---
+
+Account Code	Account	Account Type	Debit - Year to date	Credit - Year to date	31 Dec 2025
+200	Sales	Revenue		29,539.18	-
+300	Purchases	Direct Costs	775.98		-
+400	Advertising	Expense	9,657.05		-
+404	Bank Fees	Expense	30.00		-
+408	Cleaning	Expense	1,110.00		-
+412	Consulting & Accounting	Expense	87.00		-
+420	Entertainment	Expense	1,553.60		-
+425	Freight & Courier	Expense	105.50		-
+429	General Expenses	Expense	166.28		-
+445	Light, Power, Heating	Expense	335.82		-
+449	Motor Vehicle Expenses	Expense	654.36		-
+453	Office Expenses	Expense	862.48		-
+461	Printing & Stationery	Expense	94.41		-
+469	Rent	Expense	3,273.66		-
+473	Repairs and Maintenance	Expense	1,896.70		-
+489	Telephone & Internet	Expense	236.37		-
+493	Travel - National	Expense	433.24		-
+090	Business Bank Account	Bank	7,430.22		-
+610	Accounts Receivable	Current Asset	9,194.51		-
+710	Office Equipment	Fixed Asset	923.79		-
+720	Computer Equipment	Fixed Asset	3,774.49		-
+800	Accounts Payable	Current Liability		8,386.76	-
+801	Unpaid Expense Claims	Current Liability		115.95	-
+820	Sales Tax	Current Liability		422.59	-
+840	Historical Adjustment	Current Liability		4,130.98	-
+Total			42,595.46	42,595.46	-

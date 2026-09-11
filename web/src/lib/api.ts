@@ -11,6 +11,7 @@ import type {
 	BankStatementLineComment,
 	BankTransaction,
 	Contact,
+	ConversionBalance,
 	Currency,
 	Invoice,
 	InvoiceSummary,
@@ -262,6 +263,16 @@ export const accountApi = {
 		const res = await request<XeroEnvelope<'Accounts', Account>>(`/api/v1/accounts/${id}`);
 		return unwrap(res, 'Accounts')[0];
 	},
+	/**
+	 * Xero's standard chart of accounts, held by the server as reference data
+	 * (migration 00029). Shaped as accounts to create, so "Import standard chart"
+	 * posts what it reads instead of a chart written into this file.
+	 */
+	standardChart: async () =>
+		unwrap(
+			await request<XeroEnvelope<'Accounts', Account>>('/api/v1/accounts/standard-chart'),
+			'Accounts'
+		),
 	create: (payload: Partial<Account>) =>
 		request<{ Accounts: Account[] }>(`/api/v1/accounts`, {
 			method: 'POST',
@@ -749,6 +760,26 @@ export const manualJournalApi = {
 		}),
 	delete: (id: string) =>
 		request<void>(`/api/v1/manual-journals/${id}`, { method: 'DELETE' })
+};
+
+// ── Conversion balances ───────────────────────────────────────────────────
+// The organisation's opening balances, the date they are stated as at and the
+// lock. Saving replaces them: an organisation converts once, so there is one set
+// and not a history of them.
+export const conversionBalanceApi = {
+	get: async () => {
+		const res = await request<{ ConversionBalance: ConversionBalance }>(
+			'/api/v1/conversion-balances'
+		);
+		return res.ConversionBalance;
+	},
+	save: async (payload: ConversionBalance) => {
+		const res = await request<{ ConversionBalance: ConversionBalance }>(
+			'/api/v1/conversion-balances',
+			{ method: 'PUT', body: JSON.stringify(payload) }
+		);
+		return res.ConversionBalance;
+	}
 };
 
 // ── Bank feeds ────────────────────────────────────────────────────────────

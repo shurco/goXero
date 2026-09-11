@@ -45,7 +45,11 @@ func TestIntegration_GetOrganisation_SeedDemo(t *testing.T) {
 	o, err := repos.Organisations.GetByID(ctx, seedDemoOrgID)
 	require.NoError(t, err)
 	require.NotNil(t, o)
-	assert.Equal(t, "DEMO", o.ShortCode)
+	// !!6Sp3 is Xero's own short code for the company the reference captures in
+	// docs/xero-reference/ were taken from, and every URL in those files carries it.
+	// migrations/00024_xero_reference_source_documents.sql writes it over the
+	// placeholder "DEMO" 00009 seeded, so that is the value to expect.
+	assert.Equal(t, "!!6Sp3", o.ShortCode)
 }
 
 func TestIntegration_PaymentOverpayClampsAmountDue(t *testing.T) {

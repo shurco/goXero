@@ -1,0 +1,6 @@
+credit_note_number,description,quantity,unit_amount,account_code,tax_rate,tax_amount,line_amount
+CN-0014,CREDIT Half day training - Microsoft Office and include in suite of training INV-0013,1.0000,500.00,200,Tax on Consulting (8.25%),41.25,500.00
+CN-0015,Full credit - DUPLICATE of INV-0001,1.0000,500.00,200,Tax on Consulting (8.25%),41.25,500.00
+CN-0023,'Fish out of Water: Finding Your Brand' - credit - charged in error - should be included overall project,1.0000,19.95,200,Tax on Goods (8.75%),1.75,19.95
+Refund,Refund as agreed due to window break when guard absent,1.0000,23.50,453,Tax on Purchases (8.25%),1.94,23.50
+OG laptop,Unable to supply DVD writer for laptop - backorder,1.0000,250.00,453,Tax on Purchases (8.25%),20.63,250.00

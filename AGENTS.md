@@ -67,18 +67,23 @@
 11. **GL posting is centralised.** `internal/repository/gl.go` owns every journal
     posting (invoices, credit notes, bank transactions, manual journals). Any new
     transactional resource must post through a helper there and balance to zero.
-    When the dedicated tax control account (code `820`) is absent, tax is folded
-    into the line `NetAmount` so the journal still balances.
+    The control accounts are resolved by *role* (`accounts.system_account`:
+    `DEBTORS`, `CREDITORS`, `GST`), never by code. When no account carries the
+    `GST` role, tax is folded into the line `NetAmount` so the journal still
+    balances — that decision lives in `documentLineNet`, which every posting path
+    shares.
 12. **Reports are read-only aggregates over `gl_journal_lines`.** Extend
     `ReportRepository` rather than re-querying source tables; handlers live in
     `internal/handlers/report.go`.
 13. **Polymorphic endpoints** (`attachments`, `history`) use the `attachmentSubjectMap`
     lookup; add new subjects there and to the router (see `internal/router`).
-14. **Chart of accounts for the demo org is US-style** after migration `00018`.
-    Old Sales code `200` is now `400`; old Cost of Goods Sold `310` is now `500`;
-    old Accounts Receivable `610` is now `120`; old Accounts Payable `800` is
-    now `200`. Integration tests and any demo seed helpers that POST line items
-    must use the new codes (`400` for revenue lines, `500` for direct costs).
+14. **The demo org's chart is the Xero reference chart** captured from the live
+    organisation (migration `00023`; the standard chart for "Import standard
+    chart" is held as data by `00029`). Codes in tests and seed helpers must be
+    that chart's: `200` Sales (revenue), `310` Cost of Goods Sold,
+    `610` Accounts Receivable, `800` Accounts Payable, `820` Sales Tax. The
+    earlier US-style chart from `00018` is gone — in particular `200` is revenue
+    here, not Accounts Payable, and `400` is Advertising, not Sales.
 15. **Uploads are capped.** Organisation Files (`POST /api/v1/files`) reject
     payloads larger than `maxOrgFileUploadBytes` (25 MiB) to stop a single
     request from OOM-ing the server.

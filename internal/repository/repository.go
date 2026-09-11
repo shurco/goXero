@@ -87,6 +87,7 @@ type Repositories struct {
 	ExpenseClaims      *ExpenseClaimRepository
 	BankFeeds          *BankFeedRepository
 	BankStatements     *BankStatementRepository
+	ConversionBalances *ConversionBalanceRepository
 	RefreshTokens      *RefreshTokenRepository
 }
 
@@ -126,6 +127,7 @@ func New(pool *pgxpool.Pool) *Repositories {
 		ExpenseClaims:      &ExpenseClaimRepository{pool: pool},
 		BankFeeds:          &BankFeedRepository{pool: pool},
 		BankStatements:     &BankStatementRepository{pool: pool},
+		ConversionBalances: &ConversionBalanceRepository{pool: pool},
 		RefreshTokens:      &RefreshTokenRepository{pool: pool},
 	}
 }

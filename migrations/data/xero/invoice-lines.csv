@@ -1,0 +1,41 @@
+invoice_number,description,quantity,unit_amount,account_code,tax_rate,tax_amount,line_amount
+INV-0001,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0002,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0003,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0004,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0005,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0006,Project management & implementation - branding workshop with your team,1.0000,230.9469,200,Tax on Consulting (8.25%),19.05,230.95
+INV-0007,Project management & implementation - branding workshop with your team ======================== - 'Buzz Words' session with your Steering Group - Analysis of current marketing materials - Workshop on re-brand outcomes and stakeholder identification - Analysis and presentation of findings to your Steering Group & Board,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0007,Copies of 'Fish out of Water' text for your Branding Team,4.0000,11.9500,200,Tax on Goods (8.75%),4.18,47.80
+INV-0008,Half day training - Microsoft Office - for your Priority Mortgage Services Team (Session 3),1.0000,400.0000,200,Tax on Consulting (8.25%),33.00,400.00
+INV-0008,Half day training - Microsoft Office - for your Lending Services Team (Session 2),1.0000,400.0000,200,Tax on Consulting (8.25%),33.00,400.00
+INV-0008,Half day training - Microsoft Office - for your Customer Support Team (Session 1),1.0000,400.0000,200,Tax on Consulting (8.25%),33.00,400.00
+INV-0009,Onsite project management for CRM Project 3 days/week,1.0000,5715.9353,200,Tax on Consulting (8.25%),471.56,5715.94
+INV-0010,Half day training - Microsoft Office,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0011,Development work - develper onsite per day,2.0000,650.0000,200,Tax on Consulting (8.25%),107.25,1300.00
+INV-0012,Project management & implementation - branding workshop with your team - follow up session,1.0000,200.0000,200,Tax on Consulting (8.25%),16.50,200.00
+INV-0013,Half day training - Microsoft Office - reception staff (Session 1),1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0013,Half day training - Microsoft Office - operations staff (Session 2),1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0016,Project management & implementation - branding workshop with your team,1.0000,250.0000,200,Tax on Consulting (8.25%),20.63,250.00
+INV-0016,Project management & implementation - 'due diligence' stocktake of your project scope/schedule/implementation plan/outcome measures (hourly rate as agreed),5.0000,105.0000,200,Tax on Consulting (8.25%),43.31,525.00
+INV-0017,'Fish out of Water: Finding Your Brand',1.0000,19.9500,200,Tax on Goods (8.75%),1.75,19.95
+INV-0018,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0019,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0020,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0021,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0022,'Fish out of Water: Finding Your Brand',1.0000,19.9500,200,Tax on Goods (8.75%),1.75,19.95
+INV-0022,Project management & implementation - branding workshop with your team - follow up,1.0000,200.0000,200,Tax on Consulting (8.25%),16.50,200.00
+INV-0024,Development work - develper onsite per day,1.0000,650.0000,200,Tax on Consulting (8.25%),53.63,650.00
+INV-0025,Onsite project management for CRM Project 3 days/week,1.0000,5715.9353,200,Tax on Consulting (8.25%),471.56,5715.94
+INV-0026,Development work - per hour rate,5.0000,86.8360,200,Tax on Consulting (8.25%),35.82,434.18
+INV-0026,Project team meeting to discuss dev changes required to your online gift basket ordering system,1.0000,410.6697,200,Tax on Consulting (8.25%),33.88,410.67
+INV-0027,Marketing guides,4.0000,91.4550,200,Tax on Consulting (8.25%),30.18,365.82
+INV-0028,Golf balls - white single,40.0000,5.1732,200,Tax on Consulting (8.25%),17.07,206.93
+INV-0028,Delivery charge,1.0000,10.0000,425,Tax Exempt (0%),0.00,10.00
+INV-0029,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,508.0831,200,Tax on Consulting (8.25%),41.92,508.08
+INV-0030,Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.,1.0000,508.0831,200,Tax on Consulting (8.25%),41.92,508.08
+INV-0031,Golf Balls,3.0000,32.0000,200,Tax on Goods (8.75%),8.40,96.00
+INV-0032,Website creation,1.0000,300.0000,200,Tax on Consulting (8.25%),24.75,300.00
+INV-0033,Half day training - Microsoft Office - Marketing team,1.0000,500.0000,200,Tax on Consulting (8.25%),41.25,500.00
+INV-0034,Development work - software integration,40.0000,90.0000,200,Tax on Consulting (8.25%),297.00,3600.00
+INV-0036,Development work - software integration,23.0000,90.0000,200,Tax on Consulting (8.25%),170.78,2070.00

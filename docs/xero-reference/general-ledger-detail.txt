@@ -1,0 +1,551 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1071
+
+General Ledger Detail
+Demo Company (Global)
+For the period 1 January 2026 to 31 December 2026
+
+--- report output (tab-separated) ---
+
+##Accounts Payable
+8 Jul 2026	Payable Invoice	Xero	AP	-	31.39	(31.39)	-	0.00%	
+8 Jul 2026	Payable Payment	Payment: Xero	AP	31.39	-	-	-	0.00%	
+11 Jul 2026	Payable Invoice	PowerDirect	Rpt	-	119.08	(119.08)	-	0.00%	
+11 Jul 2026	Payable Invoice	Truxton Property Management	RENT	-	1,181.25	(1,300.33)	-	0.00%	
+12 Jul 2026	Payable Invoice	Net Connect	Rpt	-	44.92	(1,345.25)	-	0.00%	
+19 Jul 2026	Payable Invoice	Central Copiers	945-OCon	-	1,063.56	(2,408.81)	-	0.00%	
+20 Jul 2026	Payable Invoice	Net Connect	9781	-	1,463.88	(3,872.69)	-	0.00%	
+21 Jul 2026	Payable Invoice	Swanston Security	AP	-	59.54	(3,932.23)	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: PowerDirect	Rpt	119.08	-	(3,813.15)	-	0.00%	
+21 Jul 2026	Payable Invoice	MCO Cleaning Services	5679	-	119.08	(3,932.23)	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: Truxton Property Management	RENT	1,181.25	-	(2,750.98)	-	0.00%	
+21 Jul 2026	Payable Invoice	PC Complete		-	1,953.37	(4,704.35)	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: Net Connect	Rpt	44.92	-	(4,659.43)	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: PC Complete		1,682.74	-	(2,976.69)	-	0.00%	
+21 Jul 2026	Payable Invoice	SMART Agency	SM0195	-	2,000.00	(4,976.69)	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	PC Complete	OG laptop	-	270.63	(5,247.32)	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	PC Complete	OG laptop	270.63	-	(4,976.69)	-	0.00%	
+27 Jul 2026	Payable Payment	Payment: Central Copiers	945-OCon	900.00	-	(4,076.69)	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	Swanston Security	Refund	-	25.44	(4,102.13)	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	Swanston Security	Refund	25.44	-	(4,076.69)	-	0.00%	
+27 Jul 2026	Payable Payment	Payment: Swanston Security	AP	34.10	-	(4,042.59)	-	0.00%	
+27 Jul 2026	Payable Credit Note	PC Complete	OG laptop	270.63	-	(3,771.96)	-	0.00%	
+27 Jul 2026	Payable Credit Note	Swanston Security	Refund	25.44	-	(3,746.52)	-	0.00%	
+27 Jul 2026	Payable Payment	Payment: MCO Cleaning Services	5679	119.08	-	(3,627.44)	-	0.00%	
+30 Jul 2026	Payable Payment	Payment: Net Connect	9781	1,463.88	-	(2,163.56)	-	0.00%	
+1 Aug 2026	Payable Invoice	PC Complete	OG laptop	-	270.63	(2,434.19)	-	0.00%	
+1 Aug 2026	Payable Payment	Payment: PC Complete	OG laptop	270.63	-	(2,163.56)	-	0.00%	
+8 Aug 2026	Payable Payment	Payment: Xero	AP	31.39	-	(2,132.17)	-	0.00%	
+8 Aug 2026	Payable Invoice	Xero	AP	-	31.39	(2,163.56)	-	0.00%	
+8 Aug 2026	Payable Invoice	MCO Cleaning Services	M000435	-	216.50	(2,380.06)	-	0.00%	
+11 Aug 2026	Payable Invoice	Hoyt Productions	08-4123	-	5,953.75	(8,333.81)	-	0.00%	
+11 Aug 2026	Payable Invoice	Truxton Property Management	RENT	-	1,181.25	(9,515.06)	-	0.00%	
+11 Aug 2026	Payable Invoice	PowerDirect	Rpt	-	135.85	(9,650.91)	-	0.00%	
+11 Aug 2026	Payable Invoice	Carlton Functions	Dep	-	1,500.00	(11,150.91)	-	0.00%	
+12 Aug 2026	Payable Invoice	Net Connect	Rpt	-	46.82	(11,197.73)	-	0.00%	
+15 Aug 2026	Payable Invoice	MCO Cleaning Services	M000442	-	216.50	(11,414.23)	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Net Connect	Rpt	46.82	-	(11,367.41)	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Carlton Functions	Dep	1,500.00	-	(9,867.41)	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Truxton Property Management	RENT	1,181.25	-	(8,686.16)	-	0.00%	
+21 Aug 2026	Payable Invoice	ABC Furniture	710	-	1,000.00	(9,686.16)	-	0.00%	
+21 Aug 2026	Payable Invoice	Swanston Security	AP	-	59.54	(9,745.70)	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: PowerDirect	Rpt	135.85	-	(9,609.85)	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: ABC Furniture	710	1,000.00	-	(8,609.85)	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Hoyt Productions	08-4123	5,953.75	-	(2,656.10)	-	0.00%	
+22 Aug 2026	Payable Invoice	MCO Cleaning Services	M000456	-	216.50	(2,872.60)	-	0.00%	
+23 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000435	216.50	-	(2,656.10)	-	0.00%	
+29 Aug 2026	Payable Invoice	MCO Cleaning Services	M000463	-	216.50	(2,872.60)	-	0.00%	
+30 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000442	216.50	-	(2,656.10)	-	0.00%	
+31 Aug 2026	Payable Invoice	Truxton Property Management	RENT	-	1,181.25	(3,837.35)	-	0.00%	
+31 Aug 2026	Payable Invoice	SMART Agency	SM0210	-	2,500.00	(6,337.35)	-	0.00%	
+31 Aug 2026	Payable Payment	Payment: Truxton Property Management	RENT	1,181.25	-	(5,156.10)	-	0.00%	
+31 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000456	216.50	-	(4,939.60)	-	0.00%	
+5 Sep 2026	Payable Invoice	Bayside Club		-	130.00	(5,069.60)	-	0.00%	
+5 Sep 2026	Payable Invoice	PC Complete		-	2,132.51	(7,202.11)	-	0.00%	
+5 Sep 2026	Payable Invoice	MCO Cleaning Services	M000471	-	216.50	(7,418.61)	-	0.00%	
+5 Sep 2026	Payable Payment	Payment: MCO Cleaning Services	M000463	216.50	-	(7,202.11)	-	0.00%	
+6 Sep 2026	Payable Invoice	Gateway Motors		-	411.35	(7,613.46)	-	0.00%	
+7 Sep 2026	Payable Invoice	Young Bros Transport		-	125.03	(7,738.49)	-	0.00%	
+7 Sep 2026	Payable Invoice	Xero	AP	-	31.39	(7,769.88)	-	0.00%	
+7 Sep 2026	Payable Payment	Payment: Gateway Motors		411.35	-	(7,358.53)	-	0.00%	
+8 Sep 2026	Payable Invoice	Bayside Wholesale	GB1-White	-	840.00	(8,198.53)	-	0.00%	
+10 Sep 2026	Payable Invoice	PowerDirect	Rpt	-	108.60	(8,307.13)	-	0.00%	
+10 Sep 2026	Payable Payment	Payment: MCO Cleaning Services	M000471	216.50	-	(8,090.63)	-	0.00%	
+11 Sep 2026	Payable Invoice	Net Connect	Rpt	-	54.13	(8,144.76)	-	0.00%	
+11 Sep 2026	Payable Invoice	Capital Cab Co	CS815	-	242.00	(8,386.76)	-	0.00%	
+Total Accounts Payable				18,963.37	27,350.13	(8,386.76)	-		
+Net movement				-	8,386.76	-	-		
+##Accounts Receivable
+10 Jul 2026	Receivable Invoice	City Limousines	P/O 9711	250.00	-	250.00	-	0.00%	
+11 Jul 2026	Receivable Invoice	Rex Media Group	Monthly Support	541.25	-	791.25	-	0.00%	
+11 Jul 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	541.25	-	1,332.50	-	0.00%	
+11 Jul 2026	Receivable Invoice	Young Bros Transport	Monthly Support	541.25	-	1,873.75	-	0.00%	
+11 Jul 2026	Receivable Invoice	Port & Philip Freight	Monthly Support	541.25	-	2,415.00	-	0.00%	
+12 Jul 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	541.25	-	2,956.25	-	0.00%	
+13 Jul 2026	Receivable Invoice	Bank West	Training	1,299.00	-	4,255.25	-	0.00%	
+14 Jul 2026	Receivable Invoice	City Agency	Workshop	593.23	-	4,848.48	-	0.00%	
+19 Jul 2026	Receivable Invoice	Boom FM	Training	541.25	-	5,389.73	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Port & Philip Freight	Monthly Support	-	541.25	4,848.48	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Hamilton Smith Ltd	Monthly Support	-	541.25	4,307.23	-	0.00%	
+20 Jul 2026	Receivable Invoice	Ridgeway University	P/O CRM08-12	6,187.50	-	10,494.73	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Rex Media Group	Monthly Support	-	541.25	9,953.48	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Young Bros Transport	Monthly Support	-	541.25	9,412.23	-	0.00%	
+21 Jul 2026	Receivable Payment	Payment: Bank West	Training	-	1,299.00	8,113.23	-	0.00%	
+25 Jul 2026	Receivable Invoice	Petrie McLoud Watson & Associates	Portal Proj	1,407.25	-	9,520.48	-	0.00%	
+25 Jul 2026	Receivable Payment	Payment: City Agency	Workshop	-	593.23	8,927.25	-	0.00%	
+27 Jul 2026	Receivable Invoice	City Limousines	P/O 9711	216.50	-	9,143.75	-	0.00%	
+30 Jul 2026	Receivable Invoice	City Limousines	Book	21.70	-	9,165.45	-	0.00%	
+30 Jul 2026	Receivable Invoice	Boom FM	Training	1,082.50	-	10,247.95	-	0.00%	
+30 Jul 2026	Receivable Credit Note Allocation	Boom FM	Training	541.25	-	10,789.20	-	0.00%	
+30 Jul 2026	Receivable Credit Note Allocation	Boom FM	Training	-	541.25	10,247.95	-	0.00%	
+30 Jul 2026	Receivable Credit Note	Boom FM	Training	-	541.25	9,706.70	-	0.00%	
+1 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	838.94	-	10,545.64	-	0.00%	
+11 Aug 2026	Receivable Invoice	Rex Media Group	Monthly Support	541.25	-	11,086.89	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: Ridgeway University	P/O CRM08-12	-	6,187.50	4,899.39	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: DIISR - Small Business Services	Yr Ref W08-143	-	568.31	4,331.08	-	0.00%	
+11 Aug 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	541.25	-	4,872.33	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: DIISR - Small Business Services	Yr Ref W08-143	-	216.50	4,655.83	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: Boom FM	Training	-	1,082.50	3,573.33	-	0.00%	
+11 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	238.20	-	3,811.53	-	0.00%	
+11 Aug 2026	Receivable Invoice	Port & Philip Freight	Monthly Support	541.25	-	4,352.78	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: Petrie McLoud Watson & Associates	Portal Proj	-	1,407.25	2,945.53	-	0.00%	
+11 Aug 2026	Receivable Invoice	Young Bros Transport	Monthly Support	541.25	-	3,486.78	-	0.00%	
+16 Aug 2026	Receivable Credit Note Allocation	DIISR - Small Business Services	Yr Ref W08-143	21.70	-	3,508.48	-	0.00%	
+16 Aug 2026	Receivable Credit Note Allocation	DIISR - Small Business Services	Yr Ref W08-143	-	21.70	3,486.78	-	0.00%	
+16 Aug 2026	Receivable Credit Note	DIISR - Small Business Services	Yr Ref W08-143	-	21.70	3,465.08	-	0.00%	
+20 Aug 2026	Receivable Invoice	Ridgeway University	P/O CRM08-12	6,187.50	-	9,652.58	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Hamilton Smith Ltd	Monthly Support	-	541.25	9,111.33	-	0.00%	
+21 Aug 2026	Receivable Credit Note Allocation	Hamilton Smith Ltd	Monthly Support	-	541.25	8,570.08	-	0.00%	
+21 Aug 2026	Receivable Credit Note Allocation	Hamilton Smith Ltd	Monthly Support	541.25	-	9,111.33	-	0.00%	
+21 Aug 2026	Receivable Credit Note	Hamilton Smith Ltd	Monthly Support	-	541.25	8,570.08	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Young Bros Transport	Monthly Support	-	541.25	8,028.83	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Rex Media Group	Monthly Support	-	541.25	7,487.58	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Port & Philip Freight	Monthly Support	-	541.25	6,946.33	-	0.00%	
+26 Aug 2026	Receivable Invoice	Bank West	Website	324.75	-	7,271.08	-	0.00%	
+26 Aug 2026	Receivable Invoice	City Agency	Golf Balls	104.40	-	7,375.48	-	0.00%	
+31 Aug 2026	Receivable Invoice	Boom FM	Training	541.25	-	7,916.73	-	0.00%	
+3 Sep 2026	Receivable Invoice	Petrie McLoud Watson & Associates	Consulting	2,240.78	-	10,157.51	-	0.00%	
+3 Sep 2026	Receivable Invoice	Boom FM	Consulting	3,897.00	-	14,054.51	-	0.00%	
+3 Sep 2026	Receivable Payment	Payment: City Agency	Golf Balls	-	104.40	13,950.11	-	0.00%	
+5 Sep 2026	Receivable Invoice	City Limousines	P/O 9711	703.63	-	14,653.74	-	0.00%	
+6 Sep 2026	Receivable Payment	Payment: Bank West	Website	-	324.75	14,328.99	-	0.00%	
+7 Sep 2026	Receivable Payment	Payment: Boom FM	Consulting	-	3,897.00	10,431.99	-	0.00%	
+7 Sep 2026	Receivable Payment	Payment: Boom FM	Training	-	541.25	9,890.74	-	0.00%	
+9 Sep 2026	Receivable Payment	Payment: Petrie McLoud Watson & Associates	Consulting	-	2,240.78	7,649.96	-	0.00%	
+10 Sep 2026	Receivable Invoice	Marine Systems	Ref MK815	396.00	-	8,045.96	-	0.00%	
+10 Sep 2026	Receivable Invoice	Basket Case	INV-0026	914.55	-	8,960.51	-	0.00%	
+10 Sep 2026	Receivable Invoice	Bayside Club	GB1-White	234.00	-	9,194.51	-	0.00%	
+Total Accounts Receivable				34,195.38	25,000.87	9,194.51	-		
+Net movement				9,194.51	-	-	-		
+##Advertising
+21 Jul 2026	Payable Invoice	SMART Agency - Design concepts for Oaktown Business Leader ad series	SM0195	1,847.58	-	1,847.58	152.42	8.25%	Tax on Purchases
+11 Aug 2026	Payable Invoice	Hoyt Productions - 20-second still frame ad shown in 5 city cinemas 5 times each	08-4123	5,500.00	-	7,347.58	453.75	8.25%	Tax on Purchases
+31 Aug 2026	Payable Invoice	SMART Agency - Prototype media banner & print mockups for Oaktown Business Leader ad series	SM0210	2,309.47	-	9,657.05	190.53	8.25%	Tax on Purchases
+Total Advertising				9,657.05	-	9,657.05	796.70		
+Net movement				9,657.05	-	-	-		
+##Bank Fees
+1 Jul 2026	Spend Money	Ridgeway Bank - Bank fee	Fee	15.00	-	15.00	-	0.00%	Tax Exempt
+1 Aug 2026	Spend Money	Ridgeway Bank - Bank fee	Fee	15.00	-	30.00	-	0.00%	Tax Exempt
+Total Bank Fees				30.00	-	30.00	-		
+Net movement				30.00	-	-	-		
+##Business Bank Account
+21 Jun 2026	Conversion Balance Journal	Conversion Balance		4,130.98	-	4,130.98	-	0.00%	Tax Exempt
+1 Jul 2026	Spend Money	Ridgeway Bank	Fee	-	15.00	4,115.98	-	0.00%	
+6 Jul 2026	Spend Money	Office Supplies Company	Eft	-	23.50	4,092.48	-	0.00%	
+8 Jul 2026	Payable Payment	Payment: Xero	AP	-	31.39	4,061.09	-	0.00%	
+8 Jul 2026	Spend Money	Espresso 31		-	16.00	4,045.09	-	0.00%	
+11 Jul 2026	Spend Money	Woolworths Market		-	65.20	3,979.89	-	0.00%	
+15 Jul 2026	Spend Money	Brunswick Petals	Gift	-	50.00	3,929.89	-	0.00%	
+18 Jul 2026	Spend Money	Berry Brew		-	15.60	3,914.29	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Port & Philip Freight	INV-0003	541.25	-	4,455.54	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Hamilton Smith Ltd	INV-0001	541.25	-	4,996.79	-	0.00%	
+20 Jul 2026	Spend Money	Melrose Parking	Chq 409	-	148.50	4,848.29	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Rex Media Group	INV-0004	541.25	-	5,389.54	-	0.00%	
+20 Jul 2026	Receivable Payment	Payment: Young Bros Transport	INV-0002	541.25	-	5,930.79	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: PowerDirect	FP089876	-	119.08	5,811.71	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: Truxton Property Management	FP089876	-	1,181.25	4,630.46	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: Net Connect	FP089876	-	44.92	4,585.54	-	0.00%	
+21 Jul 2026	Payable Payment	Payment: PC Complete	FP089876	-	1,682.74	2,902.80	-	0.00%	
+21 Jul 2026	Receivable Payment	Payment: Bank West	INV-0008	1,299.00	-	4,201.80	-	0.00%	
+25 Jul 2026	Receivable Payment	Payment: City Agency	INV-0007	593.23	-	4,795.03	-	0.00%	
+27 Jul 2026	Expense Claim Payment	Payment: Orlena Greenville		-	34.90	4,760.13	-	0.00%	
+27 Jul 2026	Payable Payment	Payment: Central Copiers	FP101897	-	900.00	3,860.13	-	0.00%	
+27 Jul 2026	Payable Payment	Payment: Swanston Security	FP101897	-	34.10	3,826.03	-	0.00%	
+27 Jul 2026	Payable Payment	Payment: MCO Cleaning Services	FP101897	-	119.08	3,706.95	-	0.00%	
+30 Jul 2026	Payable Payment	Payment: Net Connect	Ref 0293	-	1,463.88	2,243.07	-	0.00%	
+1 Aug 2026	Payable Payment	Payment: PC Complete	OG laptop	-	270.63	1,972.44	-	0.00%	
+1 Aug 2026	Spend Money	Ridgeway Bank	Fee	-	15.00	1,957.44	-	0.00%	
+8 Aug 2026	Payable Payment	Payment: Xero	Ref 08162	-	31.39	1,926.05	-	0.00%	
+11 Aug 2026	Spend Money	Woolworths Market		-	34.10	1,891.95	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: Ridgeway University	INV-0009	6,187.50	-	8,079.45	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: DIISR - Small Business Services	INV-0016	568.31	-	8,647.76	-	0.00%	
+11 Aug 2026	Expense Claim Payment	Payment: Orlena Greenville		-	29.50	8,618.26	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: DIISR - Small Business Services	INV-0022	216.50	-	8,834.76	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: Boom FM	INV-0013	1,082.50	-	9,917.26	-	0.00%	
+11 Aug 2026	Spend Money	Orlena Greenville		-	29.50	9,887.76	-	0.00%	
+11 Aug 2026	Receivable Payment	Payment: Petrie McLoud Watson & Associates	INV-0011	1,407.25	-	11,295.01	-	0.00%	
+12 Aug 2026	Spend Money	Melrose Parking		-	148.50	11,146.51	-	0.00%	
+13 Aug 2026	Spend Money	Passing Places Parking		-	12.00	11,134.51	-	0.00%	
+14 Aug 2026	Spend Money	Office Supplies Company		-	49.20	11,085.31	-	0.00%	
+14 Aug 2026	Spend Money	Passing Places Parking		-	12.00	11,073.31	-	0.00%	
+15 Aug 2026	Spend Money	Passing Places Parking		-	12.00	11,061.31	-	0.00%	
+16 Aug 2026	Spend Money	Passing Places Parking		-	12.00	11,049.31	-	0.00%	
+18 Aug 2026	Spend Money	Passing Places Parking		-	12.00	11,037.31	-	0.00%	
+19 Aug 2026	Spend Money	Passing Places Parking		-	12.00	11,025.31	-	0.00%	
+20 Aug 2026	Spend Money	24 Locks		-	69.50	10,955.81	-	0.00%	
+20 Aug 2026	Spend Money	Berry Brew		-	22.00	10,933.81	-	0.00%	
+20 Aug 2026	Spend Money	Passing Places Parking		-	12.00	10,921.81	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Hamilton Smith Ltd	INV-0018	541.25	-	11,463.06	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Net Connect	Rpt	-	46.82	11,416.24	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Carlton Functions	Dep	-	1,500.00	9,916.24	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Truxton Property Management	RENT	-	1,181.25	8,734.99	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Young Bros Transport	INV-0019	541.25	-	9,276.24	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: PowerDirect	Rpt	-	135.85	9,140.39	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Rex Media Group	INV-0021	541.25	-	9,681.64	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: ABC Furniture	710	-	1,000.00	8,681.64	-	0.00%	
+21 Aug 2026	Payable Payment	Payment: Hoyt Productions	08-4123	-	5,953.75	2,727.89	-	0.00%	
+21 Aug 2026	Receivable Payment	Payment: Port & Philip Freight	INV-0020	541.25	-	3,269.14	-	0.00%	
+21 Aug 2026	Spend Money	Passing Places Parking		-	12.00	3,257.14	-	0.00%	
+22 Aug 2026	Spend Money	Passing Places Parking		-	12.00	3,245.14	-	0.00%	
+23 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000435	-	216.50	3,028.64	-	0.00%	
+24 Aug 2026	Spend Money	Passing Places Parking		-	12.00	3,016.64	-	0.00%	
+26 Aug 2026	Spend Money	Passing Places Parking		-	12.00	3,004.64	-	0.00%	
+26 Aug 2026	Spend Money	Passing Places Parking		-	12.00	2,992.64	-	0.00%	
+26 Aug 2026	Spend Money	7-Eleven		-	6.00	2,986.64	-	0.00%	
+30 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000442	-	216.50	2,770.14	-	0.00%	
+30 Aug 2026	Spend Money	7-Eleven		-	12.50	2,757.64	-	0.00%	
+31 Aug 2026	Payable Payment	Payment: Truxton Property Management	RENT	-	1,181.25	1,576.39	-	0.00%	
+31 Aug 2026	Spend Money	Passing Places Parking		-	12.00	1,564.39	-	0.00%	
+31 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000456	-	216.50	1,347.89	-	0.00%	
+31 Aug 2026	Spend Money	7-Eleven		-	5.50	1,342.39	-	0.00%	
+2 Sep 2026	Spend Money	7-Eleven		-	4.00	1,338.39	-	0.00%	
+3 Sep 2026	Spend Money	Passing Places Parking		-	12.00	1,326.39	-	0.00%	
+3 Sep 2026	Receivable Payment	Payment: City Agency	INV-0031	104.40	-	1,430.79	-	0.00%	
+5 Sep 2026	Payable Payment	Payment: MCO Cleaning Services	M000463	-	216.50	1,214.29	-	0.00%	
+6 Sep 2026	Spend Money	7-Eleven		-	12.00	1,202.29	-	0.00%	
+6 Sep 2026	Spend Money	Passing Places Parking		-	12.00	1,190.29	-	0.00%	
+6 Sep 2026	Spend Money	7-Eleven		-	8.00	1,182.29	-	0.00%	
+6 Sep 2026	Receivable Payment	Payment: Bank West	INV-0032	324.75	-	1,507.04	-	0.00%	
+7 Sep 2026	Payable Payment	Payment: Gateway Motors		-	411.35	1,095.69	-	0.00%	
+7 Sep 2026	Receivable Payment	Payment: Boom FM	INV-0034	3,897.00	-	4,992.69	-	0.00%	
+7 Sep 2026	Receivable Payment	Payment: Boom FM	INV-0033	541.25	-	5,533.94	-	0.00%	
+9 Sep 2026	Spend Money	Passing Places Parking		-	12.00	5,521.94	-	0.00%	
+9 Sep 2026	Receivable Payment	Payment: Petrie McLoud Watson & Associates	INV-0036	2,240.78	-	7,762.72	-	0.00%	
+10 Sep 2026	Payable Payment	Payment: MCO Cleaning Services	M000471	-	216.50	7,546.22	-	0.00%	
+11 Sep 2026	Spend Money	7-Eleven		-	6.00	7,540.22	-	0.00%	
+11 Sep 2026	Spend Money	Telus		-	110.00	7,430.22	-	0.00%	
+Total Business Bank Account				26,923.45	19,493.23	7,430.22	-		
+Net movement				7,430.22	-	-	-		
+##Cleaning
+21 Jul 2026	Payable Invoice	MCO Cleaning Services - Office Cleaning for month	5679	110.00	-	110.00	9.08	8.25%	Tax on Purchases
+8 Aug 2026	Payable Invoice	MCO Cleaning Services - Office Cleaning - daily rate	M000435	200.00	-	310.00	16.50	8.25%	Tax on Purchases
+15 Aug 2026	Payable Invoice	MCO Cleaning Services - Office Cleaning - daily rate	M000442	200.00	-	510.00	16.50	8.25%	Tax on Purchases
+22 Aug 2026	Payable Invoice	MCO Cleaning Services - Office Cleaning - daily rate	M000456	200.00	-	710.00	16.50	8.25%	Tax on Purchases
+29 Aug 2026	Payable Invoice	MCO Cleaning Services - Office Cleaning - daily rate	M000463	200.00	-	910.00	16.50	8.25%	Tax on Purchases
+5 Sep 2026	Payable Invoice	MCO Cleaning Services - Office Cleaning - daily rate	M000471	200.00	-	1,110.00	16.50	8.25%	Tax on Purchases
+Total Cleaning				1,110.00	-	1,110.00	91.58		
+Net movement				1,110.00	-	-	-		
+##Computer Equipment
+21 Jul 2026	Payable Invoice	PC Complete - Laptop (Oliver)		1,804.50	-	1,804.50	148.87	8.25%	Tax on Purchases
+5 Sep 2026	Payable Invoice	PC Complete - Laptop (Tracy)		1,969.99	-	3,774.49	162.52	8.25%	Tax on Purchases
+Total Computer Equipment				3,774.49	-	3,774.49	311.39		
+Net movement				3,774.49	-	-	-		
+##Consulting & Accounting
+8 Jul 2026	Payable Invoice	Xero - Monthly subscription	AP	29.00	-	29.00	2.39	8.25%	Tax on Purchases
+8 Aug 2026	Payable Invoice	Xero - Monthly subscription	AP	29.00	-	58.00	2.39	8.25%	Tax on Purchases
+7 Sep 2026	Payable Invoice	Xero - Monthly subscription	AP	29.00	-	87.00	2.39	8.25%	Tax on Purchases
+Total Consulting & Accounting				87.00	-	87.00	7.17		
+Net movement				87.00	-	-	-		
+##Entertainment
+8 Jul 2026	Spend Money	Espresso 31 - Team coffees		16.00	-	16.00	-	0.00%	Tax Exempt
+18 Jul 2026	Spend Money	Berry Brew - Team coffee		15.60	-	31.60	-	0.00%	Tax Exempt
+11 Aug 2026	Payable Invoice	Carlton Functions - Deposit on venue hire for client function	Dep	1,500.00	-	1,531.60	-	0.00%	Tax Exempt
+20 Aug 2026	Spend Money	Berry Brew		22.00	-	1,553.60	-	0.00%	Tax Exempt
+Total Entertainment				1,553.60	-	1,553.60	-		
+Net movement				1,553.60	-	-	-		
+##Freight & Courier
+7 Sep 2026	Payable Invoice	Young Bros Transport - Delivery of new reception desk		115.50	-	115.50	9.53	8.25%	Tax on Purchases
+10 Sep 2026	Receivable Invoice	Bayside Club - Delivery charge	GB1-White	-	10.00	105.50	-	0.00%	Tax Exempt
+Total Freight & Courier				115.50	10.00	105.50	9.53		
+Net movement				105.50	-	-	-		
+##General Expenses
+15 Jul 2026	Spend Money	Brunswick Petals - Bouquet for client	Gift	46.19	-	46.19	3.81	8.25%	Tax on Purchases
+5 Sep 2026	Payable Invoice	Bayside Club - Room hire		120.09	-	166.28	9.91	8.25%	Tax on Purchases
+Total General Expenses				166.28	-	166.28	13.72		
+Net movement				166.28	-	-	-		
+##Historical Adjustment
+21 Jun 2026	Conversion Balance Journal	Conversion Balance		-	4,130.98	(4,130.98)	-	0.00%	Tax Exempt
+Total Historical Adjustment				-	4,130.98	(4,130.98)	-		
+Net movement				-	4,130.98	-	-		
+##Inventory
+11 Sep 2026		Inventory Opening Balance		-	80.00	(80.00)	-	0.00%	
+11 Sep 2026		Inventory Opening Balance		80.00	-	-	-	0.00%	
+11 Sep 2026		Inventory Opening Balance		-	100.00	(100.00)	-	0.00%	
+11 Sep 2026		Inventory Opening Balance		140.00	-	40.00	-	0.00%	
+11 Sep 2026		Inventory Opening Balance		100.00	-	140.00	-	0.00%	
+11 Sep 2026		Inventory Opening Balance		-	140.00	-	-	0.00%	
+Total Inventory				320.00	320.00	-	-		
+Net movement				-	-	-	-		
+##Light, Power, Heating
+11 Jul 2026	Payable Invoice	PowerDirect - Monthly power supply	Rpt	110.00	-	110.00	9.08	8.25%	Tax on Purchases
+11 Aug 2026	Payable Invoice	PowerDirect - Monthly power supply	Rpt	125.50	-	235.50	10.35	8.25%	Tax on Purchases
+10 Sep 2026	Payable Invoice	PowerDirect - Monthly power supply	Rpt	100.32	-	335.82	8.28	8.25%	Tax on Purchases
+Total Light, Power, Heating				335.82	-	335.82	27.71		
+Net movement				335.82	-	-	-		
+##Motor Vehicle Expenses
+20 Jul 2026	Spend Money	Melrose Parking - Monthly carpark	Chq 409	137.18	-	137.18	11.32	8.25%	Tax on Purchases
+12 Aug 2026	Spend Money	Melrose Parking		137.18	-	274.36	11.32	8.25%	Tax on Purchases
+6 Sep 2026	Payable Invoice	Gateway Motors - Annual service company car		380.00	-	654.36	31.35	8.25%	Tax on Purchases
+Total Motor Vehicle Expenses				654.36	-	654.36	53.99		
+Net movement				654.36	-	-	-		
+##Office Equipment
+21 Aug 2026	Payable Invoice	ABC Furniture - Coffee table for reception	710	923.79	-	923.79	76.21	8.25%	Tax on Purchases
+Total Office Equipment				923.79	-	923.79	76.21		
+Net movement				923.79	-	-	-		
+##Office Expenses
+11 Jul 2026	Spend Money	Woolworths Market - Misc kitchen supplies for office		60.23	-	60.23	4.97	8.25%	Tax on Purchases
+20 Jul 2026	Payable Invoice	Net Connect - Network diagnostics software	9781	500.00	-	560.23	43.75	8.75%	Tax on Goods
+21 Jul 2026	Payable Invoice	Swanston Security - Our share building doorman/security	AP	55.00	-	615.23	4.54	8.25%	Tax on Purchases
+27 Jul 2026	Payable Credit Note	PC Complete - Unable to supply DVD writer for laptop - backorder	OG laptop	-	250.00	365.23	(20.63)	8.25%	Tax on Purchases
+27 Jul 2026	Payable Credit Note	Swanston Security - Refund as agreed due to window break when guard absent	Refund	-	23.50	341.73	(1.94)	8.25%	Tax on Purchases
+1 Aug 2026	Payable Invoice	PC Complete - DVD writer for laptop	OG laptop	250.00	-	591.73	20.63	8.25%	Tax on Purchases
+11 Aug 2026	Spend Money	Woolworths Market - Misc kitchen supplies for office		31.50	-	623.23	2.60	8.25%	Tax on Purchases
+11 Aug 2026	Spend Money	Orlena Greenville		27.25	-	650.48	2.25	8.25%	Tax on Purchases
+21 Aug 2026	Payable Invoice	Swanston Security - Our share building doorman/security	AP	55.00	-	705.48	4.54	8.25%	Tax on Purchases
+26 Aug 2026	Spend Money	7-Eleven - Misc corner store		5.54	-	711.02	0.46	8.25%	Tax on Purchases
+30 Aug 2026	Spend Money	7-Eleven - Misc corner store		11.55	-	722.57	0.95	8.25%	Tax on Purchases
+31 Aug 2026	Spend Money	7-Eleven - Misc corner store		5.08	-	727.65	0.42	8.25%	Tax on Purchases
+2 Sep 2026	Spend Money	7-Eleven - Misc corner store		3.70	-	731.35	0.30	8.25%	Tax on Purchases
+6 Sep 2026	Spend Money	7-Eleven - Misc corner store		11.09	-	742.44	0.91	8.25%	Tax on Purchases
+6 Sep 2026	Spend Money	7-Eleven - Misc corner store		7.39	-	749.83	0.61	8.25%	Tax on Purchases
+10 Sep 2026	Expense Claim	Xero Demo - Battery pack & power cable for home office		107.11	-	856.94	8.84	8.25%	Tax on Purchases
+11 Sep 2026	Spend Money	7-Eleven - Misc corner store		5.54	-	862.48	0.46	8.25%	Tax on Purchases
+Total Office Expenses				1,135.98	273.50	862.48	73.66		
+Net movement				862.48	-	-	-		
+##Printing & Stationery
+6 Jul 2026	Spend Money	Office Supplies Company - Misc stationery	Eft	21.71	-	21.71	1.79	8.25%	Tax on Purchases
+11 Aug 2026	Expense Claim	Orlena Greenville - Print/bind report		27.25	-	48.96	2.25	8.25%	Tax on Purchases
+14 Aug 2026	Spend Money	Office Supplies Company - Misc stationery		45.45	-	94.41	3.75	8.25%	Tax on Purchases
+Total Printing & Stationery				94.41	-	94.41	7.79		
+Net movement				94.41	-	-	-		
+##Purchases
+8 Sep 2026	Payable Invoice	Bayside Wholesale - Golf balls - white single	GB1-White	775.98	-	775.98	64.02	8.25%	Tax on Purchases
+Total Purchases				775.98	-	775.98	64.02		
+Net movement				775.98	-	-	-		
+##Rent
+11 Jul 2026	Payable Invoice	Truxton Property Management - Monthy rent in advance	RENT	1,091.22	-	1,091.22	90.03	8.25%	Tax on Purchases
+11 Aug 2026	Payable Invoice	Truxton Property Management - Monthy rent in advance	RENT	1,091.22	-	2,182.44	90.03	8.25%	Tax on Purchases
+31 Aug 2026	Payable Invoice	Truxton Property Management - Monthy rent in advance	RENT	1,091.22	-	3,273.66	90.03	8.25%	Tax on Purchases
+Total Rent				3,273.66	-	3,273.66	270.09		
+Net movement				3,273.66	-	-	-		
+##Repairs and Maintenance
+19 Jul 2026	Payable Invoice	Central Copiers - Photocopier repair & drum replacement	945-OCon	982.50	-	982.50	81.06	8.25%	Tax on Purchases
+20 Jul 2026	Payable Invoice	Net Connect - Replacement hub & network switches	9781	850.00	-	1,832.50	70.13	8.25%	Tax on Purchases
+20 Aug 2026	Spend Money	24 Locks		64.20	-	1,896.70	5.30	8.25%	Tax on Purchases
+Total Repairs and Maintenance				1,896.70	-	1,896.70	156.49		
+Net movement				1,896.70	-	-	-		
+##Sales
+10 Jul 2026	Receivable Invoice	City Limousines - Project management & implementation - branding workshop with your team	P/O 9711	-	230.95	(230.95)	(19.05)	8.25%	Tax on Consulting
+11 Jul 2026	Receivable Invoice	Rex Media Group - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(730.95)	(41.25)	8.25%	Tax on Consulting
+11 Jul 2026	Receivable Invoice	Hamilton Smith Ltd - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(1,230.95)	(41.25)	8.25%	Tax on Consulting
+11 Jul 2026	Receivable Invoice	Young Bros Transport - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(1,730.95)	(41.25)	8.25%	Tax on Consulting
+11 Jul 2026	Receivable Invoice	Port & Philip Freight - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(2,230.95)	(41.25)	8.25%	Tax on Consulting
+12 Jul 2026	Receivable Invoice	Hamilton Smith Ltd - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(2,730.95)	(41.25)	8.25%	Tax on Consulting
+13 Jul 2026	Receivable Invoice	Bank West - Half day training - Microsoft Office - for your Priority Mortgage Services Team (Session 3)	Training	-	400.00	(3,130.95)	(33.00)	8.25%	Tax on Consulting
+13 Jul 2026	Receivable Invoice	Bank West - Half day training - Microsoft Office - for your Customer Support Team (Session 1)	Training	-	400.00	(3,530.95)	(33.00)	8.25%	Tax on Consulting
+13 Jul 2026	Receivable Invoice	Bank West - Half day training - Microsoft Office - for your Lending Services Team (Session 2)	Training	-	400.00	(3,930.95)	(33.00)	8.25%	Tax on Consulting
+14 Jul 2026	Receivable Invoice	City Agency - Copies of 'Fish out of Water' text for your Branding Team	Workshop	-	47.80	(3,978.75)	(4.18)	8.75%	Tax on Goods
+14 Jul 2026	Receivable Invoice	City Agency - Project management & implementation - branding workshop with your team ======================== - 'Buzz Words' session with your Steering Group - Analysis of current marketing materials - Workshop on re-brand outcomes and stakeholder identification - Analysis and presentation of findings to your Steering Group & Board	Workshop	-	500.00	(4,478.75)	(41.25)	8.25%	Tax on Consulting
+19 Jul 2026	Receivable Invoice	Boom FM - Half day training - Microsoft Office	Training	-	500.00	(4,978.75)	(41.25)	8.25%	Tax on Consulting
+20 Jul 2026	Receivable Invoice	Ridgeway University - Onsite project management for CRM Project 3 days/week	P/O CRM08-12	-	5,715.94	(10,694.69)	(471.56)	8.25%	Tax on Consulting
+25 Jul 2026	Receivable Invoice	Petrie McLoud Watson & Associates - Development work - develper onsite per day	Portal Proj	-	1,300.00	(11,994.69)	(107.25)	8.25%	Tax on Consulting
+27 Jul 2026	Receivable Invoice	City Limousines - Project management & implementation - branding workshop with your team - follow up session	P/O 9711	-	200.00	(12,194.69)	(16.50)	8.25%	Tax on Consulting
+30 Jul 2026	Receivable Invoice	City Limousines - 'Fish out of Water: Finding Your Brand'	Book	-	19.95	(12,214.64)	(1.75)	8.75%	Tax on Goods
+30 Jul 2026	Receivable Invoice	Boom FM - Half day training - Microsoft Office - operations staff (Session 2)	Training	-	500.00	(12,714.64)	(41.25)	8.25%	Tax on Consulting
+30 Jul 2026	Receivable Invoice	Boom FM - Half day training - Microsoft Office - reception staff (Session 1)	Training	-	500.00	(13,214.64)	(41.25)	8.25%	Tax on Consulting
+30 Jul 2026	Receivable Credit Note	Boom FM - CREDIT Half day training - Microsoft Office and include in suite of training INV-0013	Training	500.00	-	(12,714.64)	41.25	8.25%	Tax on Consulting
+1 Aug 2026	Receivable Invoice	DIISR - Small Business Services - Project management & implementation - branding workshop with your team	Yr Ref W08-143	-	250.00	(12,964.64)	(20.63)	8.25%	Tax on Consulting
+1 Aug 2026	Receivable Invoice	DIISR - Small Business Services - Project management & implementation - 'due diligence' stocktake of your project scope/schedule/implementation plan/outcome measures (hourly rate as agreed)	Yr Ref W08-143	-	525.00	(13,489.64)	(43.31)	8.25%	Tax on Consulting
+11 Aug 2026	Receivable Invoice	Rex Media Group - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(13,989.64)	(41.25)	8.25%	Tax on Consulting
+11 Aug 2026	Receivable Invoice	Hamilton Smith Ltd - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(14,489.64)	(41.25)	8.25%	Tax on Consulting
+11 Aug 2026	Receivable Invoice	DIISR - Small Business Services - 'Fish out of Water: Finding Your Brand'	Yr Ref W08-143	-	19.95	(14,509.59)	(1.75)	8.75%	Tax on Goods
+11 Aug 2026	Receivable Invoice	DIISR - Small Business Services - Project management & implementation - branding workshop with your team - follow up	Yr Ref W08-143	-	200.00	(14,709.59)	(16.50)	8.25%	Tax on Consulting
+11 Aug 2026	Receivable Invoice	Port & Philip Freight - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(15,209.59)	(41.25)	8.25%	Tax on Consulting
+11 Aug 2026	Receivable Invoice	Young Bros Transport - Desktop/network support via email & phone. Per month fixed fee for minimum 20 hours/month.	Monthly Support	-	500.00	(15,709.59)	(41.25)	8.25%	Tax on Consulting
+16 Aug 2026	Receivable Credit Note	DIISR - Small Business Services - 'Fish out of Water: Finding Your Brand' - credit - charged in error - should be included overall project	Yr Ref W08-143	19.95	-	(15,689.64)	1.75	8.75%	Tax on Goods
+20 Aug 2026	Receivable Invoice	Ridgeway University - Onsite project management for CRM Project 3 days/week	P/O CRM08-12	-	5,715.94	(21,405.58)	(471.56)	8.25%	Tax on Consulting
+21 Aug 2026	Receivable Credit Note	Hamilton Smith Ltd - Full credit - DUPLICATE of INV-0001	Monthly Support	500.00	-	(20,905.58)	41.25	8.25%	Tax on Consulting
+26 Aug 2026	Receivable Invoice	Bank West - Website creation	Website	-	300.00	(21,205.58)	(24.75)	8.25%	Tax on Consulting
+26 Aug 2026	Receivable Invoice	City Agency - Golf Balls	Golf Balls	-	96.00	(21,301.58)	(8.40)	8.75%	Tax on Goods
+31 Aug 2026	Receivable Invoice	Boom FM - Half day training - Microsoft Office - Marketing team	Training	-	500.00	(21,801.58)	(41.25)	8.25%	Tax on Consulting
+3 Sep 2026	Receivable Invoice	Petrie McLoud Watson & Associates - Development work - software integration	Consulting	-	2,070.00	(23,871.58)	(170.78)	8.25%	Tax on Consulting
+3 Sep 2026	Receivable Invoice	Boom FM - Development work - software integration	Consulting	-	3,600.00	(27,471.58)	(297.00)	8.25%	Tax on Consulting
+5 Sep 2026	Receivable Invoice	City Limousines - Development work - develper onsite per day	P/O 9711	-	650.00	(28,121.58)	(53.63)	8.25%	Tax on Consulting
+10 Sep 2026	Receivable Invoice	Marine Systems - Marketing guides	Ref MK815	-	365.82	(28,487.40)	(30.18)	8.25%	Tax on Consulting
+10 Sep 2026	Receivable Invoice	Basket Case - Development work - per hour rate	INV-0026	-	434.18	(28,921.58)	(35.82)	8.25%	Tax on Consulting
+10 Sep 2026	Receivable Invoice	Basket Case - Project team meeting to discuss dev changes required to your online gift basket ordering system	INV-0026	-	410.67	(29,332.25)	(33.88)	8.25%	Tax on Consulting
+10 Sep 2026	Receivable Invoice	Bayside Club - Golf balls - white single	GB1-White	-	206.93	(29,539.18)	(17.07)	8.25%	Tax on Consulting
+Total Sales				1,019.95	30,559.13	(29,539.18)	(2,437.80)		
+Net movement				-	29,539.18	-	-		
+##Sales Tax
+6 Jul 2026	Spend Money	Office Supplies Company	Eft	1.79	-	1.79	-	0.00%	
+8 Jul 2026	Payable Invoice	Xero	AP	2.39	-	4.18	-	0.00%	
+10 Jul 2026	Receivable Invoice	City Limousines	P/O 9711	-	19.05	(14.87)	-	0.00%	
+11 Jul 2026	Receivable Invoice	Rex Media Group	Monthly Support	-	41.25	(56.12)	-	0.00%	
+11 Jul 2026	Expense Claim	Orlena Greenville		2.66	-	(53.46)	-	0.00%	
+11 Jul 2026	Payable Invoice	PowerDirect	Rpt	9.08	-	(44.38)	-	0.00%	
+11 Jul 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	-	41.25	(85.63)	-	0.00%	
+11 Jul 2026	Receivable Invoice	Young Bros Transport	Monthly Support	-	41.25	(126.88)	-	0.00%	
+11 Jul 2026	Receivable Invoice	Port & Philip Freight	Monthly Support	-	41.25	(168.13)	-	0.00%	
+11 Jul 2026	Spend Money	Woolworths Market		4.97	-	(163.16)	-	0.00%	
+11 Jul 2026	Payable Invoice	Truxton Property Management	RENT	90.03	-	(73.13)	-	0.00%	
+12 Jul 2026	Payable Invoice	Net Connect	Rpt	3.42	-	(69.71)	-	0.00%	
+12 Jul 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	-	41.25	(110.96)	-	0.00%	
+13 Jul 2026	Receivable Invoice	Bank West	Training	-	33.00	(143.96)	-	0.00%	
+13 Jul 2026	Receivable Invoice	Bank West	Training	-	66.00	(209.96)	-	0.00%	
+14 Jul 2026	Receivable Invoice	City Agency	Workshop	-	41.25	(251.21)	-	0.00%	
+14 Jul 2026	Receivable Invoice	City Agency	Workshop	-	4.18	(255.39)	-	0.00%	
+15 Jul 2026	Spend Money	Brunswick Petals	Gift	3.81	-	(251.58)	-	0.00%	
+19 Jul 2026	Payable Invoice	Central Copiers	945-OCon	81.06	-	(170.52)	-	0.00%	
+19 Jul 2026	Receivable Invoice	Boom FM	Training	-	41.25	(211.77)	-	0.00%	
+20 Jul 2026	Spend Money	Melrose Parking	Chq 409	11.32	-	(200.45)	-	0.00%	
+20 Jul 2026	Receivable Invoice	Ridgeway University	P/O CRM08-12	-	471.56	(672.01)	-	0.00%	
+20 Jul 2026	Payable Invoice	Net Connect	9781	113.88	-	(558.13)	-	0.00%	
+21 Jul 2026	Payable Invoice	Swanston Security	AP	4.54	-	(553.59)	-	0.00%	
+21 Jul 2026	Payable Invoice	MCO Cleaning Services	5679	9.08	-	(544.51)	-	0.00%	
+21 Jul 2026	Payable Invoice	PC Complete		148.87	-	(395.64)	-	0.00%	
+21 Jul 2026	Payable Invoice	SMART Agency	SM0195	152.42	-	(243.22)	-	0.00%	
+25 Jul 2026	Receivable Invoice	Petrie McLoud Watson & Associates	Portal Proj	-	107.25	(350.47)	-	0.00%	
+27 Jul 2026	Receivable Invoice	City Limousines	P/O 9711	-	16.50	(366.97)	-	0.00%	
+27 Jul 2026	Payable Credit Note	PC Complete	OG laptop	-	20.63	(387.60)	-	0.00%	
+27 Jul 2026	Payable Credit Note	Swanston Security	Refund	-	1.94	(389.54)	-	0.00%	
+30 Jul 2026	Receivable Invoice	City Limousines	Book	-	1.75	(391.29)	-	0.00%	
+30 Jul 2026	Receivable Invoice	Boom FM	Training	-	82.50	(473.79)	-	0.00%	
+30 Jul 2026	Receivable Credit Note	Boom FM	Training	41.25	-	(432.54)	-	0.00%	
+1 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	-	43.31	(475.85)	-	0.00%	
+1 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	-	20.63	(496.48)	-	0.00%	
+1 Aug 2026	Payable Invoice	PC Complete	OG laptop	20.63	-	(475.85)	-	0.00%	
+8 Aug 2026	Payable Invoice	Xero	AP	2.39	-	(473.46)	-	0.00%	
+8 Aug 2026	Payable Invoice	MCO Cleaning Services	M000435	16.50	-	(456.96)	-	0.00%	
+11 Aug 2026	Receivable Invoice	Rex Media Group	Monthly Support	-	41.25	(498.21)	-	0.00%	
+11 Aug 2026	Spend Money	Woolworths Market		2.60	-	(495.61)	-	0.00%	
+11 Aug 2026	Payable Invoice	Hoyt Productions	08-4123	453.75	-	(41.86)	-	0.00%	
+11 Aug 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	-	41.25	(83.11)	-	0.00%	
+11 Aug 2026	Payable Invoice	Truxton Property Management	RENT	90.03	-	6.92	-	0.00%	
+11 Aug 2026	Spend Money	Orlena Greenville		2.25	-	9.17	-	0.00%	
+11 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	-	16.50	(7.33)	-	0.00%	
+11 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	-	1.75	(9.08)	-	0.00%	
+11 Aug 2026	Receivable Invoice	Port & Philip Freight	Monthly Support	-	41.25	(50.33)	-	0.00%	
+11 Aug 2026	Payable Invoice	PowerDirect	Rpt	10.35	-	(39.98)	-	0.00%	
+11 Aug 2026	Expense Claim	Orlena Greenville		2.25	-	(37.73)	-	0.00%	
+11 Aug 2026	Receivable Invoice	Young Bros Transport	Monthly Support	-	41.25	(78.98)	-	0.00%	
+12 Aug 2026	Spend Money	Melrose Parking		11.32	-	(67.66)	-	0.00%	
+12 Aug 2026	Payable Invoice	Net Connect	Rpt	3.57	-	(64.09)	-	0.00%	
+13 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(63.18)	-	0.00%	
+14 Aug 2026	Spend Money	Office Supplies Company		3.75	-	(59.43)	-	0.00%	
+14 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(58.52)	-	0.00%	
+15 Aug 2026	Payable Invoice	MCO Cleaning Services	M000442	16.50	-	(42.02)	-	0.00%	
+15 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(41.11)	-	0.00%	
+16 Aug 2026	Receivable Credit Note	DIISR - Small Business Services	Yr Ref W08-143	1.75	-	(39.36)	-	0.00%	
+16 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(38.45)	-	0.00%	
+18 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(37.54)	-	0.00%	
+19 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(36.63)	-	0.00%	
+20 Aug 2026	Spend Money	24 Locks		5.30	-	(31.33)	-	0.00%	
+20 Aug 2026	Receivable Invoice	Ridgeway University	P/O CRM08-12	-	471.56	(502.89)	-	0.00%	
+20 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(501.98)	-	0.00%	
+21 Aug 2026	Payable Invoice	ABC Furniture	710	76.21	-	(425.77)	-	0.00%	
+21 Aug 2026	Receivable Credit Note	Hamilton Smith Ltd	Monthly Support	41.25	-	(384.52)	-	0.00%	
+21 Aug 2026	Payable Invoice	Swanston Security	AP	4.54	-	(379.98)	-	0.00%	
+21 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(379.07)	-	0.00%	
+22 Aug 2026	Payable Invoice	MCO Cleaning Services	M000456	16.50	-	(362.57)	-	0.00%	
+22 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(361.66)	-	0.00%	
+24 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(360.75)	-	0.00%	
+26 Aug 2026	Receivable Invoice	Bank West	Website	-	24.75	(385.50)	-	0.00%	
+26 Aug 2026	Receivable Invoice	City Agency	Golf Balls	-	8.40	(393.90)	-	0.00%	
+26 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(392.99)	-	0.00%	
+26 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(392.08)	-	0.00%	
+26 Aug 2026	Spend Money	7-Eleven		0.46	-	(391.62)	-	0.00%	
+29 Aug 2026	Payable Invoice	MCO Cleaning Services	M000463	16.50	-	(375.12)	-	0.00%	
+30 Aug 2026	Spend Money	7-Eleven		0.95	-	(374.17)	-	0.00%	
+31 Aug 2026	Payable Invoice	Truxton Property Management	RENT	90.03	-	(284.14)	-	0.00%	
+31 Aug 2026	Payable Invoice	SMART Agency	SM0210	190.53	-	(93.61)	-	0.00%	
+31 Aug 2026	Receivable Invoice	Boom FM	Training	-	41.25	(134.86)	-	0.00%	
+31 Aug 2026	Spend Money	Passing Places Parking		0.91	-	(133.95)	-	0.00%	
+31 Aug 2026	Spend Money	7-Eleven		0.42	-	(133.53)	-	0.00%	
+2 Sep 2026	Spend Money	7-Eleven		0.30	-	(133.23)	-	0.00%	
+3 Sep 2026	Receivable Invoice	Petrie McLoud Watson & Associates	Consulting	-	170.78	(304.01)	-	0.00%	
+3 Sep 2026	Receivable Invoice	Boom FM	Consulting	-	297.00	(601.01)	-	0.00%	
+3 Sep 2026	Spend Money	Passing Places Parking		0.91	-	(600.10)	-	0.00%	
+5 Sep 2026	Payable Invoice	Bayside Club		9.91	-	(590.19)	-	0.00%	
+5 Sep 2026	Receivable Invoice	City Limousines	P/O 9711	-	53.63	(643.82)	-	0.00%	
+5 Sep 2026	Payable Invoice	PC Complete		162.52	-	(481.30)	-	0.00%	
+5 Sep 2026	Payable Invoice	MCO Cleaning Services	M000471	16.50	-	(464.80)	-	0.00%	
+6 Sep 2026	Payable Invoice	Gateway Motors		31.35	-	(433.45)	-	0.00%	
+6 Sep 2026	Spend Money	7-Eleven		0.91	-	(432.54)	-	0.00%	
+6 Sep 2026	Spend Money	Passing Places Parking		0.91	-	(431.63)	-	0.00%	
+6 Sep 2026	Spend Money	7-Eleven		0.61	-	(431.02)	-	0.00%	
+7 Sep 2026	Payable Invoice	Young Bros Transport		9.53	-	(421.49)	-	0.00%	
+7 Sep 2026	Payable Invoice	Xero	AP	2.39	-	(419.10)	-	0.00%	
+8 Sep 2026	Payable Invoice	Bayside Wholesale	GB1-White	64.02	-	(355.08)	-	0.00%	
+9 Sep 2026	Spend Money	Passing Places Parking		0.91	-	(354.17)	-	0.00%	
+10 Sep 2026	Receivable Invoice	Marine Systems	Ref MK815	-	30.18	(384.35)	-	0.00%	
+10 Sep 2026	Payable Invoice	PowerDirect	Rpt	8.28	-	(376.07)	-	0.00%	
+10 Sep 2026	Receivable Invoice	Basket Case	INV-0026	-	69.70	(445.77)	-	0.00%	
+10 Sep 2026	Receivable Invoice	Bayside Club	GB1-White	-	17.07	(462.84)	-	0.00%	
+10 Sep 2026	Expense Claim	Xero Demo		8.84	-	(454.00)	-	0.00%	
+11 Sep 2026	Payable Invoice	Net Connect	Rpt	4.13	-	(449.87)	-	0.00%	
+11 Sep 2026	Payable Invoice	Capital Cab Co	CS815	18.44	-	(431.43)	-	0.00%	
+11 Sep 2026	Spend Money	7-Eleven		0.46	-	(430.97)	-	0.00%	
+11 Sep 2026	Spend Money	Telus		8.38	-	(422.59)	-	0.00%	
+Total Sales Tax				2,122.03	2,544.62	(422.59)	-		
+Net movement				-	422.59	-	-		
+##Telephone & Internet
+12 Jul 2026	Payable Invoice	Net Connect - Cable internet	Rpt	41.50	-	41.50	3.42	8.25%	Tax on Purchases
+12 Aug 2026	Payable Invoice	Net Connect - Cable internet	Rpt	43.25	-	84.75	3.57	8.25%	Tax on Purchases
+11 Sep 2026	Payable Invoice	Net Connect - Cable internet	Rpt	50.00	-	134.75	4.13	8.25%	Tax on Purchases
+11 Sep 2026	Spend Money	Telus		101.62	-	236.37	8.38	8.25%	Tax on Purchases
+Total Telephone & Internet				236.37	-	236.37	19.50		
+Net movement				236.37	-	-	-		
+##Tracking Transfers
+27 Jul 2026	Payable Credit Note Allocation	PC Complete	OG laptop	-	270.63	(270.63)	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	PC Complete	OG laptop	270.63	-	-	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	Swanston Security	Refund	-	25.44	(25.44)	-	0.00%	
+27 Jul 2026	Payable Credit Note Allocation	Swanston Security	Refund	25.44	-	-	-	0.00%	
+30 Jul 2026	Receivable Credit Note Allocation	Boom FM	Training	-	541.25	(541.25)	-	0.00%	
+30 Jul 2026	Receivable Credit Note Allocation	Boom FM	Training	541.25	-	-	-	0.00%	
+16 Aug 2026	Receivable Credit Note Allocation	DIISR - Small Business Services	Yr Ref W08-143	21.70	-	21.70	-	0.00%	
+16 Aug 2026	Receivable Credit Note Allocation	DIISR - Small Business Services	Yr Ref W08-143	-	21.70	-	-	0.00%	
+21 Aug 2026	Receivable Credit Note Allocation	Hamilton Smith Ltd	Monthly Support	-	541.25	(541.25)	-	0.00%	
+21 Aug 2026	Receivable Credit Note Allocation	Hamilton Smith Ltd	Monthly Support	541.25	-	-	-	0.00%	
+Total Tracking Transfers				1,400.27	1,400.27	-	-		
+Net movement				-	-	-	-		
+##Travel - National
+11 Jul 2026	Expense Claim	Orlena Greenville - Parking for MRE conference		16.63	-	16.63	1.37	8.25%	Tax on Purchases
+11 Jul 2026	Expense Claim	Orlena Greenville - Breakfast before MRE conference		15.61	-	32.24	1.29	8.25%	Tax on Purchases
+13 Aug 2026	Spend Money	Passing Places Parking		11.09	-	43.33	0.91	8.25%	Tax on Purchases
+14 Aug 2026	Spend Money	Passing Places Parking		11.09	-	54.42	0.91	8.25%	Tax on Purchases
+15 Aug 2026	Spend Money	Passing Places Parking		11.09	-	65.51	0.91	8.25%	Tax on Purchases
+16 Aug 2026	Spend Money	Passing Places Parking		11.09	-	76.60	0.91	8.25%	Tax on Purchases
+18 Aug 2026	Spend Money	Passing Places Parking		11.09	-	87.69	0.91	8.25%	Tax on Purchases
+19 Aug 2026	Spend Money	Passing Places Parking		11.09	-	98.78	0.91	8.25%	Tax on Purchases
+20 Aug 2026	Spend Money	Passing Places Parking		11.09	-	109.87	0.91	8.25%	Tax on Purchases
+21 Aug 2026	Spend Money	Passing Places Parking		11.09	-	120.96	0.91	8.25%	Tax on Purchases
+22 Aug 2026	Spend Money	Passing Places Parking		11.09	-	132.05	0.91	8.25%	Tax on Purchases
+24 Aug 2026	Spend Money	Passing Places Parking		11.09	-	143.14	0.91	8.25%	Tax on Purchases
+26 Aug 2026	Spend Money	Passing Places Parking		11.09	-	154.23	0.91	8.25%	Tax on Purchases
+26 Aug 2026	Spend Money	Passing Places Parking		11.09	-	165.32	0.91	8.25%	Tax on Purchases
+31 Aug 2026	Spend Money	Passing Places Parking		11.09	-	176.41	0.91	8.25%	Tax on Purchases
+3 Sep 2026	Spend Money	Passing Places Parking		11.09	-	187.50	0.91	8.25%	Tax on Purchases
+6 Sep 2026	Spend Money	Passing Places Parking		11.09	-	198.59	0.91	8.25%	Tax on Purchases
+9 Sep 2026	Spend Money	Passing Places Parking		11.09	-	209.68	0.91	8.25%	Tax on Purchases
+11 Sep 2026	Payable Invoice	Capital Cab Co - Taxi services	CS815	223.56	-	433.24	18.44	8.25%	Tax on Purchases
+Total Travel - National				433.24	-	433.24	35.66		
+Net movement				433.24	-	-	-		
+##Unpaid Expense Claims
+11 Jul 2026	Expense Claim	Orlena Greenville		-	34.90	(34.90)	-	0.00%	
+27 Jul 2026	Expense Claim Payment	Payment: Orlena Greenville		34.90	-	-	-	0.00%	
+11 Aug 2026	Expense Claim Payment	Payment: Orlena Greenville		29.50	-	29.50	-	0.00%	
+11 Aug 2026	Expense Claim	Orlena Greenville		-	29.50	-	-	0.00%	
+10 Sep 2026	Expense Claim	Xero Demo		-	115.95	(115.95)	-	0.00%	
+Total Unpaid Expense Claims				64.40	180.35	(115.95)	-		
+Net movement				-	115.95	-	-		
+Total				111,263.08	111,263.08	-	(422.59)		

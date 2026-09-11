@@ -22,9 +22,9 @@ const accountColumns = `
 	COALESCE(bank_account_number,''), COALESCE(bank_account_type,''), COALESCE(currency_code,''),
 	status, COALESCE(description,''), COALESCE(tax_type,''),
 	enable_payments_to_account, show_in_expense_claims,
-	COALESCE(class,''), COALESCE(system_account,''),
+	COALESCE(system_account,''),
 	COALESCE(reporting_code,''), COALESCE(reporting_code_name,''),
-	has_attachments, updated_date_utc`
+	has_attachments, auto_reconcile, updated_date_utc`
 
 func scanAccount(row pgx.Row) (*models.Account, error) {
 	a := &models.Account{}
@@ -33,9 +33,9 @@ func scanAccount(row pgx.Row) (*models.Account, error) {
 		&a.BankAccountNumber, &a.BankAccountType, &a.CurrencyCode,
 		&a.Status, &a.Description, &a.TaxType,
 		&a.EnablePaymentsToAccount, &a.ShowInExpenseClaims,
-		&a.Class, &a.SystemAccount,
+		&a.SystemAccount,
 		&a.ReportingCode, &a.ReportingCodeName,
-		&a.HasAttachments, &a.UpdatedDateUTC,
+		&a.HasAttachments, &a.AutoReconcile, &a.UpdatedDateUTC,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -43,7 +43,18 @@ func scanAccount(row pgx.Row) (*models.Account, error) {
 		}
 		return nil, err
 	}
+	deriveClass(a)
 	return a, nil
+}
+
+// deriveClass sets the reporting class Xero gives an account of this type.
+//
+// Class is not an independent fact about an account — Xero computes it from
+// Type — so it is derived at every boundary rather than taken from the client,
+// which may omit it or send one that disagrees with the type. A chart using
+// types this build has never seen gets no class, which is what its type maps to.
+func deriveClass(a *models.Account) {
+	a.Class = models.AccountClassForType(a.Type)
 }
 
 type AccountFilter struct {
@@ -99,27 +110,79 @@ func (r *AccountRepository) GetByID(ctx context.Context, orgID, id uuid.UUID) (*
 	return scanAccount(r.pool.QueryRow(ctx, q, orgID, id))
 }
 
+// StandardChart returns the standard chart of accounts — the 58 accounts of the
+// captured Xero organisation, held as reference data by migration 00029 from
+// migrations/data/xero/accounts.csv — shaped as accounts a caller can create, so
+// that "Import standard chart" posts what it reads rather than a chart written
+// into the frontend.
+//
+// Two fields are resolved here rather than stored, and neither is invented:
+//
+//   - TaxType. The reference table carries the tax rate by the name Xero prints
+//     ("Tax on Purchases (8.25%)"), and the type the API speaks ('INPUT') is a
+//     row of *this organisation's* tax_rates, so it is looked up per tenant. An
+//     organisation with no rate by that name gets an account with no tax type,
+//     not one borrowed from another chart.
+//
+// Class is derived here the same way every other path derives it (deriveClass),
+// rather than stored a second time where it could drift.
+//
+// No balance is returned, because the reference table carries none: an opening
+// figure belongs to the books it was read from.
+func (r *AccountRepository) StandardChart(ctx context.Context, orgID uuid.UUID) ([]models.Account, error) {
+	const q = `
+		SELECT s.code, s.name, s.type, COALESCE(t.tax_type, ''), s.description
+		  FROM standard_chart_accounts s
+		  LEFT JOIN tax_rates t ON t.organisation_id = $1 AND t.name = s.tax_rate_name
+		 ORDER BY s.display_order`
+	rows, err := r.pool.Query(ctx, q, orgID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]models.Account, 0, 58)
+	for rows.Next() {
+		var a models.Account
+		if err := rows.Scan(&a.Code, &a.Name, &a.Type, &a.TaxType, &a.Description); err != nil {
+			return nil, err
+		}
+		a.Status = "ACTIVE"
+		deriveClass(&a)
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
 func (r *AccountRepository) Create(ctx context.Context, orgID uuid.UUID, a *models.Account) error {
+	deriveClass(a)
+	// auto_reconcile is written here as well as in Update: the create handler
+	// echoes the payload back, so dropping the field would answer with a value
+	// the row does not hold.
 	q := `INSERT INTO accounts (
 		organisation_id, code, name, type, bank_account_number, bank_account_type,
 		currency_code, status, description, tax_type,
-		enable_payments_to_account, show_in_expense_claims, class, reporting_code, reporting_code_name
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,COALESCE(NULLIF($8,''),'ACTIVE'),$9,$10,$11,$12,$13,$14,$15)
+		enable_payments_to_account, show_in_expense_claims, class, reporting_code, reporting_code_name,
+		auto_reconcile
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,COALESCE(NULLIF($8,''),'ACTIVE'),$9,$10,$11,$12,$13,$14,$15,$16)
 	RETURNING account_id, updated_date_utc`
 	return r.pool.QueryRow(ctx, q,
 		orgID, a.Code, a.Name, a.Type, a.BankAccountNumber, a.BankAccountType,
 		a.CurrencyCode, a.Status, a.Description, a.TaxType,
 		a.EnablePaymentsToAccount, a.ShowInExpenseClaims, a.Class, a.ReportingCode, a.ReportingCodeName,
+		a.AutoReconcile,
 	).Scan(&a.AccountID, &a.UpdatedDateUTC)
 }
 
 func (r *AccountRepository) Update(ctx context.Context, orgID uuid.UUID, a *models.Account) error {
+	deriveClass(a)
 	q := `UPDATE accounts SET
 		code=$3, name=$4, type=$5,
 		bank_account_number=NULLIF($6,''), bank_account_type=NULLIF($7,''), currency_code=NULLIF($8,''),
 		status=$9, description=$10, tax_type=NULLIF($11,''),
 		enable_payments_to_account=$12, show_in_expense_claims=$13,
 		class=NULLIF($14,''), reporting_code=NULLIF($15,''), reporting_code_name=NULLIF($16,''),
+		auto_reconcile=$17,
 		updated_date_utc = now()
 		WHERE organisation_id=$1 AND account_id=$2
 		RETURNING updated_date_utc`

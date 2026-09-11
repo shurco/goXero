@@ -1,0 +1,11 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1065
+
+Bank Summary
+Demo Company (Global)
+For the period 1 January 2026 to 31 December 2026
+
+--- report output (tab-separated) ---
+
+Account	Bank Account Type	Status	Opening Balance	Cash Received	Cash Spent	Closing Balance
+Business Bank Account	Bank	Active	-	26,923.45	19,493.23	7,430.22
+Total			-	26,923.45	19,493.23	7,430.22

@@ -1,0 +1,34 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1016
+
+Profit and Loss
+Demo Company (Global)
+For the year ended 31 December 2026
+
+--- report output (tab-separated) ---
+
+	2026
+Trading Income	
+Sales	29,539.18
+Total Trading Income	29,539.18
+Cost of Sales	
+Purchases	775.98
+Total Cost of Sales	775.98
+Gross Profit	28,763.20
+Operating Expenses	
+Advertising	9,657.05
+Bank Fees	30.00
+Cleaning	1,110.00
+Consulting & Accounting	87.00
+Entertainment	1,553.60
+Freight & Courier	105.50
+General Expenses	166.28
+Light, Power, Heating	335.82
+Motor Vehicle Expenses	654.36
+Office Expenses	862.48
+Printing & Stationery	94.41
+Rent	3,273.66
+Repairs and Maintenance	1,896.70
+Telephone & Internet	236.37
+Travel - National	433.24
+Total Operating Expenses	20,496.47
+Net Profit	8,266.73

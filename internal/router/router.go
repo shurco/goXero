@@ -45,6 +45,7 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	bankStatementHandler := handlers.NewBankStatementHandler(repos)
 	manualJournalHandler := handlers.NewManualJournalHandler(repos)
 	journalHandler := handlers.NewJournalHandler(repos)
+	conversionBalanceHandler := handlers.NewConversionBalanceHandler(repos)
 	quoteHandler := handlers.NewQuoteHandler(repos)
 	poHandler := handlers.NewPurchaseOrderHandler(repos)
 	contactGroupHandler := handlers.NewContactGroupHandler(repos)
@@ -98,6 +99,9 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 
 	apiV1.Get("/accounts", accountHandler.List)
 	apiV1.Post("/accounts", accountHandler.Create)
+	// Ahead of /accounts/:id: a static segment loses to a parameter otherwise,
+	// and the chart template would be looked up as an account id.
+	apiV1.Get("/accounts/standard-chart", accountHandler.StandardChart)
 	apiV1.Get("/accounts/:id", accountHandler.Get)
 	apiV1.Put("/accounts/:id", accountHandler.Update)
 	apiV1.Post("/accounts/:id", accountHandler.Update)
@@ -179,6 +183,9 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Delete("/manual-journals/:id", manualJournalHandler.Delete)
 
 	apiV1.Get("/journals", journalHandler.List)
+
+	apiV1.Get("/conversion-balances", conversionBalanceHandler.Get)
+	apiV1.Put("/conversion-balances", conversionBalanceHandler.Update)
 
 	apiV1.Get("/quotes", quoteHandler.List)
 	apiV1.Post("/quotes", quoteHandler.Create)

@@ -1,0 +1,9 @@
+account_code,account_name,date,description,amount,source,side,note
+090,Business Bank Account,2026-06-21,Conversion Balance,4130.98,Conversion Balance Journal,debit,Journal ID 388 on https://reporting.xero.com/!!6Sp3/v1/Run/1098; offsetting line is account 840
+840,Historical Adjustment,2026-06-21,Conversion Balance,-4130.98,Conversion Balance Journal,credit,Journal ID 388 on https://reporting.xero.com/!!6Sp3/v1/Run/1098; offsetting line is account 090
+630,Inventory,2026-09-11,Inventory Opening Balance,80.00,Inventory Opening Balance,debit,"Journal ID 651 (https://reporting.xero.com/!!6Sp3/v1/Run/1098), self-balancing inside account 630"
+630,Inventory,2026-09-11,Inventory Opening Balance,-80.00,Inventory Opening Balance,credit,Journal ID 651
+630,Inventory,2026-09-11,Inventory Opening Balance,100.00,Inventory Opening Balance,debit,Journal ID 651
+630,Inventory,2026-09-11,Inventory Opening Balance,-100.00,Inventory Opening Balance,credit,Journal ID 651
+630,Inventory,2026-09-11,Inventory Opening Balance,140.00,Inventory Opening Balance,debit,Journal ID 651
+630,Inventory,2026-09-11,Inventory Opening Balance,-140.00,Inventory Opening Balance,credit,Journal ID 651

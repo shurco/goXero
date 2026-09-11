@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import AccountFormModal from '$lib/components/AccountFormModal.svelte';
-	import { accountApi, orgApi } from '$lib/api';
+	import { accountApi, orgApi, reportApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import {
 		COA_TABS,
 		displayTypeColumn,
-		STANDARD_CHART_IMPORT,
 		tabMatches,
-		ytdForAccount,
+		ytdByCode,
 		type CoaTabId
 	} from '$lib/chart-of-accounts';
 	import type { Account } from '$lib/types';
@@ -31,6 +30,12 @@
 	let modalMode = $state<'add' | 'edit'>('add');
 	let modalAccount = $state<Account | null>(null);
 	let importing = $state(false);
+	/**
+	 * Year-to-date by account code, read from the Trial Balance. Empty until the
+	 * report answers, and an account it does not list stays blank: the column
+	 * shows the ledger's figure or nothing, never a stand-in.
+	 */
+	let ytd = $state<Record<string, number>>({});
 	let bulkWorking = $state(false);
 	let toast = $state<string | null>(null);
 
@@ -43,6 +48,23 @@
 			accounts = [];
 		} finally {
 			loading = false;
+		}
+		void loadYtd();
+	}
+
+	/**
+	 * The YTD column's figures, from the Trial Balance report. A failure leaves
+	 * the column blank rather than filled in from anywhere else — Xero's own
+	 * chart of accounts shows a balance or nothing, and a number this screen
+	 * cannot source is worse than an empty cell.
+	 */
+	async function loadYtd() {
+		try {
+			const env = await reportApi.run('/api/v1/reports/trial-balance');
+			const report = env.Reports?.[0] ?? env.Payload?.Reports?.[0];
+			ytd = ytdByCode(report);
+		} catch {
+			ytd = {};
 		}
 	}
 
@@ -78,10 +100,8 @@
 			else if (sortKey === 'name') cmp = a.Name.localeCompare(b.Name);
 			else if (sortKey === 'type') cmp = displayTypeColumn(a).localeCompare(displayTypeColumn(b));
 			else {
-				const ya = ytdForAccount(a);
-				const yb = ytdForAccount(b);
-				const va = ya ?? -Infinity;
-				const vb = yb ?? -Infinity;
+				const va = ytd[a.Code?.trim()] ?? -Infinity;
+				const vb = ytd[b.Code?.trim()] ?? -Infinity;
 				cmp = va - vb;
 			}
 			return cmp * dir;
@@ -182,7 +202,11 @@
 		let added = 0;
 		let skipped = 0;
 		try {
-			for (const row of STANDARD_CHART_IMPORT) {
+			// The chart comes from the server, which holds Xero's own standard
+			// chart as reference data. This screen used to carry its own twelve
+			// accounts, and they were not this chart's: see migration 00029.
+			const template = await accountApi.standardChart();
+			for (const row of template) {
 				try {
 					await accountApi.create(row);
 					added++;
@@ -205,11 +229,14 @@
 		const lines = [
 			headers.join(','),
 			...sorted.map((a) => {
-				const y = ytdForAccount(a);
-				const ytd = y !== null ? String(y) : '';
-				return [a.Code, `"${a.Name.replace(/"/g, '""')}"`, displayTypeColumn(a), a.Status, ytd].join(
-					','
-				);
+				const y = ytd[a.Code?.trim()];
+				return [
+					a.Code,
+					`"${a.Name.replace(/"/g, '""')}"`,
+					displayTypeColumn(a),
+					a.Status,
+					y === undefined ? '' : String(y)
+				].join(',');
 			})
 		];
 		const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
@@ -405,8 +432,8 @@
 								</td>
 								<td class="text-ink-800">{displayTypeColumn(a)}</td>
 								<td class="text-right tabular-nums font-medium">
-									{#if ytdForAccount(a) !== null}
-										{formatCurrency(ytdForAccount(a)!, currency)}
+									{#if ytd[a.Code?.trim()] !== undefined}
+										{formatCurrency(ytd[a.Code?.trim()]!, currency)}
 									{:else}
 										<span class="text-ink-400">—</span>
 									{/if}

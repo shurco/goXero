@@ -642,3 +642,22 @@ export interface StatementLineCoding {
 	Reference?: string;
 	Description?: string;
 }
+
+// ── Conversion balances (settings → conversion balances) ───────────────────
+/**
+ * The opening balances an organisation brings in when it converts to goXero.
+ * ConversionDate is a calendar date ("YYYY-MM-DD") and is empty until the
+ * organisation converts; Amount is signed the way the ledger signs it, so a
+ * debit is positive and a credit negative.
+ */
+export interface ConversionBalance {
+	ConversionDate: string;
+	Locked: boolean;
+	Lines: ConversionBalanceLine[];
+}
+
+export interface ConversionBalanceLine {
+	AccountID: string;
+	Code?: string;
+	Amount: string;
+}

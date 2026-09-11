@@ -1,0 +1,83 @@
+account_name,date,contact,description,reference,amount,signed_amount,direction,tax_rate,account_code,account_name_coded
+Business Bank Account,11 Sep 2026,Telus,Telus,,110.00,-110.00,out,Tax on Purchases,489,Telephone & Internet
+Business Bank Account,11 Sep 2026,7-Eleven,7-Eleven,,6.00,-6.00,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,10 Sep 2026,MCO Cleaning Services,Payment: MCO Cleaning Services,M000471,216.50,-216.50,out,Tax on Purchases,408,Cleaning
+Business Bank Account,9 Sep 2026,Petrie McLoud Watson & Associates,Payment: Petrie McLoud Watson & Associates,Consulting | INV-0036,2240.78,2240.78,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,9 Sep 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,7 Sep 2026,Boom FM,Payment: Boom FM,Training | INV-0033,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,7 Sep 2026,Boom FM,Payment: Boom FM,Consulting | INV-0034,3897.00,3897.00,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,6 Sep 2026,Bank West,Payment: Bank West,Website | INV-0032,324.75,324.75,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,6 Sep 2026,7-Eleven,7-Eleven,,8.00,-8.00,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,6 Sep 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,6 Sep 2026,7-Eleven,7-Eleven,,12.00,-12.00,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,5 Sep 2026,MCO Cleaning Services,Payment: MCO Cleaning Services,M000463,216.50,-216.50,out,Tax on Purchases,408,Cleaning
+Business Bank Account,3 Sep 2026,City Agency,Payment: City Agency,Golf Balls | INV-0031,104.40,104.40,in,Tax on Goods (8.75%),200,Sales
+Business Bank Account,3 Sep 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,2 Sep 2026,7-Eleven,7-Eleven,,4.00,-4.00,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,31 Aug 2026,7-Eleven,7-Eleven,,5.50,-5.50,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,31 Aug 2026,MCO Cleaning Services,Payment: MCO Cleaning Services,M000456,216.50,-216.50,out,Tax on Purchases,408,Cleaning
+Business Bank Account,31 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,30 Aug 2026,7-Eleven,7-Eleven,,12.50,-12.50,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,30 Aug 2026,MCO Cleaning Services,Payment: MCO Cleaning Services,M000442,216.50,-216.50,out,Tax on Purchases,408,Cleaning
+Business Bank Account,26 Aug 2026,7-Eleven,7-Eleven,,6.00,-6.00,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,26 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,26 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,24 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,23 Aug 2026,MCO Cleaning Services,Payment: MCO Cleaning Services,M000435,216.50,-216.50,out,Tax on Purchases,408,Cleaning
+Business Bank Account,22 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,21 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,21 Aug 2026,ABC Furniture,Payment: ABC Furniture,710,1000.00,-1000.00,out,Tax on Purchases,710,Office Equipment
+Business Bank Account,21 Aug 2026,Rex Media Group,Payment: Rex Media Group,Monthly Support | INV-0021,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,21 Aug 2026,Port & Philip Freight,Payment: Port & Philip Freight,Monthly Support | INV-0020,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,21 Aug 2026,PowerDirect,Payment: multiple items,,1363.92,-1363.92,out,Tax on Purchases,445,"Light, Power, Heating"
+Business Bank Account,21 Aug 2026,Young Bros Transport,Payment: Young Bros Transport,Monthly Support | INV-0019,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,21 Aug 2026,Carlton Functions,Payment: Carlton Functions,Dep,1500.00,-1500.00,out,Tax Exempt,420,Entertainment
+Business Bank Account,21 Aug 2026,Hamilton Smith Ltd,Payment: Hamilton Smith Ltd,Monthly Support | INV-0018,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,21 Aug 2026,Hoyt Productions,Payment: Hoyt Productions,08-4123,5953.75,-5953.75,out,Tax on Purchases,400,Advertising
+Business Bank Account,20 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,20 Aug 2026,24 Locks,24 Locks,,69.50,-69.50,out,Tax on Purchases,473,Repairs and Maintenance
+Business Bank Account,20 Aug 2026,Berry Brew,Berry Brew,,22.00,-22.00,out,Tax Exempt,420,Entertainment
+Business Bank Account,19 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,18 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,16 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,15 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,14 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,14 Aug 2026,Office Supplies Company,Office Supplies Company,,49.20,-49.20,out,Tax on Purchases,461,Printing & Stationery
+Business Bank Account,13 Aug 2026,Passing Places Parking,Passing Places Parking,,12.00,-12.00,out,Tax on Purchases,493,Travel - National
+Business Bank Account,12 Aug 2026,Melrose Parking,Melrose Parking,,148.50,-148.50,out,Tax on Purchases,449,Motor Vehicle Expenses
+Business Bank Account,11 Aug 2026,Woolworths Market,Woolworths Market,,34.10,-34.10,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,11 Aug 2026,Boom FM,Payment: Boom FM,Training | INV-0013,1082.50,1082.50,in,Tax on Consulting (8.25%); Tax on Consulting (8.25%),200,Sales; Sales
+Business Bank Account,7 Sep 2026,Gateway Motors,Payment: Gateway Motors,,411.35,-411.35,out,Tax on Purchases,449,Motor Vehicle Expenses
+Business Bank Account,31 Aug 2026,Truxton Property Management,Payment: Truxton Property Management,RENT,1181.25,-1181.25,out,Tax on Purchases,469,Rent
+Business Bank Account,11 Aug 2026,DIISR - Small Business Services,Payment: DIISR - Small Business Services,Yr Ref W08-143 | INV-0016,568.31,568.31,in,Tax on Consulting (8.25%); Tax on Consulting (8.25%),200; 200,Sales; Sales
+Business Bank Account,11 Aug 2026,DIISR - Small Business Services,Payment: DIISR - Small Business Services,Yr Ref W08-143 | INV-0022,216.50,216.50,in,Tax on Goods (8.75%); Tax on Consulting (8.25%),200; 200,Sales; Sales
+Business Bank Account,11 Aug 2026,Ridgeway University,Payment: Ridgeway University,P/O CRM08-12 | INV-0009,6187.50,6187.50,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,11 Aug 2026,Orlena Greenville,Orlena Greenville,,29.50,-29.50,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,11 Aug 2026,Petrie McLoud Watson & Associates,Payment: Petrie McLoud Watson & Associates,Portal Proj | INV-0011,1407.25,1407.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,11 Aug 2026,Orlena Greenville,Payment: Orlena Greenville,,29.50,-29.50,out,Tax Exempt,801,Unpaid Expense Claims
+Business Bank Account,8 Aug 2026,Xero,Payment: Xero,AP,31.39,-31.39,out,Tax on Purchases,412,Consulting & Accounting
+Business Bank Account,1 Aug 2026,PC Complete,Payment: PC Complete,OG laptop,270.63,-270.63,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,1 Aug 2026,Ridgeway Bank,Ridgeway Bank,Fee,15.00,-15.00,out,Tax Exempt,404,Bank Fees
+Business Bank Account,30 Jul 2026,Net Connect,Payment: Net Connect,9781,1463.88,-1463.88,out,Tax on Goods; Tax on Purchases,453; 473,Office Expenses; Repairs and Maintenance
+Business Bank Account,27 Jul 2026,Central Copiers,Payment: Central Copiers,945-OCon,900.00,-900.00,out,Tax on Purchases,473,Repairs and Maintenance
+Business Bank Account,27 Jul 2026,MCO Cleaning Services,Payment: MCO Cleaning Services,5679,119.08,-119.08,out,Tax on Purchases,408,Cleaning
+Business Bank Account,27 Jul 2026,Orlena Greenville,Payment: Orlena Greenville,,34.90,-34.90,out,Tax Exempt,801,Unpaid Expense Claims
+Business Bank Account,27 Jul 2026,Swanston Security,Payment: Swanston Security,AP,34.10,-34.10,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,25 Jul 2026,City Agency,Payment: City Agency,Workshop | INV-0007,593.23,593.23,in,Tax on Consulting (8.25%); Tax on Goods (8.75%),200; 200,Sales; Sales
+Business Bank Account,21 Jul 2026,Truxton Property Management,Payment: Truxton Property Management,RENT,1181.25,-1181.25,out,Tax on Purchases,469,Rent
+Business Bank Account,21 Jul 2026,Net Connect,Payment: Net Connect,Rpt,44.92,-44.92,out,Tax on Purchases,489,Telephone & Internet
+Business Bank Account,21 Jul 2026,PC Complete,Payment: PC Complete,,1682.74,-1682.74,out,Tax on Purchases,720,Computer Equipment
+Business Bank Account,21 Jul 2026,Bank West,Payment: Bank West,,1299.00,1299.00,in,Tax on Consulting (8.25%); Tax on Consulting (8.25%); Tax on Consulting (8.25%),200; 200; 200,Sales; Sales; Sales
+Business Bank Account,21 Jul 2026,PowerDirect,Payment: PowerDirect,Rpt,119.08,-119.08,out,Tax on Purchases,445,"Light, Power, Heating"
+Business Bank Account,20 Jul 2026,Hamilton Smith Ltd,Payment: Hamilton Smith Ltd,,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,20 Jul 2026,Rex Media Group,Payment: Rex Media Group,,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,20 Jul 2026,Port & Philip Freight,Payment: Port & Philip Freight,,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,20 Jul 2026,Young Bros Transport,Payment: Young Bros Transport,,541.25,541.25,in,Tax on Consulting (8.25%),200,Sales
+Business Bank Account,20 Jul 2026,Melrose Parking,Melrose Parking,Chq 409,148.50,-148.50,out,Tax on Purchases,449,Motor Vehicle Expenses
+Business Bank Account,18 Jul 2026,Berry Brew,Berry Brew,,15.60,-15.60,out,Tax Exempt,420,Entertainment
+Business Bank Account,15 Jul 2026,Brunswick Petals,Brunswick Petals,Gift,50.00,-50.00,out,Tax on Purchases,429,General Expenses
+Business Bank Account,11 Jul 2026,Woolworths Market,Woolworths Market,,65.20,-65.20,out,Tax on Purchases,453,Office Expenses
+Business Bank Account,8 Jul 2026,Espresso 31,Espresso 31,,16.00,-16.00,out,Tax Exempt,420,Entertainment
+Business Bank Account,8 Jul 2026,Xero,Payment: Xero,,31.39,-31.39,out,Tax on Purchases,412,Consulting & Accounting
+Business Bank Account,6 Jul 2026,Office Supplies Company,Office Supplies Company,Eft,23.50,-23.50,out,Tax on Purchases,461,Printing & Stationery
+Business Bank Account,1 Jul 2026,Ridgeway Bank,Ridgeway Bank,Fee,15.00,-15.00,out,Tax Exempt,404,Bank Fees

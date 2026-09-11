@@ -1,0 +1,1301 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1098
+
+Journal Report
+Demo Company (Global)
+For the period 1 January 2026 to 31 December 2026
+
+--- report output (tab-separated) ---
+
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+ID 651 Inventory Opening Balance
+11 Sep 2026	651	630	Inventory	-	80.00	10 Sep 2026	Adam Michkevich
+11 Sep 2026	651	630	Inventory	80.00	-	10 Sep 2026	Adam Michkevich
+11 Sep 2026	651	630	Inventory	-	100.00	10 Sep 2026	Adam Michkevich
+11 Sep 2026	651	630	Inventory	140.00	-	10 Sep 2026	Adam Michkevich
+11 Sep 2026	651	630	Inventory	100.00	-	10 Sep 2026	Adam Michkevich
+11 Sep 2026	651	630	Inventory	-	140.00	10 Sep 2026	Adam Michkevich
+Total				320.00	320.00		
+ID 650 Reversed: Swanston Security - Reversal of ID 649
+19 Nov 2026	650	453	Office Expenses	-	55.00	10 Sep 2026	Adam Michkevich
+19 Nov 2026	650	820	Sales Tax	-	4.54	10 Sep 2026	Adam Michkevich
+19 Nov 2026	650	800	Accounts Payable	59.54	-	10 Sep 2026	Adam Michkevich
+Total				59.54	59.54		
+ID 649 Swanston Security
+19 Nov 2026	649	453	Office Expenses	55.00	-	19 Nov 2026	System Generated
+19 Nov 2026	649	820	Sales Tax	4.54	-	19 Nov 2026	System Generated
+19 Nov 2026	649	800	Accounts Payable	-	59.54	19 Nov 2026	System Generated
+Total				59.54	59.54		
+ID 648 Reversed: Truxton Property Management - Reversal of ID 647
+11 Nov 2026	648	800	Accounts Payable	1,181.25	-	10 Sep 2026	Adam Michkevich
+11 Nov 2026	648	820	Sales Tax	-	90.03	10 Sep 2026	Adam Michkevich
+11 Nov 2026	648	469	Rent	-	1,091.22	10 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 647 Truxton Property Management
+11 Nov 2026	647	820	Sales Tax	90.03	-	11 Nov 2026	System Generated
+11 Nov 2026	647	800	Accounts Payable	-	1,181.25	11 Nov 2026	System Generated
+11 Nov 2026	647	469	Rent	1,091.22	-	11 Nov 2026	System Generated
+Total				1,181.25	1,181.25		
+ID 646 Reversed: Xero - Reversal of ID 645
+8 Nov 2026	646	412	Consulting & Accounting	-	29.00	10 Sep 2026	Adam Michkevich
+8 Nov 2026	646	820	Sales Tax	-	2.39	10 Sep 2026	Adam Michkevich
+8 Nov 2026	646	800	Accounts Payable	31.39	-	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 645 Xero
+8 Nov 2026	645	800	Accounts Payable	-	31.39	8 Nov 2026	System Generated
+8 Nov 2026	645	412	Consulting & Accounting	29.00	-	8 Nov 2026	System Generated
+8 Nov 2026	645	820	Sales Tax	2.39	-	8 Nov 2026	System Generated
+Total				31.39	31.39		
+ID 644 Swanston Security
+21 Oct 2026	644	453	Office Expenses	55.00	-	21 Oct 2026	System Generated
+21 Oct 2026	644	820	Sales Tax	4.54	-	21 Oct 2026	System Generated
+21 Oct 2026	644	800	Accounts Payable	-	59.54	21 Oct 2026	System Generated
+Total				59.54	59.54		
+ID 643 Reversed: Swanston Security - Reversal of ID 644
+21 Oct 2026	643	800	Accounts Payable	59.54	-	10 Sep 2026	Adam Michkevich
+21 Oct 2026	643	820	Sales Tax	-	4.54	10 Sep 2026	Adam Michkevich
+21 Oct 2026	643	453	Office Expenses	-	55.00	10 Sep 2026	Adam Michkevich
+Total				59.54	59.54		
+ID 642 Reversed: Truxton Property Management - Reversal of ID 641
+11 Oct 2026	642	800	Accounts Payable	1,181.25	-	10 Sep 2026	Adam Michkevich
+11 Oct 2026	642	820	Sales Tax	-	90.03	10 Sep 2026	Adam Michkevich
+11 Oct 2026	642	469	Rent	-	1,091.22	10 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 641 Truxton Property Management
+11 Oct 2026	641	820	Sales Tax	90.03	-	11 Oct 2026	System Generated
+11 Oct 2026	641	469	Rent	1,091.22	-	11 Oct 2026	System Generated
+11 Oct 2026	641	800	Accounts Payable	-	1,181.25	11 Oct 2026	System Generated
+Total				1,181.25	1,181.25		
+ID 640 Reversed: Xero - Reversal of ID 639
+8 Oct 2026	640	800	Accounts Payable	31.39	-	10 Sep 2026	Adam Michkevich
+8 Oct 2026	640	412	Consulting & Accounting	-	29.00	10 Sep 2026	Adam Michkevich
+8 Oct 2026	640	820	Sales Tax	-	2.39	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 639 Xero
+8 Oct 2026	639	820	Sales Tax	2.39	-	8 Oct 2026	System Generated
+8 Oct 2026	639	800	Accounts Payable	-	31.39	8 Oct 2026	System Generated
+8 Oct 2026	639	412	Consulting & Accounting	29.00	-	8 Oct 2026	System Generated
+Total				31.39	31.39		
+ID 638 Reversed: Swanston Security - Reversal of ID 637
+20 Sep 2026	638	453	Office Expenses	-	55.00	10 Sep 2026	Adam Michkevich
+20 Sep 2026	638	820	Sales Tax	-	4.54	10 Sep 2026	Adam Michkevich
+20 Sep 2026	638	800	Accounts Payable	59.54	-	10 Sep 2026	Adam Michkevich
+Total				59.54	59.54		
+ID 637 Swanston Security
+20 Sep 2026	637	820	Sales Tax	4.54	-	20 Sep 2026	System Generated
+20 Sep 2026	637	800	Accounts Payable	-	59.54	20 Sep 2026	System Generated
+20 Sep 2026	637	453	Office Expenses	55.00	-	20 Sep 2026	System Generated
+Total				59.54	59.54		
+ID 636 Reversed: Payment: Gateway Motors - Reversal of ID 635
+17 Sep 2026	636	090	Business Bank Account	411.35	-	11 Sep 2026	Adam Michkevich
+17 Sep 2026	636	800	Accounts Payable	-	411.35	11 Sep 2026	Adam Michkevich
+Total				411.35	411.35		
+ID 635 Payment: Gateway Motors
+17 Sep 2026	635	800	Accounts Payable	411.35	-	11 Sep 2026	Adam Michkevich
+17 Sep 2026	635	090	Business Bank Account	-	411.35	11 Sep 2026	Adam Michkevich
+Total				411.35	411.35		
+ID 634 Telus
+11 Sep 2026	634	090	Business Bank Account	-	110.00	11 Sep 2026	System Generated
+11 Sep 2026	634	489	Telephone & Internet	101.62	-	11 Sep 2026	System Generated
+11 Sep 2026	634	820	Sales Tax	8.38	-	11 Sep 2026	System Generated
+Total				110.00	110.00		
+ID 633 7-Eleven
+11 Sep 2026	633	090	Business Bank Account	-	6.00	11 Sep 2026	System Generated
+11 Sep 2026	633	453	Office Expenses	5.54	-	11 Sep 2026	System Generated
+11 Sep 2026	633	820	Sales Tax	0.46	-	11 Sep 2026	System Generated
+Total				6.00	6.00		
+ID 632 Melrose Parking
+11 Sep 2026	632	449	Motor Vehicle Expenses	137.18	-	11 Sep 2026	Adam Michkevich
+11 Sep 2026	632	090	Business Bank Account	-	148.50	11 Sep 2026	Adam Michkevich
+11 Sep 2026	632	820	Sales Tax	11.32	-	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+Total				148.50	148.50		
+ID 631 Capital Cab Co
+11 Sep 2026	631	493	Travel - National	223.56	-	11 Sep 2026	Adam Michkevich
+11 Sep 2026	631	800	Accounts Payable	-	242.00	11 Sep 2026	Adam Michkevich
+11 Sep 2026	631	820	Sales Tax	18.44	-	11 Sep 2026	Adam Michkevich
+Total				242.00	242.00		
+ID 630 Reversed: Capital Cab Co - Reversal of ID 627
+11 Sep 2026	630	820	Sales Tax	-	3.20	11 Sep 2026	Adam Michkevich
+11 Sep 2026	630	493	Travel - National	-	38.80	11 Sep 2026	Adam Michkevich
+11 Sep 2026	630	800	Accounts Payable	42.00	-	11 Sep 2026	Adam Michkevich
+Total				42.00	42.00		
+ID 629 Reversed: Melrose Parking - Reversal of ID 628
+11 Sep 2026	629	449	Motor Vehicle Expenses	-	137.18	11 Sep 2026	Adam Michkevich
+11 Sep 2026	629	820	Sales Tax	-	11.32	11 Sep 2026	Adam Michkevich
+11 Sep 2026	629	090	Business Bank Account	148.50	-	11 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 628 Melrose Parking
+11 Sep 2026	628	449	Motor Vehicle Expenses	137.18	-	11 Sep 2026	Adam Michkevich
+11 Sep 2026	628	090	Business Bank Account	-	148.50	11 Sep 2026	Adam Michkevich
+11 Sep 2026	628	820	Sales Tax	11.32	-	11 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 627 Capital Cab Co
+11 Sep 2026	627	493	Travel - National	38.80	-	9 Sep 2026	Adam Michkevich
+11 Sep 2026	627	800	Accounts Payable	-	42.00	9 Sep 2026	Adam Michkevich
+11 Sep 2026	627	820	Sales Tax	3.20	-	9 Sep 2026	Adam Michkevich
+Total				42.00	42.00		
+ID 626 Net Connect
+11 Sep 2026	626	820	Sales Tax	4.13	-	11 Sep 2026	Adam Michkevich
+11 Sep 2026	626	800	Accounts Payable	-	54.13	11 Sep 2026	Adam Michkevich
+11 Sep 2026	626	489	Telephone & Internet	50.00	-	11 Sep 2026	Adam Michkevich
+Total				54.13	54.13		
+ID 625 Reversed: Melrose Parking - Reversal of ID 632
+11 Sep 2026	625	820	Sales Tax	-	11.32	11 Sep 2026	Adam Michkevich
+11 Sep 2026	625	090	Business Bank Account	148.50	-	11 Sep 2026	Adam Michkevich
+11 Sep 2026	625	449	Motor Vehicle Expenses	-	137.18	11 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 624 Payment: MCO Cleaning Services
+10 Sep 2026	624	800	Accounts Payable	216.50	-	11 Sep 2026	System Generated
+10 Sep 2026	624	090	Business Bank Account	-	216.50	11 Sep 2026	System Generated
+Total				216.50	216.50		
+ID 623 Xero Demo
+10 Sep 2026	623	801	Unpaid Expense Claims	-	115.95	11 Sep 2026	Adam Michkevich
+10 Sep 2026	623	453	Office Expenses	107.11	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	623	820	Sales Tax	8.84	-	11 Sep 2026	Adam Michkevich
+Total				115.95	115.95		
+ID 622 Reversed: Orlena Greenville - Reversal of ID 620
+10 Sep 2026	622	453	Office Expenses	-	107.11	11 Sep 2026	Adam Michkevich
+10 Sep 2026	622	820	Sales Tax	-	8.84	11 Sep 2026	Adam Michkevich
+10 Sep 2026	622	801	Unpaid Expense Claims	115.95	-	11 Sep 2026	Adam Michkevich
+Total				115.95	115.95		
+ID 621 Reversed: Truxton Property Management - Reversal of ID 618
+10 Sep 2026	621	800	Accounts Payable	1,181.25	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	621	820	Sales Tax	-	90.03	11 Sep 2026	Adam Michkevich
+10 Sep 2026	621	469	Rent	-	1,091.22	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 620 Orlena Greenville
+10 Sep 2026	620	453	Office Expenses	107.11	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	620	820	Sales Tax	8.84	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	620	801	Unpaid Expense Claims	-	115.95	11 Sep 2026	Adam Michkevich
+Total				115.95	115.95		
+ID 619 Reversed: Bayside Club - Reversal of ID 613
+10 Sep 2026	619	820	Sales Tax	17.07	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	619	610	Accounts Receivable	-	224.00	11 Sep 2026	Adam Michkevich
+10 Sep 2026	619	200	Sales	206.93	-	11 Sep 2026	Adam Michkevich
+Total				224.00	224.00		
+ID 618 Truxton Property Management
+10 Sep 2026	618	800	Accounts Payable	-	1,181.25	10 Sep 2026	Adam Michkevich
+10 Sep 2026	618	820	Sales Tax	90.03	-	10 Sep 2026	Adam Michkevich
+10 Sep 2026	618	469	Rent	1,091.22	-	10 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 617 Basket Case
+10 Sep 2026	617	610	Accounts Receivable	914.55	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	617	200	Sales	-	410.67	11 Sep 2026	Adam Michkevich
+10 Sep 2026	617	820	Sales Tax	-	69.70	11 Sep 2026	Adam Michkevich
+10 Sep 2026	617	200	Sales	-	434.18	11 Sep 2026	Adam Michkevich
+Total				914.55	914.55		
+ID 616 Reversed: Basket Case - Reversal of ID 617
+10 Sep 2026	616	610	Accounts Receivable	-	914.55	11 Sep 2026	Adam Michkevich
+10 Sep 2026	616	200	Sales	434.18	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	616	820	Sales Tax	69.70	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	616	200	Sales	410.67	-	11 Sep 2026	Adam Michkevich
+Total				914.55	914.55		
+ID 615 Reversed: Gateway Motors - Reversal of ID 608
+10 Sep 2026	615	449	Motor Vehicle Expenses	-	380.00	11 Sep 2026	Adam Michkevich
+10 Sep 2026	615	800	Accounts Payable	411.35	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	615	820	Sales Tax	-	31.35	11 Sep 2026	Adam Michkevich
+Total				411.35	411.35		
+ID 614 Bayside Club
+10 Sep 2026	614	820	Sales Tax	-	17.07	11 Sep 2026	Adam Michkevich
+10 Sep 2026	614	610	Accounts Receivable	234.00	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	614	425	Freight & Courier	-	10.00	11 Sep 2026	Adam Michkevich
+10 Sep 2026	614	200	Sales	-	206.93	11 Sep 2026	Adam Michkevich
+Total				234.00	234.00		
+ID 613 Bayside Club
+10 Sep 2026	613	610	Accounts Receivable	224.00	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	613	200	Sales	-	206.93	11 Sep 2026	Adam Michkevich
+10 Sep 2026	613	820	Sales Tax	-	17.07	11 Sep 2026	Adam Michkevich
+Total				224.00	224.00		
+ID 612 Basket Case
+10 Sep 2026	612	200	Sales	-	434.18	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+10 Sep 2026	612	200	Sales	-	410.67	11 Sep 2026	Adam Michkevich
+10 Sep 2026	612	610	Accounts Receivable	914.55	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	612	820	Sales Tax	-	69.70	11 Sep 2026	Adam Michkevich
+Total				914.55	914.55		
+ID 611 PowerDirect
+10 Sep 2026	611	445	Light, Power, Heating	100.32	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	611	820	Sales Tax	8.28	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	611	800	Accounts Payable	-	108.60	11 Sep 2026	Adam Michkevich
+Total				108.60	108.60		
+ID 610 Basket Case
+10 Sep 2026	610	200	Sales	-	464.55	11 Sep 2026	Adam Michkevich
+10 Sep 2026	610	610	Accounts Receivable	990.01	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	610	820	Sales Tax	-	75.46	11 Sep 2026	Adam Michkevich
+10 Sep 2026	610	200	Sales	-	450.00	11 Sep 2026	Adam Michkevich
+Total				990.01	990.01		
+ID 609 Payment: Truxton Property Management
+10 Sep 2026	609	090	Business Bank Account	-	1,181.25	11 Sep 2026	Adam Michkevich
+10 Sep 2026	609	800	Accounts Payable	1,181.25	-	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 608 Gateway Motors
+10 Sep 2026	608	800	Accounts Payable	-	411.35	11 Sep 2026	Adam Michkevich
+10 Sep 2026	608	449	Motor Vehicle Expenses	380.00	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	608	820	Sales Tax	31.35	-	11 Sep 2026	Adam Michkevich
+Total				411.35	411.35		
+ID 607 Reversed: Basket Case - Reversal of ID 610
+10 Sep 2026	607	820	Sales Tax	75.46	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	607	200	Sales	464.55	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	607	610	Accounts Receivable	-	990.01	11 Sep 2026	Adam Michkevich
+10 Sep 2026	607	200	Sales	450.00	-	11 Sep 2026	Adam Michkevich
+Total				990.01	990.01		
+ID 606 Marine Systems
+10 Sep 2026	606	610	Accounts Receivable	396.00	-	9 Sep 2026	Adam Michkevich
+10 Sep 2026	606	200	Sales	-	365.82	9 Sep 2026	Adam Michkevich
+10 Sep 2026	606	820	Sales Tax	-	30.18	9 Sep 2026	Adam Michkevich
+Total				396.00	396.00		
+ID 605 Reversed: Payment: Truxton Property Management - Reversal of ID 609
+10 Sep 2026	605	090	Business Bank Account	1,181.25	-	11 Sep 2026	Adam Michkevich
+10 Sep 2026	605	800	Accounts Payable	-	1,181.25	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 604 Payment: Petrie McLoud Watson & Associates
+9 Sep 2026	604	610	Accounts Receivable	-	2,240.78	11 Sep 2026	System Generated
+9 Sep 2026	604	090	Business Bank Account	2,240.78	-	11 Sep 2026	System Generated
+Total				2,240.78	2,240.78		
+ID 603 Passing Places Parking
+9 Sep 2026	603	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+9 Sep 2026	603	493	Travel - National	11.09	-	11 Sep 2026	System Generated
+9 Sep 2026	603	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 602 Bayside Wholesale
+8 Sep 2026	602	300	Purchases	775.98	-	11 Sep 2026	Adam Michkevich
+8 Sep 2026	602	800	Accounts Payable	-	840.00	11 Sep 2026	Adam Michkevich
+8 Sep 2026	602	820	Sales Tax	64.02	-	11 Sep 2026	Adam Michkevich
+Total				840.00	840.00		
+ID 601 Payment: Boom FM
+7 Sep 2026	601	610	Accounts Receivable	-	541.25	11 Sep 2026	System Generated
+7 Sep 2026	601	090	Business Bank Account	541.25	-	11 Sep 2026	System Generated
+Total				541.25	541.25		
+ID 600 Payment: Boom FM
+7 Sep 2026	600	610	Accounts Receivable	-	3,897.00	11 Sep 2026	System Generated
+7 Sep 2026	600	090	Business Bank Account	3,897.00	-	11 Sep 2026	System Generated
+Total				3,897.00	3,897.00		
+ID 599 Payment: Gateway Motors
+7 Sep 2026	599	800	Accounts Payable	411.35	-	11 Sep 2026	Adam Michkevich
+7 Sep 2026	599	090	Business Bank Account	-	411.35	11 Sep 2026	Adam Michkevich
+Total				411.35	411.35		
+ID 598 Xero
+7 Sep 2026	598	800	Accounts Payable	-	31.39	10 Sep 2026	Adam Michkevich
+7 Sep 2026	598	820	Sales Tax	2.39	-	10 Sep 2026	Adam Michkevich
+7 Sep 2026	598	412	Consulting & Accounting	29.00	-	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 597 Young Bros Transport
+7 Sep 2026	597	425	Freight & Courier	115.50	-	11 Sep 2026	Adam Michkevich
+7 Sep 2026	597	800	Accounts Payable	-	125.03	11 Sep 2026	Adam Michkevich
+7 Sep 2026	597	820	Sales Tax	9.53	-	11 Sep 2026	Adam Michkevich
+Total				125.03	125.03		
+ID 596 Payment: Bank West
+6 Sep 2026	596	610	Accounts Receivable	-	324.75	11 Sep 2026	System Generated
+6 Sep 2026	596	090	Business Bank Account	324.75	-	11 Sep 2026	System Generated
+Total				324.75	324.75		
+ID 595 7-Eleven
+6 Sep 2026	595	090	Business Bank Account	-	8.00	11 Sep 2026	System Generated
+6 Sep 2026	595	453	Office Expenses	7.39	-	11 Sep 2026	System Generated
+6 Sep 2026	595	820	Sales Tax	0.61	-	11 Sep 2026	System Generated
+Total				8.00	8.00		
+ID 594 Passing Places Parking
+6 Sep 2026	594	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+6 Sep 2026	594	493	Travel - National	11.09	-	11 Sep 2026	System Generated
+6 Sep 2026	594	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 593 7-Eleven
+6 Sep 2026	593	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+6 Sep 2026	593	453	Office Expenses	11.09	-	11 Sep 2026	System Generated
+6 Sep 2026	593	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 592 Gateway Motors
+6 Sep 2026	592	820	Sales Tax	31.35	-	11 Sep 2026	Adam Michkevich
+6 Sep 2026	592	800	Accounts Payable	-	411.35	11 Sep 2026	Adam Michkevich
+6 Sep 2026	592	449	Motor Vehicle Expenses	380.00	-	11 Sep 2026	Adam Michkevich
+Total				411.35	411.35		
+ID 591 Payment: MCO Cleaning Services
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+5 Sep 2026	591	800	Accounts Payable	216.50	-	11 Sep 2026	System Generated
+5 Sep 2026	591	090	Business Bank Account	-	216.50	11 Sep 2026	System Generated
+Total				216.50	216.50		
+ID 590 MCO Cleaning Services
+5 Sep 2026	590	800	Accounts Payable	-	216.50	11 Sep 2026	Adam Michkevich
+5 Sep 2026	590	408	Cleaning	200.00	-	11 Sep 2026	Adam Michkevich
+5 Sep 2026	590	820	Sales Tax	16.50	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 589 Reversed: Ridgeway Bank - Reversal of ID 586
+5 Sep 2026	589	404	Bank Fees	-	15.00	11 Sep 2026	Adam Michkevich
+5 Sep 2026	589	090	Business Bank Account	15.00	-	11 Sep 2026	Adam Michkevich
+Total				15.00	15.00		
+ID 588 PC Complete
+5 Sep 2026	588	800	Accounts Payable	-	2,132.51	5 Dec 2026	Adam Michkevich
+5 Sep 2026	588	720	Computer Equipment	1,969.99	-	5 Dec 2026	Adam Michkevich
+5 Sep 2026	588	820	Sales Tax	162.52	-	5 Dec 2026	Adam Michkevich
+Total				2,132.51	2,132.51		
+ID 587 City Limousines
+5 Sep 2026	587	610	Accounts Receivable	703.63	-	11 Sep 2026	Adam Michkevich
+5 Sep 2026	587	820	Sales Tax	-	53.63	11 Sep 2026	Adam Michkevich
+5 Sep 2026	587	200	Sales	-	650.00	11 Sep 2026	Adam Michkevich
+Total				703.63	703.63		
+ID 586 Ridgeway Bank
+5 Sep 2026	586	404	Bank Fees	15.00	-	10 Sep 2026	Adam Michkevich
+5 Sep 2026	586	090	Business Bank Account	-	15.00	10 Sep 2026	Adam Michkevich
+Total				15.00	15.00		
+ID 585 Bayside Club
+5 Sep 2026	585	800	Accounts Payable	-	130.00	11 Sep 2026	Adam Michkevich
+5 Sep 2026	585	820	Sales Tax	9.91	-	11 Sep 2026	Adam Michkevich
+5 Sep 2026	585	429	General Expenses	120.09	-	11 Sep 2026	Adam Michkevich
+Total				130.00	130.00		
+ID 584 Payment: City Agency
+3 Sep 2026	584	610	Accounts Receivable	-	104.40	11 Sep 2026	System Generated
+3 Sep 2026	584	090	Business Bank Account	104.40	-	11 Sep 2026	System Generated
+Total				104.40	104.40		
+ID 583 Passing Places Parking
+3 Sep 2026	583	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+3 Sep 2026	583	493	Travel - National	11.09	-	11 Sep 2026	System Generated
+3 Sep 2026	583	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 582 Boom FM
+3 Sep 2026	582	610	Accounts Receivable	3,897.00	-	11 Sep 2026	Adam Michkevich
+3 Sep 2026	582	200	Sales	-	3,600.00	11 Sep 2026	Adam Michkevich
+3 Sep 2026	582	820	Sales Tax	-	297.00	11 Sep 2026	Adam Michkevich
+Total				3,897.00	3,897.00		
+ID 581 Petrie McLoud Watson & Associates
+3 Sep 2026	581	610	Accounts Receivable	2,240.78	-	11 Sep 2026	Adam Michkevich
+3 Sep 2026	581	200	Sales	-	2,070.00	11 Sep 2026	Adam Michkevich
+3 Sep 2026	581	820	Sales Tax	-	170.78	11 Sep 2026	Adam Michkevich
+Total				2,240.78	2,240.78		
+ID 580 7-Eleven
+2 Sep 2026	580	090	Business Bank Account	-	4.00	11 Sep 2026	System Generated
+2 Sep 2026	580	453	Office Expenses	3.70	-	11 Sep 2026	System Generated
+2 Sep 2026	580	820	Sales Tax	0.30	-	11 Sep 2026	System Generated
+Total				4.00	4.00		
+ID 579 7-Eleven
+31 Aug 2026	579	090	Business Bank Account	-	5.50	11 Sep 2026	System Generated
+31 Aug 2026	579	453	Office Expenses	5.08	-	11 Sep 2026	System Generated
+31 Aug 2026	579	820	Sales Tax	0.42	-	11 Sep 2026	System Generated
+Total				5.50	5.50		
+ID 578 Payment: MCO Cleaning Services
+31 Aug 2026	578	800	Accounts Payable	216.50	-	11 Sep 2026	System Generated
+31 Aug 2026	578	090	Business Bank Account	-	216.50	11 Sep 2026	System Generated
+Total				216.50	216.50		
+ID 577 Passing Places Parking
+31 Aug 2026	577	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+31 Aug 2026	577	493	Travel - National	11.09	-	11 Sep 2026	System Generated
+31 Aug 2026	577	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 576 Boom FM
+31 Aug 2026	576	610	Accounts Receivable	541.25	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	576	200	Sales	-	500.00	11 Sep 2026	Adam Michkevich
+31 Aug 2026	576	820	Sales Tax	-	41.25	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 575 Payment: Truxton Property Management
+31 Aug 2026	575	090	Business Bank Account	-	1,181.25	11 Sep 2026	Adam Michkevich
+31 Aug 2026	575	800	Accounts Payable	1,181.25	-	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 574 SMART Agency
+31 Aug 2026	574	400	Advertising	2,309.47	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	574	820	Sales Tax	190.53	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	574	800	Accounts Payable	-	2,500.00	11 Sep 2026	Adam Michkevich
+Total				2,500.00	2,500.00		
+ID 573 Reversed: SMART Agency - Reversal of ID 570
+31 Aug 2026	573	400	Advertising	-	2,157.04	11 Sep 2026	Adam Michkevich
+31 Aug 2026	573	800	Accounts Payable	2,335.00	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	573	820	Sales Tax	-	177.96	11 Sep 2026	Adam Michkevich
+Total				2,335.00	2,335.00		
+ID 572 Truxton Property Management
+31 Aug 2026	572	800	Accounts Payable	-	1,181.25	11 Sep 2026	Adam Michkevich
+31 Aug 2026	572	469	Rent	1,091.22	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	572	820	Sales Tax	90.03	-	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 571 Reversed: SMART Agency - Reversal of ID 569
+31 Aug 2026	571	400	Advertising	-	2,157.04	11 Sep 2026	Adam Michkevich
+31 Aug 2026	571	820	Sales Tax	-	177.96	11 Sep 2026	Adam Michkevich
+31 Aug 2026	571	800	Accounts Payable	2,335.00	-	11 Sep 2026	Adam Michkevich
+Total				2,335.00	2,335.00		
+ID 570 SMART Agency
+31 Aug 2026	570	800	Accounts Payable	-	2,335.00	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+31 Aug 2026	570	400	Advertising	2,157.04	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	570	820	Sales Tax	177.96	-	11 Sep 2026	Adam Michkevich
+Total				2,335.00	2,335.00		
+ID 569 SMART Agency
+31 Aug 2026	569	820	Sales Tax	177.96	-	11 Sep 2026	Adam Michkevich
+31 Aug 2026	569	800	Accounts Payable	-	2,335.00	11 Sep 2026	Adam Michkevich
+31 Aug 2026	569	400	Advertising	2,157.04	-	11 Sep 2026	Adam Michkevich
+Total				2,335.00	2,335.00		
+ID 568 7-Eleven
+30 Aug 2026	568	090	Business Bank Account	-	12.50	11 Sep 2026	System Generated
+30 Aug 2026	568	453	Office Expenses	11.55	-	11 Sep 2026	System Generated
+30 Aug 2026	568	820	Sales Tax	0.95	-	11 Sep 2026	System Generated
+Total				12.50	12.50		
+ID 567 Payment: MCO Cleaning Services
+30 Aug 2026	567	800	Accounts Payable	216.50	-	11 Sep 2026	System Generated
+30 Aug 2026	567	090	Business Bank Account	-	216.50	11 Sep 2026	System Generated
+Total				216.50	216.50		
+ID 566 MCO Cleaning Services
+29 Aug 2026	566	800	Accounts Payable	-	216.50	11 Sep 2026	Adam Michkevich
+29 Aug 2026	566	408	Cleaning	200.00	-	11 Sep 2026	Adam Michkevich
+29 Aug 2026	566	820	Sales Tax	16.50	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 565 7-Eleven
+26 Aug 2026	565	090	Business Bank Account	-	6.00	11 Sep 2026	System Generated
+26 Aug 2026	565	453	Office Expenses	5.54	-	11 Sep 2026	System Generated
+26 Aug 2026	565	820	Sales Tax	0.46	-	11 Sep 2026	System Generated
+Total				6.00	6.00		
+ID 564 Passing Places Parking
+26 Aug 2026	564	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+26 Aug 2026	564	493	Travel - National	11.09	-	11 Sep 2026	System Generated
+26 Aug 2026	564	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 563 Passing Places Parking
+26 Aug 2026	563	090	Business Bank Account	-	12.00	11 Sep 2026	System Generated
+26 Aug 2026	563	493	Travel - National	11.09	-	11 Sep 2026	System Generated
+26 Aug 2026	563	820	Sales Tax	0.91	-	11 Sep 2026	System Generated
+Total				12.00	12.00		
+ID 562 City Agency
+26 Aug 2026	562	610	Accounts Receivable	104.40	-	11 Sep 2026	Adam Michkevich
+26 Aug 2026	562	200	Sales	-	96.00	11 Sep 2026	Adam Michkevich
+26 Aug 2026	562	820	Sales Tax	-	8.40	11 Sep 2026	Adam Michkevich
+Total				104.40	104.40		
+ID 561 Bank West
+26 Aug 2026	561	610	Accounts Receivable	324.75	-	11 Sep 2026	Adam Michkevich
+26 Aug 2026	561	200	Sales	-	300.00	11 Sep 2026	Adam Michkevich
+26 Aug 2026	561	820	Sales Tax	-	24.75	11 Sep 2026	Adam Michkevich
+Total				324.75	324.75		
+ID 560 Passing Places Parking
+24 Aug 2026	560	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+24 Aug 2026	560	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+24 Aug 2026	560	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 559 Payment: MCO Cleaning Services
+23 Aug 2026	559	800	Accounts Payable	216.50	-	11 Sep 2026	System Generated
+23 Aug 2026	559	090	Business Bank Account	-	216.50	11 Sep 2026	System Generated
+Total				216.50	216.50		
+ID 558 Reversed: Gable Print - Reversal of ID 557
+23 Aug 2026	558	090	Business Bank Account	29.50	-	11 Sep 2026	Adam Michkevich
+23 Aug 2026	558	461	Printing & Stationery	-	27.25	11 Sep 2026	Adam Michkevich
+23 Aug 2026	558	820	Sales Tax	-	2.25	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 557 Gable Print
+23 Aug 2026	557	461	Printing & Stationery	27.25	-	11 Sep 2026	Adam Michkevich
+23 Aug 2026	557	090	Business Bank Account	-	29.50	11 Sep 2026	Adam Michkevich
+23 Aug 2026	557	820	Sales Tax	2.25	-	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 556 Passing Places Parking
+22 Aug 2026	556	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+22 Aug 2026	556	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+22 Aug 2026	556	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 555 MCO Cleaning Services
+22 Aug 2026	555	800	Accounts Payable	-	216.50	11 Sep 2026	Adam Michkevich
+22 Aug 2026	555	408	Cleaning	200.00	-	11 Sep 2026	Adam Michkevich
+22 Aug 2026	555	820	Sales Tax	16.50	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 554 Reversed: Payment: Orlena Greenville - Reversal of ID 553
+22 Aug 2026	554	090	Business Bank Account	29.50	-	11 Sep 2026	Adam Michkevich
+22 Aug 2026	554	801	Unpaid Expense Claims	-	29.50	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 553 Payment: Orlena Greenville
+22 Aug 2026	553	090	Business Bank Account	-	29.50	11 Sep 2026	Adam Michkevich
+22 Aug 2026	553	801	Unpaid Expense Claims	29.50	-	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 552 Passing Places Parking
+21 Aug 2026	552	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+21 Aug 2026	552	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	552	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 551 Payment: Port & Philip Freight
+21 Aug 2026	551	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	551	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 550 Payment: Rex Media Group
+21 Aug 2026	550	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	550	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 549 Reversed: Payment: PowerDirect - Reversal of ID 525
+21 Aug 2026	549	090	Business Bank Account	135.85	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	549	800	Accounts Payable	-	135.85	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+Total				135.85	135.85		
+ID 548 Payment: Hoyt Productions
+21 Aug 2026	548	090	Business Bank Account	-	5,953.75	11 Sep 2026	Adam Michkevich
+21 Aug 2026	548	800	Accounts Payable	5,953.75	-	11 Sep 2026	Adam Michkevich
+Total				5,953.75	5,953.75		
+ID 547 Payment: Hoyt Productions
+21 Aug 2026	547	090	Business Bank Account	-	5,953.75	11 Sep 2026	Adam Michkevich
+21 Aug 2026	547	800	Accounts Payable	5,953.75	-	11 Sep 2026	Adam Michkevich
+Total				5,953.75	5,953.75		
+ID 546 Reversed: Payment: Net Connect - Reversal of ID 533
+21 Aug 2026	546	800	Accounts Payable	-	46.82	11 Sep 2026	Adam Michkevich
+21 Aug 2026	546	090	Business Bank Account	46.82	-	11 Sep 2026	Adam Michkevich
+Total				46.82	46.82		
+ID 545 Payment: Young Bros Transport
+21 Aug 2026	545	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	545	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 544 Payment: ABC Furniture
+21 Aug 2026	544	800	Accounts Payable	1,000.00	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	544	090	Business Bank Account	-	1,000.00	11 Sep 2026	Adam Michkevich
+Total				1,000.00	1,000.00		
+ID 543 Payment: Rex Media Group
+21 Aug 2026	543	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	543	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 542 Payment: PowerDirect
+21 Aug 2026	542	090	Business Bank Account	-	135.85	11 Sep 2026	Adam Michkevich
+21 Aug 2026	542	800	Accounts Payable	135.85	-	11 Sep 2026	Adam Michkevich
+Total				135.85	135.85		
+ID 541 Payment: Young Bros Transport
+21 Aug 2026	541	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	541	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 540 Payment: Carlton Functions
+21 Aug 2026	540	090	Business Bank Account	-	1,500.00	11 Sep 2026	Adam Michkevich
+21 Aug 2026	540	800	Accounts Payable	1,500.00	-	11 Sep 2026	Adam Michkevich
+Total				1,500.00	1,500.00		
+ID 539 Swanston Security
+21 Aug 2026	539	453	Office Expenses	55.00	-	10 Sep 2026	Adam Michkevich
+21 Aug 2026	539	820	Sales Tax	4.54	-	10 Sep 2026	Adam Michkevich
+21 Aug 2026	539	800	Accounts Payable	-	59.54	10 Sep 2026	Adam Michkevich
+Total				59.54	59.54		
+ID 538 Payment: Port & Philip Freight
+21 Aug 2026	538	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	538	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 537 Hamilton Smith Ltd
+21 Aug 2026	537	820	Sales Tax	41.25	-	10 Sep 2026	Adam Michkevich
+21 Aug 2026	537	200	Sales	500.00	-	10 Sep 2026	Adam Michkevich
+21 Aug 2026	537	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 536 Reversed: Payment: Rex Media Group - Reversal of ID 550
+21 Aug 2026	536	610	Accounts Receivable	541.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	536	090	Business Bank Account	-	541.25	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 535 Hamilton Smith Ltd
+21 Aug 2026	535	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+21 Aug 2026	535	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+21 Aug 2026	535	877	Tracking Transfers	-	541.25	10 Sep 2026	Adam Michkevich
+21 Aug 2026	535	877	Tracking Transfers	541.25	-	10 Sep 2026	Adam Michkevich
+Total				1,082.50	1,082.50		
+ID 534 Reversed: Payment: Hoyt Productions - Reversal of ID 547
+21 Aug 2026	534	800	Accounts Payable	-	5,953.75	11 Sep 2026	Adam Michkevich
+21 Aug 2026	534	090	Business Bank Account	5,953.75	-	11 Sep 2026	Adam Michkevich
+Total				5,953.75	5,953.75		
+ID 533 Payment: Net Connect
+21 Aug 2026	533	800	Accounts Payable	46.82	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	533	090	Business Bank Account	-	46.82	11 Sep 2026	Adam Michkevich
+Total				46.82	46.82		
+ID 532 Reversed: Payment: Port & Philip Freight - Reversal of ID 538
+21 Aug 2026	532	090	Business Bank Account	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	532	610	Accounts Receivable	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 531 Payment: Hamilton Smith Ltd
+21 Aug 2026	531	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	531	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 530 ABC Furniture
+21 Aug 2026	530	710	Office Equipment	923.79	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	530	800	Accounts Payable	-	1,000.00	11 Sep 2026	Adam Michkevich
+21 Aug 2026	530	820	Sales Tax	76.21	-	11 Sep 2026	Adam Michkevich
+Total				1,000.00	1,000.00		
+ID 529 Reversed: Payment: Hamilton Smith Ltd - Reversal of ID 531
+21 Aug 2026	529	090	Business Bank Account	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	529	610	Accounts Receivable	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 528 Payment: Truxton Property Management
+21 Aug 2026	528	800	Accounts Payable	1,181.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	528	090	Business Bank Account	-	1,181.25	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 527 Payment: Carlton Functions
+21 Aug 2026	527	090	Business Bank Account	-	1,500.00	11 Sep 2026	Adam Michkevich
+21 Aug 2026	527	800	Accounts Payable	1,500.00	-	11 Sep 2026	Adam Michkevich
+Total				1,500.00	1,500.00		
+ID 526 Payment: Truxton Property Management
+21 Aug 2026	526	800	Accounts Payable	1,181.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	526	090	Business Bank Account	-	1,181.25	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 525 Payment: PowerDirect
+21 Aug 2026	525	090	Business Bank Account	-	135.85	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+21 Aug 2026	525	800	Accounts Payable	135.85	-	11 Sep 2026	Adam Michkevich
+Total				135.85	135.85		
+ID 524 Reversed: Payment: Young Bros Transport - Reversal of ID 545
+21 Aug 2026	524	090	Business Bank Account	-	541.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	524	610	Accounts Receivable	541.25	-	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 523 Reversed: Payment: Carlton Functions - Reversal of ID 540
+21 Aug 2026	523	800	Accounts Payable	-	1,500.00	11 Sep 2026	Adam Michkevich
+21 Aug 2026	523	090	Business Bank Account	1,500.00	-	11 Sep 2026	Adam Michkevich
+Total				1,500.00	1,500.00		
+ID 522 Payment: Net Connect
+21 Aug 2026	522	090	Business Bank Account	-	46.82	11 Sep 2026	Adam Michkevich
+21 Aug 2026	522	800	Accounts Payable	46.82	-	11 Sep 2026	Adam Michkevich
+Total				46.82	46.82		
+ID 521 Reversed: Payment: Truxton Property Management - Reversal of ID 526
+21 Aug 2026	521	800	Accounts Payable	-	1,181.25	11 Sep 2026	Adam Michkevich
+21 Aug 2026	521	090	Business Bank Account	1,181.25	-	11 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 520 Payment: Hamilton Smith Ltd
+21 Aug 2026	520	090	Business Bank Account	541.25	-	11 Sep 2026	Adam Michkevich
+21 Aug 2026	520	610	Accounts Receivable	-	541.25	11 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 519 Passing Places Parking
+20 Aug 2026	519	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+20 Aug 2026	519	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+20 Aug 2026	519	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 518 Reversed: 24 Locks - Reversal of ID 513
+20 Aug 2026	518	473	Repairs and Maintenance	-	64.20	11 Sep 2026	Adam Michkevich
+20 Aug 2026	518	090	Business Bank Account	69.50	-	11 Sep 2026	Adam Michkevich
+20 Aug 2026	518	820	Sales Tax	-	5.30	11 Sep 2026	Adam Michkevich
+Total				69.50	69.50		
+ID 517 Berry Brew
+20 Aug 2026	517	420	Entertainment	22.00	-	11 Sep 2026	Adam Michkevich
+20 Aug 2026	517	090	Business Bank Account	-	22.00	11 Sep 2026	Adam Michkevich
+Total				22.00	22.00		
+ID 516 Ridgeway University
+20 Aug 2026	516	610	Accounts Receivable	6,187.50	-	11 Sep 2026	Adam Michkevich
+20 Aug 2026	516	820	Sales Tax	-	471.56	11 Sep 2026	Adam Michkevich
+20 Aug 2026	516	200	Sales	-	5,715.94	11 Sep 2026	Adam Michkevich
+Total				6,187.50	6,187.50		
+ID 515 Berry Brew
+20 Aug 2026	515	090	Business Bank Account	-	22.00	11 Sep 2026	Adam Michkevich
+20 Aug 2026	515	420	Entertainment	22.00	-	11 Sep 2026	Adam Michkevich
+Total				22.00	22.00		
+ID 514 24 Locks
+20 Aug 2026	514	820	Sales Tax	5.30	-	11 Sep 2026	Adam Michkevich
+20 Aug 2026	514	090	Business Bank Account	-	69.50	11 Sep 2026	Adam Michkevich
+20 Aug 2026	514	473	Repairs and Maintenance	64.20	-	11 Sep 2026	Adam Michkevich
+Total				69.50	69.50		
+ID 513 24 Locks
+20 Aug 2026	513	090	Business Bank Account	-	69.50	11 Sep 2026	Adam Michkevich
+20 Aug 2026	513	473	Repairs and Maintenance	64.20	-	11 Sep 2026	Adam Michkevich
+20 Aug 2026	513	820	Sales Tax	5.30	-	11 Sep 2026	Adam Michkevich
+Total				69.50	69.50		
+ID 512 Reversed: Berry Brew - Reversal of ID 517
+20 Aug 2026	512	420	Entertainment	-	22.00	11 Sep 2026	Adam Michkevich
+20 Aug 2026	512	090	Business Bank Account	22.00	-	11 Sep 2026	Adam Michkevich
+Total				22.00	22.00		
+ID 511 Passing Places Parking
+19 Aug 2026	511	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+19 Aug 2026	511	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+19 Aug 2026	511	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 510 Passing Places Parking
+18 Aug 2026	510	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+18 Aug 2026	510	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+18 Aug 2026	510	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 509 Passing Places Parking
+16 Aug 2026	509	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+16 Aug 2026	509	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+16 Aug 2026	509	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 508 DIISR - Small Business Services
+16 Aug 2026	508	200	Sales	19.95	-	10 Sep 2026	Adam Michkevich
+16 Aug 2026	508	610	Accounts Receivable	-	21.70	10 Sep 2026	Adam Michkevich
+16 Aug 2026	508	820	Sales Tax	1.75	-	10 Sep 2026	Adam Michkevich
+Total				21.70	21.70		
+ID 507 DIISR - Small Business Services
+16 Aug 2026	507	877	Tracking Transfers	19.72	-	10 Sep 2026	Adam Michkevich
+16 Aug 2026	507	877	Tracking Transfers	-	21.70	10 Sep 2026	Adam Michkevich
+16 Aug 2026	507	610	Accounts Receivable	21.70	-	10 Sep 2026	Adam Michkevich
+16 Aug 2026	507	610	Accounts Receivable	-	19.72	10 Sep 2026	Adam Michkevich
+16 Aug 2026	507	877	Tracking Transfers	1.98	-	10 Sep 2026	Adam Michkevich
+16 Aug 2026	507	610	Accounts Receivable	-	1.98	10 Sep 2026	Adam Michkevich
+Total				43.40	43.40		
+ID 506 Passing Places Parking
+15 Aug 2026	506	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+15 Aug 2026	506	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+15 Aug 2026	506	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 505 MCO Cleaning Services
+15 Aug 2026	505	800	Accounts Payable	-	216.50	11 Sep 2026	Adam Michkevich
+15 Aug 2026	505	408	Cleaning	200.00	-	11 Sep 2026	Adam Michkevich
+15 Aug 2026	505	820	Sales Tax	16.50	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 504 Passing Places Parking
+14 Aug 2026	504	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+14 Aug 2026	504	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+14 Aug 2026	504	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 503 Reversed: Office Supplies Company - Reversal of ID 502
+14 Aug 2026	503	090	Business Bank Account	49.20	-	11 Sep 2026	Adam Michkevich
+14 Aug 2026	503	461	Printing & Stationery	-	45.45	11 Sep 2026	Adam Michkevich
+14 Aug 2026	503	820	Sales Tax	-	3.75	11 Sep 2026	Adam Michkevich
+Total				49.20	49.20		
+ID 502 Office Supplies Company
+14 Aug 2026	502	461	Printing & Stationery	45.45	-	11 Sep 2026	Adam Michkevich
+14 Aug 2026	502	090	Business Bank Account	-	49.20	11 Sep 2026	Adam Michkevich
+14 Aug 2026	502	820	Sales Tax	3.75	-	11 Sep 2026	Adam Michkevich
+Total				49.20	49.20		
+ID 501 Office Supplies Company
+14 Aug 2026	501	461	Printing & Stationery	45.45	-	11 Sep 2026	Adam Michkevich
+14 Aug 2026	501	820	Sales Tax	3.75	-	11 Sep 2026	Adam Michkevich
+14 Aug 2026	501	090	Business Bank Account	-	49.20	11 Sep 2026	Adam Michkevich
+Total				49.20	49.20		
+ID 500 Passing Places Parking
+13 Aug 2026	500	090	Business Bank Account	-	12.00	11 Sep 2026	Adam Michkevich
+13 Aug 2026	500	493	Travel - National	11.09	-	11 Sep 2026	Adam Michkevich
+13 Aug 2026	500	820	Sales Tax	0.91	-	11 Sep 2026	Adam Michkevich
+Total				12.00	12.00		
+ID 499 Net Connect
+12 Aug 2026	499	800	Accounts Payable	-	46.82	10 Sep 2026	Adam Michkevich
+12 Aug 2026	499	820	Sales Tax	3.57	-	10 Sep 2026	Adam Michkevich
+12 Aug 2026	499	489	Telephone & Internet	43.25	-	10 Sep 2026	Adam Michkevich
+Total				46.82	46.82		
+ID 498 Melrose Parking
+12 Aug 2026	498	090	Business Bank Account	-	148.50	11 Sep 2026	Adam Michkevich
+12 Aug 2026	498	820	Sales Tax	11.32	-	11 Sep 2026	Adam Michkevich
+12 Aug 2026	498	449	Motor Vehicle Expenses	137.18	-	11 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 497 Melrose Parking
+12 Aug 2026	497	820	Sales Tax	11.32	-	11 Sep 2026	Adam Michkevich
+12 Aug 2026	497	449	Motor Vehicle Expenses	137.18	-	11 Sep 2026	Adam Michkevich
+12 Aug 2026	497	090	Business Bank Account	-	148.50	11 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 496 Reversed: Melrose Parking - Reversal of ID 498
+12 Aug 2026	496	090	Business Bank Account	148.50	-	11 Sep 2026	Adam Michkevich
+12 Aug 2026	496	449	Motor Vehicle Expenses	-	137.18	11 Sep 2026	Adam Michkevich
+12 Aug 2026	496	820	Sales Tax	-	11.32	11 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 495 Young Bros Transport
+11 Aug 2026	495	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+11 Aug 2026	495	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+11 Aug 2026	495	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 494 Carlton Functions
+11 Aug 2026	494	800	Accounts Payable	-	1,500.00	11 Sep 2026	Adam Michkevich
+11 Aug 2026	494	420	Entertainment	1,500.00	-	11 Sep 2026	Adam Michkevich
+Total				1,500.00	1,500.00		
+ID 493 Reversed: Payment: DIISR - Small Business Services - Reversal of ID 464
+11 Aug 2026	493	090	Business Bank Account	-	19.72	11 Sep 2026	Adam Michkevich
+11 Aug 2026	493	610	Accounts Receivable	196.78	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	493	090	Business Bank Account	-	196.78	11 Sep 2026	Adam Michkevich
+11 Aug 2026	493	610	Accounts Receivable	19.72	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 492 Orlena Greenville
+11 Aug 2026	492	820	Sales Tax	2.25	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	492	801	Unpaid Expense Claims	-	29.50	11 Sep 2026	Adam Michkevich
+11 Aug 2026	492	461	Printing & Stationery	27.25	-	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 491 PowerDirect
+11 Aug 2026	491	800	Accounts Payable	-	135.85	10 Sep 2026	Adam Michkevich
+11 Aug 2026	491	820	Sales Tax	10.35	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	491	445	Light, Power, Heating	125.50	-	10 Sep 2026	Adam Michkevich
+Total				135.85	135.85		
+ID 490 Payment: Petrie McLoud Watson & Associates
+11 Aug 2026	490	610	Accounts Receivable	-	1,407.25	11 Sep 2026	Adam Michkevich
+11 Aug 2026	490	090	Business Bank Account	1,407.25	-	11 Sep 2026	Adam Michkevich
+Total				1,407.25	1,407.25		
+ID 489 Port & Philip Freight
+11 Aug 2026	489	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	489	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+11 Aug 2026	489	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 488 DIISR - Small Business Services
+11 Aug 2026	488	200	Sales	-	19.95	10 Sep 2026	Adam Michkevich
+11 Aug 2026	488	610	Accounts Receivable	216.50	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	488	200	Sales	-	200.00	10 Sep 2026	Adam Michkevich
+11 Aug 2026	488	820	Sales Tax	-	16.50	10 Sep 2026	Adam Michkevich
+11 Aug 2026	488	610	Accounts Receivable	21.70	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	488	820	Sales Tax	-	1.75	10 Sep 2026	Adam Michkevich
+Total				238.20	238.20		
+ID 487 Woolworths Market
+11 Aug 2026	487	429	General Expenses	31.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	487	090	Business Bank Account	-	34.10	11 Sep 2026	Adam Michkevich
+11 Aug 2026	487	820	Sales Tax	2.60	-	11 Sep 2026	Adam Michkevich
+Total				34.10	34.10		
+ID 486 Orlena Greenville
+11 Aug 2026	486	453	Office Expenses	27.25	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	486	820	Sales Tax	2.25	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	486	090	Business Bank Account	-	29.50	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 485 Payment: Boom FM
+11 Aug 2026	485	090	Business Bank Account	1,082.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	485	610	Accounts Receivable	-	1,082.50	11 Sep 2026	Adam Michkevich
+Total				1,082.50	1,082.50		
+ID 484 Truxton Property Management
+11 Aug 2026	484	800	Accounts Payable	-	1,181.25	10 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+11 Aug 2026	484	820	Sales Tax	90.03	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	484	469	Rent	1,091.22	-	10 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 483 Reversed: Woolworths Market - Reversal of ID 487
+11 Aug 2026	483	820	Sales Tax	-	2.60	11 Sep 2026	Adam Michkevich
+11 Aug 2026	483	090	Business Bank Account	34.10	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	483	429	General Expenses	-	31.50	11 Sep 2026	Adam Michkevich
+Total				34.10	34.10		
+ID 482 Payment: DIISR - Small Business Services
+11 Aug 2026	482	610	Accounts Receivable	-	196.78	11 Sep 2026	Adam Michkevich
+11 Aug 2026	482	090	Business Bank Account	196.78	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	482	090	Business Bank Account	19.72	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	482	610	Accounts Receivable	-	19.72	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 481 Reversed: Payment: Ridgeway University - Reversal of ID 472
+11 Aug 2026	481	610	Accounts Receivable	6,187.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	481	090	Business Bank Account	-	6,187.50	11 Sep 2026	Adam Michkevich
+Total				6,187.50	6,187.50		
+ID 480 Payment: Boom FM
+11 Aug 2026	480	610	Accounts Receivable	-	1,082.50	11 Sep 2026	Adam Michkevich
+11 Aug 2026	480	090	Business Bank Account	1,082.50	-	11 Sep 2026	Adam Michkevich
+Total				1,082.50	1,082.50		
+ID 479 Payment: City Limousines
+11 Aug 2026	479	090	Business Bank Account	216.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	479	610	Accounts Receivable	-	216.50	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 478 Hamilton Smith Ltd
+11 Aug 2026	478	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	478	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+11 Aug 2026	478	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 477 Payment: Orlena Greenville
+11 Aug 2026	477	801	Unpaid Expense Claims	29.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	477	090	Business Bank Account	-	29.50	11 Sep 2026	Adam Michkevich
+Total				29.50	29.50		
+ID 476 Reversed: Payment: City Limousines - Reversal of ID 479
+11 Aug 2026	476	090	Business Bank Account	-	216.50	11 Sep 2026	Adam Michkevich
+11 Aug 2026	476	610	Accounts Receivable	216.50	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 475 Payment: DIISR - Small Business Services
+11 Aug 2026	475	610	Accounts Receivable	-	183.33	11 Sep 2026	Adam Michkevich
+11 Aug 2026	475	090	Business Bank Account	183.33	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	475	090	Business Bank Account	384.98	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	475	610	Accounts Receivable	-	384.98	11 Sep 2026	Adam Michkevich
+Total				568.31	568.31		
+ID 474 Reversed: Payment: Boom FM - Reversal of ID 480
+11 Aug 2026	474	610	Accounts Receivable	1,082.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	474	090	Business Bank Account	-	1,082.50	11 Sep 2026	Adam Michkevich
+Total				1,082.50	1,082.50		
+ID 473 Hoyt Productions
+11 Aug 2026	473	800	Accounts Payable	-	5,953.75	11 Sep 2026	Adam Michkevich
+11 Aug 2026	473	820	Sales Tax	453.75	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	473	400	Advertising	5,500.00	-	11 Sep 2026	Adam Michkevich
+Total				5,953.75	5,953.75		
+ID 472 Payment: Ridgeway University
+11 Aug 2026	472	090	Business Bank Account	6,187.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	472	610	Accounts Receivable	-	6,187.50	11 Sep 2026	Adam Michkevich
+Total				6,187.50	6,187.50		
+ID 471 Payment: Ridgeway University
+11 Aug 2026	471	090	Business Bank Account	6,187.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	471	610	Accounts Receivable	-	6,187.50	11 Sep 2026	Adam Michkevich
+Total				6,187.50	6,187.50		
+ID 470 Woolworths Market
+11 Aug 2026	470	820	Sales Tax	2.60	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	470	453	Office Expenses	31.50	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	470	090	Business Bank Account	-	34.10	11 Sep 2026	Adam Michkevich
+Total				34.10	34.10		
+ID 469 Payment: DIISR - Small Business Services
+11 Aug 2026	469	090	Business Bank Account	384.98	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	469	610	Accounts Receivable	-	183.33	11 Sep 2026	Adam Michkevich
+11 Aug 2026	469	090	Business Bank Account	183.33	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	469	610	Accounts Receivable	-	384.98	11 Sep 2026	Adam Michkevich
+Total				568.31	568.31		
+ID 468 Payment: Petrie McLoud Watson & Associates
+11 Aug 2026	468	610	Accounts Receivable	-	1,407.25	11 Sep 2026	Adam Michkevich
+11 Aug 2026	468	090	Business Bank Account	1,407.25	-	11 Sep 2026	Adam Michkevich
+Total				1,407.25	1,407.25		
+ID 467 Rex Media Group
+11 Aug 2026	467	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+11 Aug 2026	467	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+11 Aug 2026	467	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 466 Reversed: Payment: Petrie McLoud Watson & Associates - Reversal of ID 468
+11 Aug 2026	466	090	Business Bank Account	-	1,407.25	11 Sep 2026	Adam Michkevich
+11 Aug 2026	466	610	Accounts Receivable	1,407.25	-	11 Sep 2026	Adam Michkevich
+Total				1,407.25	1,407.25		
+ID 465 Reversed: Payment: DIISR - Small Business Services - Reversal of ID 469
+11 Aug 2026	465	090	Business Bank Account	-	183.33	11 Sep 2026	Adam Michkevich
+11 Aug 2026	465	610	Accounts Receivable	384.98	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	465	090	Business Bank Account	-	384.98	11 Sep 2026	Adam Michkevich
+11 Aug 2026	465	610	Accounts Receivable	183.33	-	11 Sep 2026	Adam Michkevich
+Total				568.31	568.31		
+ID 464 Payment: DIISR - Small Business Services
+11 Aug 2026	464	610	Accounts Receivable	-	196.78	11 Sep 2026	Adam Michkevich
+11 Aug 2026	464	610	Accounts Receivable	-	19.72	11 Sep 2026	Adam Michkevich
+11 Aug 2026	464	090	Business Bank Account	19.72	-	11 Sep 2026	Adam Michkevich
+11 Aug 2026	464	090	Business Bank Account	196.78	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 463 MCO Cleaning Services
+8 Aug 2026	463	800	Accounts Payable	-	216.50	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+8 Aug 2026	463	408	Cleaning	200.00	-	11 Sep 2026	Adam Michkevich
+8 Aug 2026	463	820	Sales Tax	16.50	-	11 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 462 Xero
+8 Aug 2026	462	820	Sales Tax	2.39	-	10 Sep 2026	Adam Michkevich
+8 Aug 2026	462	412	Consulting & Accounting	29.00	-	10 Sep 2026	Adam Michkevich
+8 Aug 2026	462	800	Accounts Payable	-	31.39	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 461 Payment: Xero
+8 Aug 2026	461	800	Accounts Payable	31.39	-	10 Sep 2026	Adam Michkevich
+8 Aug 2026	461	090	Business Bank Account	-	31.39	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 460 Ridgeway Bank
+1 Aug 2026	460	090	Business Bank Account	-	15.00	10 Sep 2026	Adam Michkevich
+1 Aug 2026	460	404	Bank Fees	15.00	-	10 Sep 2026	Adam Michkevich
+Total				15.00	15.00		
+ID 459 Payment: PC Complete
+1 Aug 2026	459	800	Accounts Payable	270.63	-	11 Sep 2026	Adam Michkevich
+1 Aug 2026	459	090	Business Bank Account	-	270.63	11 Sep 2026	Adam Michkevich
+Total				270.63	270.63		
+ID 458 PC Complete
+1 Aug 2026	458	800	Accounts Payable	-	270.63	10 Sep 2026	Adam Michkevich
+1 Aug 2026	458	820	Sales Tax	20.63	-	10 Sep 2026	Adam Michkevich
+1 Aug 2026	458	453	Office Expenses	250.00	-	10 Sep 2026	Adam Michkevich
+Total				270.63	270.63		
+ID 457 DIISR - Small Business Services
+1 Aug 2026	457	200	Sales	-	250.00	10 Sep 2026	Adam Michkevich
+1 Aug 2026	457	610	Accounts Receivable	568.31	-	10 Sep 2026	Adam Michkevich
+1 Aug 2026	457	200	Sales	-	525.00	10 Sep 2026	Adam Michkevich
+1 Aug 2026	457	610	Accounts Receivable	270.63	-	10 Sep 2026	Adam Michkevich
+1 Aug 2026	457	820	Sales Tax	-	43.31	10 Sep 2026	Adam Michkevich
+1 Aug 2026	457	820	Sales Tax	-	20.63	10 Sep 2026	Adam Michkevich
+Total				838.94	838.94		
+ID 456 Boom FM
+30 Jul 2026	456	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+30 Jul 2026	456	200	Sales	500.00	-	10 Sep 2026	Adam Michkevich
+30 Jul 2026	456	820	Sales Tax	41.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 455 Payment: Net Connect
+30 Jul 2026	455	800	Accounts Payable	1,463.88	-	11 Sep 2026	Adam Michkevich
+30 Jul 2026	455	090	Business Bank Account	-	1,463.88	11 Sep 2026	Adam Michkevich
+Total				1,463.88	1,463.88		
+ID 454 Boom FM
+30 Jul 2026	454	877	Tracking Transfers	-	541.25	10 Sep 2026	Adam Michkevich
+30 Jul 2026	454	877	Tracking Transfers	541.25	-	10 Sep 2026	Adam Michkevich
+30 Jul 2026	454	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+30 Jul 2026	454	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+Total				1,082.50	1,082.50		
+ID 453 Boom FM
+30 Jul 2026	453	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+30 Jul 2026	453	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+30 Jul 2026	453	610	Accounts Receivable	1,082.50	-	10 Sep 2026	Adam Michkevich
+30 Jul 2026	453	820	Sales Tax	-	82.50	10 Sep 2026	Adam Michkevich
+Total				1,082.50	1,082.50		
+ID 452 City Limousines
+30 Jul 2026	452	610	Accounts Receivable	21.70	-	10 Sep 2026	Adam Michkevich
+30 Jul 2026	452	820	Sales Tax	-	1.75	10 Sep 2026	Adam Michkevich
+30 Jul 2026	452	200	Sales	-	19.95	10 Sep 2026	Adam Michkevich
+Total				21.70	21.70		
+ID 451 Payment: MCO Cleaning Services
+27 Jul 2026	451	800	Accounts Payable	119.08	-	11 Sep 2026	Adam Michkevich
+27 Jul 2026	451	090	Business Bank Account	-	119.08	11 Sep 2026	Adam Michkevich
+Total				119.08	119.08		
+ID 450 Swanston Security
+27 Jul 2026	450	820	Sales Tax	-	1.94	10 Sep 2026	Adam Michkevich
+27 Jul 2026	450	800	Accounts Payable	25.44	-	10 Sep 2026	Adam Michkevich
+27 Jul 2026	450	453	Office Expenses	-	23.50	10 Sep 2026	Adam Michkevich
+Total				25.44	25.44		
+ID 449 PC Complete
+27 Jul 2026	449	800	Accounts Payable	270.63	-	10 Sep 2026	Adam Michkevich
+27 Jul 2026	449	820	Sales Tax	-	20.63	10 Sep 2026	Adam Michkevich
+27 Jul 2026	449	453	Office Expenses	-	250.00	10 Sep 2026	Adam Michkevich
+Total				270.63	270.63		
+ID 448 City Limousines
+27 Jul 2026	448	820	Sales Tax	-	16.50	10 Sep 2026	Adam Michkevich
+27 Jul 2026	448	610	Accounts Receivable	216.50	-	10 Sep 2026	Adam Michkevich
+27 Jul 2026	448	200	Sales	-	200.00	10 Sep 2026	Adam Michkevich
+Total				216.50	216.50		
+ID 447 Payment: Swanston Security
+27 Jul 2026	447	090	Business Bank Account	-	34.10	11 Sep 2026	Adam Michkevich
+27 Jul 2026	447	800	Accounts Payable	34.10	-	11 Sep 2026	Adam Michkevich
+Total				34.10	34.10		
+ID 446 Swanston Security
+27 Jul 2026	446	877	Tracking Transfers	-	25.44	10 Sep 2026	Adam Michkevich
+27 Jul 2026	446	800	Accounts Payable	-	25.44	10 Sep 2026	Adam Michkevich
+27 Jul 2026	446	800	Accounts Payable	25.44	-	10 Sep 2026	Adam Michkevich
+27 Jul 2026	446	877	Tracking Transfers	25.44	-	10 Sep 2026	Adam Michkevich
+Total				50.88	50.88		
+ID 445 Payment: Central Copiers
+27 Jul 2026	445	090	Business Bank Account	-	900.00	11 Sep 2026	Adam Michkevich
+27 Jul 2026	445	800	Accounts Payable	900.00	-	11 Sep 2026	Adam Michkevich
+Total				900.00	900.00		
+ID 444 PC Complete
+27 Jul 2026	444	800	Accounts Payable	-	270.63	10 Sep 2026	Adam Michkevich
+27 Jul 2026	444	877	Tracking Transfers	-	270.63	10 Sep 2026	Adam Michkevich
+27 Jul 2026	444	800	Accounts Payable	270.63	-	10 Sep 2026	Adam Michkevich
+27 Jul 2026	444	877	Tracking Transfers	270.63	-	10 Sep 2026	Adam Michkevich
+Total				541.26	541.26		
+ID 443 Payment: Orlena Greenville
+27 Jul 2026	443	801	Unpaid Expense Claims	34.90	-	11 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+27 Jul 2026	443	090	Business Bank Account	-	34.90	11 Sep 2026	Adam Michkevich
+Total				34.90	34.90		
+ID 442 Payment: City Agency
+25 Jul 2026	442	090	Business Bank Account	541.25	-	6 Nov 2026	Adam Michkevich
+25 Jul 2026	442	610	Accounts Receivable	-	541.25	6 Nov 2026	Adam Michkevich
+25 Jul 2026	442	090	Business Bank Account	51.98	-	6 Nov 2026	Adam Michkevich
+25 Jul 2026	442	610	Accounts Receivable	-	51.98	6 Nov 2026	Adam Michkevich
+Total				593.23	593.23		
+ID 441 Petrie McLoud Watson & Associates
+25 Jul 2026	441	820	Sales Tax	-	107.25	10 Sep 2026	Adam Michkevich
+25 Jul 2026	441	200	Sales	-	1,300.00	10 Sep 2026	Adam Michkevich
+25 Jul 2026	441	610	Accounts Receivable	1,407.25	-	10 Sep 2026	Adam Michkevich
+Total				1,407.25	1,407.25		
+ID 440 Reversed: Payment: City Agency - Reversal of ID 439
+25 Jul 2026	440	610	Accounts Receivable	593.23	-	6 Nov 2026	Adam Michkevich
+25 Jul 2026	440	090	Business Bank Account	-	593.23	6 Nov 2026	Adam Michkevich
+Total				593.23	593.23		
+ID 439 Payment: City Agency
+25 Jul 2026	439	610	Accounts Receivable	-	593.23	11 Sep 2026	Adam Michkevich
+25 Jul 2026	439	090	Business Bank Account	593.23	-	11 Sep 2026	Adam Michkevich
+Total				593.23	593.23		
+ID 438 Payment: Bank West
+21 Jul 2026	438	610	Accounts Receivable	-	433.00	10 Sep 2026	Adam Michkevich
+21 Jul 2026	438	090	Business Bank Account	433.00	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	438	090	Business Bank Account	866.00	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	438	610	Accounts Receivable	-	866.00	10 Sep 2026	Adam Michkevich
+Total				1,299.00	1,299.00		
+ID 437 SMART Agency
+21 Jul 2026	437	800	Accounts Payable	-	2,000.00	11 Sep 2026	Adam Michkevich
+21 Jul 2026	437	400	Advertising	1,847.58	-	11 Sep 2026	Adam Michkevich
+21 Jul 2026	437	820	Sales Tax	152.42	-	11 Sep 2026	Adam Michkevich
+Total				2,000.00	2,000.00		
+ID 436 Payment: PC Complete
+21 Jul 2026	436	090	Business Bank Account	-	1,682.74	10 Sep 2026	Adam Michkevich
+21 Jul 2026	436	800	Accounts Payable	1,682.74	-	10 Sep 2026	Adam Michkevich
+Total				1,682.74	1,682.74		
+ID 435 Reversed: SMART Agency - Reversal of ID 427
+21 Jul 2026	435	400	Advertising	-	2,000.00	11 Sep 2026	Adam Michkevich
+21 Jul 2026	435	820	Sales Tax	-	165.00	11 Sep 2026	Adam Michkevich
+21 Jul 2026	435	800	Accounts Payable	2,165.00	-	11 Sep 2026	Adam Michkevich
+Total				2,165.00	2,165.00		
+ID 434 Payment: Net Connect
+21 Jul 2026	434	800	Accounts Payable	44.92	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	434	090	Business Bank Account	-	44.92	10 Sep 2026	Adam Michkevich
+Total				44.92	44.92		
+ID 433 PC Complete
+21 Jul 2026	433	720	Computer Equipment	1,804.50	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	433	820	Sales Tax	148.87	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	433	800	Accounts Payable	-	1,953.37	10 Sep 2026	Adam Michkevich
+Total				1,953.37	1,953.37		
+ID 432 Payment: Truxton Property Management
+21 Jul 2026	432	090	Business Bank Account	-	1,181.25	10 Sep 2026	Adam Michkevich
+21 Jul 2026	432	800	Accounts Payable	1,181.25	-	10 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 431 SMART Agency
+21 Jul 2026	431	800	Accounts Payable	-	2,165.00	11 Sep 2026	Adam Michkevich
+21 Jul 2026	431	400	Advertising	2,000.00	-	11 Sep 2026	Adam Michkevich
+21 Jul 2026	431	820	Sales Tax	165.00	-	11 Sep 2026	Adam Michkevich
+Total				2,165.00	2,165.00		
+ID 430 MCO Cleaning Services
+21 Jul 2026	430	820	Sales Tax	9.08	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	430	408	Cleaning	110.00	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	430	800	Accounts Payable	-	119.08	10 Sep 2026	Adam Michkevich
+Total				119.08	119.08		
+ID 429 Reversed: SMART Agency - Reversal of ID 431
+21 Jul 2026	429	820	Sales Tax	-	165.00	11 Sep 2026	Adam Michkevich
+21 Jul 2026	429	800	Accounts Payable	2,165.00	-	11 Sep 2026	Adam Michkevich
+21 Jul 2026	429	400	Advertising	-	2,000.00	11 Sep 2026	Adam Michkevich
+Total				2,165.00	2,165.00		
+ID 428 Payment: PowerDirect
+21 Jul 2026	428	800	Accounts Payable	119.08	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	428	090	Business Bank Account	-	119.08	10 Sep 2026	Adam Michkevich
+Total				119.08	119.08		
+ID 427 SMART Agency
+21 Jul 2026	427	400	Advertising	2,000.00	-	11 Sep 2026	Adam Michkevich
+21 Jul 2026	427	800	Accounts Payable	-	2,165.00	11 Sep 2026	Adam Michkevich
+21 Jul 2026	427	820	Sales Tax	165.00	-	11 Sep 2026	Adam Michkevich
+Total				2,165.00	2,165.00		
+ID 426 Swanston Security
+21 Jul 2026	426	800	Accounts Payable	-	59.54	10 Sep 2026	Adam Michkevich
+21 Jul 2026	426	820	Sales Tax	4.54	-	10 Sep 2026	Adam Michkevich
+21 Jul 2026	426	453	Office Expenses	55.00	-	10 Sep 2026	Adam Michkevich
+Total				59.54	59.54		
+ID 425 Payment: Young Bros Transport
+20 Jul 2026	425	090	Business Bank Account	541.25	-	10 Sep 2026	Adam Michkevich
+20 Jul 2026	425	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 424 Net Connect
+20 Jul 2026	424	473	Repairs and Maintenance	850.00	-	10 Sep 2026	Adam Michkevich
+20 Jul 2026	424	800	Accounts Payable	-	1,463.88	10 Sep 2026	Adam Michkevich
+20 Jul 2026	424	453	Office Expenses	500.00	-	10 Sep 2026	Adam Michkevich
+20 Jul 2026	424	820	Sales Tax	113.88	-	10 Sep 2026	Adam Michkevich
+Total				1,463.88	1,463.88		
+ID 423 Payment: Rex Media Group
+20 Jul 2026	423	090	Business Bank Account	541.25	-	10 Sep 2026	Adam Michkevich
+20 Jul 2026	423	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 422 Ridgeway University
+20 Jul 2026	422	610	Accounts Receivable	6,187.50	-	10 Sep 2026	Adam Michkevich
+20 Jul 2026	422	200	Sales	-	5,715.94	10 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+20 Jul 2026	422	820	Sales Tax	-	471.56	10 Sep 2026	Adam Michkevich
+Total				6,187.50	6,187.50		
+ID 421 Melrose Parking
+20 Jul 2026	421	090	Business Bank Account	-	148.50	10 Sep 2026	Adam Michkevich
+20 Jul 2026	421	449	Motor Vehicle Expenses	137.18	-	10 Sep 2026	Adam Michkevich
+20 Jul 2026	421	820	Sales Tax	11.32	-	10 Sep 2026	Adam Michkevich
+Total				148.50	148.50		
+ID 420 Payment: Hamilton Smith Ltd
+20 Jul 2026	420	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+20 Jul 2026	420	090	Business Bank Account	541.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 419 Payment: Port & Philip Freight
+20 Jul 2026	419	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+20 Jul 2026	419	090	Business Bank Account	541.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 418 Boom FM
+19 Jul 2026	418	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+19 Jul 2026	418	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+19 Jul 2026	418	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 417 Boom FM
+19 Jul 2026	417	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+19 Jul 2026	417	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+19 Jul 2026	417	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 416 Reversed: Boom FM - Reversal of ID 417
+19 Jul 2026	416	610	Accounts Receivable	-	541.25	10 Sep 2026	Adam Michkevich
+19 Jul 2026	416	200	Sales	500.00	-	10 Sep 2026	Adam Michkevich
+19 Jul 2026	416	820	Sales Tax	41.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 415 Central Copiers
+19 Jul 2026	415	820	Sales Tax	81.06	-	10 Sep 2026	Adam Michkevich
+19 Jul 2026	415	473	Repairs and Maintenance	982.50	-	10 Sep 2026	Adam Michkevich
+19 Jul 2026	415	800	Accounts Payable	-	1,063.56	10 Sep 2026	Adam Michkevich
+Total				1,063.56	1,063.56		
+ID 414 Berry Brew
+18 Jul 2026	414	090	Business Bank Account	-	15.60	10 Sep 2026	Adam Michkevich
+18 Jul 2026	414	420	Entertainment	15.60	-	10 Sep 2026	Adam Michkevich
+Total				15.60	15.60		
+ID 413 Brunswick Petals
+15 Jul 2026	413	090	Business Bank Account	-	50.00	10 Sep 2026	Adam Michkevich
+15 Jul 2026	413	429	General Expenses	46.19	-	10 Sep 2026	Adam Michkevich
+15 Jul 2026	413	820	Sales Tax	3.81	-	10 Sep 2026	Adam Michkevich
+Total				50.00	50.00		
+ID 412 City Agency
+14 Jul 2026	412	820	Sales Tax	-	41.25	6 Nov 2026	Adam Michkevich
+14 Jul 2026	412	610	Accounts Receivable	541.25	-	6 Nov 2026	Adam Michkevich
+14 Jul 2026	412	610	Accounts Receivable	51.98	-	6 Nov 2026	Adam Michkevich
+14 Jul 2026	412	200	Sales	-	47.80	6 Nov 2026	Adam Michkevich
+14 Jul 2026	412	820	Sales Tax	-	4.18	6 Nov 2026	Adam Michkevich
+14 Jul 2026	412	200	Sales	-	500.00	6 Nov 2026	Adam Michkevich
+Total				593.23	593.23		
+ID 411 City Agency
+14 Jul 2026	411	820	Sales Tax	-	45.43	10 Sep 2026	Adam Michkevich
+14 Jul 2026	411	200	Sales	-	47.80	10 Sep 2026	Adam Michkevich
+14 Jul 2026	411	610	Accounts Receivable	593.23	-	10 Sep 2026	Adam Michkevich
+14 Jul 2026	411	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+Total				593.23	593.23		
+ID 410 Reversed: City Agency - Reversal of ID 411
+14 Jul 2026	410	200	Sales	47.80	-	6 Nov 2026	Adam Michkevich
+14 Jul 2026	410	610	Accounts Receivable	-	593.23	6 Nov 2026	Adam Michkevich
+14 Jul 2026	410	820	Sales Tax	45.43	-	6 Nov 2026	Adam Michkevich
+14 Jul 2026	410	200	Sales	500.00	-	6 Nov 2026	Adam Michkevich
+Total				593.23	593.23		
+ID 409 Bank West
+13 Jul 2026	409	610	Accounts Receivable	433.00	-	10 Sep 2026	Adam Michkevich
+13 Jul 2026	409	820	Sales Tax	-	33.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	409	610	Accounts Receivable	866.00	-	10 Sep 2026	Adam Michkevich
+13 Jul 2026	409	200	Sales	-	400.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	409	200	Sales	-	400.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	409	820	Sales Tax	-	66.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	409	200	Sales	-	400.00	10 Sep 2026	Adam Michkevich
+Total				1,299.00	1,299.00		
+ID 408 Bank West
+13 Jul 2026	408	200	Sales	-	400.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	408	820	Sales Tax	-	99.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	408	200	Sales	-	400.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	408	610	Accounts Receivable	1,299.00	-	10 Sep 2026	Adam Michkevich
+13 Jul 2026	408	200	Sales	-	400.00	10 Sep 2026	Adam Michkevich
+Total				1,299.00	1,299.00		
+ID 407 Reversed: Bank West - Reversal of ID 408
+13 Jul 2026	407	200	Sales	400.00	-	10 Sep 2026	Adam Michkevich
+13 Jul 2026	407	200	Sales	400.00	-	10 Sep 2026	Adam Michkevich
+13 Jul 2026	407	820	Sales Tax	99.00	-	10 Sep 2026	Adam Michkevich
+13 Jul 2026	407	610	Accounts Receivable	-	1,299.00	10 Sep 2026	Adam Michkevich
+13 Jul 2026	407	200	Sales	400.00	-	10 Sep 2026	Adam Michkevich
+Total				1,299.00	1,299.00		
+ID 406 Hamilton Smith Ltd
+12 Jul 2026	406	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+12 Jul 2026	406	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+12 Jul 2026	406	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 405 Net Connect
+12 Jul 2026	405	820	Sales Tax	3.42	-	10 Sep 2026	Adam Michkevich
+12 Jul 2026	405	800	Accounts Payable	-	44.92	10 Sep 2026	Adam Michkevich
+12 Jul 2026	405	489	Telephone & Internet	41.50	-	10 Sep 2026	Adam Michkevich
+Total				44.92	44.92		
+ID 404 Truxton Property Management
+11 Jul 2026	404	800	Accounts Payable	-	1,181.25	10 Sep 2026	Adam Michkevich
+11 Jul 2026	404	469	Rent	1,091.22	-	10 Sep 2026	Adam Michkevich
+Date	Journal ID	Account Code	Account	Debit	Credit	Posted Date	Posted By
+11 Jul 2026	404	820	Sales Tax	90.03	-	10 Sep 2026	Adam Michkevich
+Total				1,181.25	1,181.25		
+ID 403 Woolworths Market
+11 Jul 2026	403	090	Business Bank Account	-	65.20	10 Sep 2026	Adam Michkevich
+11 Jul 2026	403	820	Sales Tax	4.97	-	10 Sep 2026	Adam Michkevich
+11 Jul 2026	403	453	Office Expenses	60.23	-	10 Sep 2026	Adam Michkevich
+Total				65.20	65.20		
+ID 402 Port & Philip Freight
+11 Jul 2026	402	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+11 Jul 2026	402	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+11 Jul 2026	402	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 401 Young Bros Transport
+11 Jul 2026	401	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+11 Jul 2026	401	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+11 Jul 2026	401	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 400 Hamilton Smith Ltd
+11 Jul 2026	400	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+11 Jul 2026	400	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+11 Jul 2026	400	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 399 PowerDirect
+11 Jul 2026	399	820	Sales Tax	9.08	-	10 Sep 2026	Adam Michkevich
+11 Jul 2026	399	800	Accounts Payable	-	119.08	10 Sep 2026	Adam Michkevich
+11 Jul 2026	399	445	Light, Power, Heating	110.00	-	10 Sep 2026	Adam Michkevich
+Total				119.08	119.08		
+ID 398 Orlena Greenville
+11 Jul 2026	398	493	Travel - National	16.63	-	11 Sep 2026	Adam Michkevich
+11 Jul 2026	398	493	Travel - National	15.61	-	11 Sep 2026	Adam Michkevich
+11 Jul 2026	398	820	Sales Tax	2.66	-	11 Sep 2026	Adam Michkevich
+11 Jul 2026	398	801	Unpaid Expense Claims	-	34.90	11 Sep 2026	Adam Michkevich
+Total				34.90	34.90		
+ID 397 Rex Media Group
+11 Jul 2026	397	200	Sales	-	500.00	10 Sep 2026	Adam Michkevich
+11 Jul 2026	397	820	Sales Tax	-	41.25	10 Sep 2026	Adam Michkevich
+11 Jul 2026	397	610	Accounts Receivable	541.25	-	10 Sep 2026	Adam Michkevich
+Total				541.25	541.25		
+ID 396 City Limousines
+10 Jul 2026	396	610	Accounts Receivable	250.00	-	11 Sep 2026	Adam Michkevich
+10 Jul 2026	396	820	Sales Tax	-	19.05	11 Sep 2026	Adam Michkevich
+10 Jul 2026	396	200	Sales	-	230.95	11 Sep 2026	Adam Michkevich
+Total				250.00	250.00		
+ID 395 Reversed: City Limousines - Reversal of ID 394
+10 Jul 2026	395	200	Sales	250.00	-	11 Sep 2026	Adam Michkevich
+10 Jul 2026	395	610	Accounts Receivable	-	270.63	11 Sep 2026	Adam Michkevich
+10 Jul 2026	395	820	Sales Tax	20.63	-	11 Sep 2026	Adam Michkevich
+Total				270.63	270.63		
+ID 394 City Limousines
+10 Jul 2026	394	820	Sales Tax	-	20.63	10 Sep 2026	Adam Michkevich
+10 Jul 2026	394	200	Sales	-	250.00	10 Sep 2026	Adam Michkevich
+10 Jul 2026	394	610	Accounts Receivable	270.63	-	10 Sep 2026	Adam Michkevich
+Total				270.63	270.63		
+ID 393 Espresso 31
+8 Jul 2026	393	420	Entertainment	16.00	-	10 Sep 2026	Adam Michkevich
+8 Jul 2026	393	090	Business Bank Account	-	16.00	10 Sep 2026	Adam Michkevich
+Total				16.00	16.00		
+ID 392 Payment: Xero
+8 Jul 2026	392	090	Business Bank Account	-	31.39	10 Sep 2026	Adam Michkevich
+8 Jul 2026	392	800	Accounts Payable	31.39	-	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 391 Xero
+8 Jul 2026	391	820	Sales Tax	2.39	-	10 Sep 2026	Adam Michkevich
+8 Jul 2026	391	800	Accounts Payable	-	31.39	10 Sep 2026	Adam Michkevich
+8 Jul 2026	391	412	Consulting & Accounting	29.00	-	10 Sep 2026	Adam Michkevich
+Total				31.39	31.39		
+ID 390 Office Supplies Company
+6 Jul 2026	390	090	Business Bank Account	-	23.50	10 Sep 2026	Adam Michkevich
+6 Jul 2026	390	820	Sales Tax	1.79	-	10 Sep 2026	Adam Michkevich
+6 Jul 2026	390	461	Printing & Stationery	21.71	-	10 Sep 2026	Adam Michkevich
+Total				23.50	23.50		
+ID 389 Ridgeway Bank
+1 Jul 2026	389	404	Bank Fees	15.00	-	10 Sep 2026	Adam Michkevich
+1 Jul 2026	389	090	Business Bank Account	-	15.00	10 Sep 2026	Adam Michkevich
+Total				15.00	15.00		
+ID 388 Conversion Balance
+21 Jun 2026	388	090	Business Bank Account	4,130.98	-	10 Sep 2026	Adam Michkevich
+21 Jun 2026	388	840	Historical Adjustment	-	4,130.98	10 Sep 2026	Adam Michkevich
+Total				4,130.98	4,130.98		
+Total				194,720.04	194,720.04		

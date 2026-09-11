@@ -1,0 +1,33 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1017
+
+Balance Sheet
+Demo Company (Global)
+As at 31 December 2026
+
+--- report output (tab-separated) ---
+
+	31 Dec 2026
+Assets	
+Bank	
+Business Bank Account	7,430.22
+Total Bank	7,430.22
+Current Assets	
+Accounts Receivable	9,194.51
+Total Current Assets	9,194.51
+Fixed Assets	
+Computer Equipment	3,774.49
+Office Equipment	923.79
+Total Fixed Assets	4,698.28
+Total Assets	21,323.01
+Liabilities	
+Current Liabilities	
+Accounts Payable	8,386.76
+Historical Adjustment	4,130.98
+Sales Tax	422.59
+Unpaid Expense Claims	115.95
+Total Current Liabilities	13,056.28
+Total Liabilities	13,056.28
+Net Assets	8,266.73
+Equity	
+Current Year Earnings	8,266.73
+Total Equity	8,266.73
