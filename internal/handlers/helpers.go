@@ -82,6 +82,8 @@ func httpError(err error) *fiber.Error {
 		return fiber.NewError(fiber.StatusConflict, "already exists")
 	case errors.Is(err, repository.ErrForbidden):
 		return fiber.NewError(fiber.StatusForbidden, "forbidden")
+	case errors.Is(err, repository.ErrInvalidInput):
+		return fiber.NewError(fiber.StatusBadRequest, "invalid input")
 	}
 	slog.Error("internal error", "err", err)
 	return fiber.NewError(fiber.StatusInternalServerError, "internal server error")

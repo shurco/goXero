@@ -29,6 +29,15 @@ var validInvoiceStatuses = map[string]bool{
 	models.InvoiceStatusDeleted:    true,
 }
 
+// validInvoiceTypes are the two types the API accepts. No column constrains
+// `invoices.type`, and the posting switch behind an AUTHORISED document has a
+// rule for each of these and nothing else — so an unrecognised type is refused
+// here rather than half-saved as a draft or failed deep in a 500.
+var validInvoiceTypes = map[string]bool{
+	models.InvoiceTypeAccRec: true,
+	models.InvoiceTypeAccPay: true,
+}
+
 func (h *InvoiceHandler) List(c fiber.Ctx) error {
 	orgID := middleware.OrganisationIDFrom(c)
 	p := paginationFromQuery(c)
@@ -86,6 +95,9 @@ func (h *InvoiceHandler) Create(c fiber.Ctx) error {
 	if inv.Type == "" {
 		inv.Type = models.InvoiceTypeAccRec
 	}
+	if !validInvoiceTypes[inv.Type] {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid type")
+	}
 	if inv.Status == "" {
 		inv.Status = models.InvoiceStatusDraft
 	}
@@ -141,6 +153,9 @@ func (h *InvoiceHandler) Update(c fiber.Ctx) error {
 	}
 	if inv.Type == "" {
 		inv.Type = existing.Type
+	}
+	if !validInvoiceTypes[inv.Type] {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid type")
 	}
 	if inv.LineAmountTypes == "" {
 		inv.LineAmountTypes = existing.LineAmountTypes

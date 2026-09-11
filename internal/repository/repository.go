@@ -11,6 +11,7 @@ var (
 	ErrNotFound      = errors.New("record not found")
 	ErrAlreadyExists = errors.New("record already exists")
 	ErrForbidden     = errors.New("forbidden")
+	ErrInvalidInput  = errors.New("invalid input")
 )
 
 // pgErrCodeUniqueViolation is PostgreSQL's SQLSTATE for unique_violation.

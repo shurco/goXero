@@ -27,6 +27,13 @@ type creditNoteRequest struct {
 	ContactID string `json:"ContactID"`
 }
 
+// validCreditNoteTypes are the two types the API accepts — see validInvoiceTypes
+// for why an unrecognised one is refused at the boundary rather than deeper in.
+var validCreditNoteTypes = map[string]bool{
+	models.CreditNoteTypeAccRecCredit: true,
+	models.CreditNoteTypeAccPayCredit: true,
+}
+
 func (h *CreditNoteHandler) List(c fiber.Ctx) error {
 	p := paginationFromQuery(c)
 	list, total, err := h.repos.CreditNotes.List(c.Context(), middleware.OrganisationIDFrom(c), repository.CreditNoteFilter{
@@ -68,6 +75,9 @@ func (h *CreditNoteHandler) Create(c fiber.Ctx) error {
 	if cn.Type == "" {
 		cn.Type = models.CreditNoteTypeAccRecCredit
 	}
+	if !validCreditNoteTypes[cn.Type] {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid type")
+	}
 	if cn.Status == "" {
 		cn.Status = models.CreditNoteStatusDraft
 	}
@@ -93,6 +103,9 @@ func (h *CreditNoteHandler) Update(c fiber.Ctx) error {
 		return errInvalidPayload
 	}
 	existing.CreditNoteID = id
+	if !validCreditNoteTypes[existing.Type] {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid type")
+	}
 	if err := h.repos.CreditNotes.Update(c.Context(), orgID, existing); err != nil {
 		return httpError(err)
 	}
