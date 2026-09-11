@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { invoiceApi, orgApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import { formatCurrency, formatDate, statusClass } from '$lib/utils/format';
@@ -23,7 +22,6 @@
 			loading = false;
 		}
 	}
-	onMount(reload);
 	$effect(() => { if ($session.tenantId) void reload(); });
 
 	const currency = $derived(org?.BaseCurrency || 'USD');

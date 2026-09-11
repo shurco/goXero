@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import {
 		bankFeedApi,
 		accountApi,
@@ -42,7 +41,6 @@
 			loading = false;
 		}
 	}
-	onMount(reload);
 	$effect(() => { if ($session.tenantId) void reload(); });
 
 	async function openConnect(p: string) {

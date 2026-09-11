@@ -2,7 +2,6 @@
 	import { paymentApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import type { Payment, Pagination } from '$lib/types';
-	import { onMount } from 'svelte';
 	import { formatCurrency, formatDate, statusClass } from '$lib/utils/format';
 
 	let payments = $state<Payment[]>([]);
@@ -20,7 +19,6 @@
 		}
 	}
 
-	onMount(reload);
 	$effect(() => { if ($session.tenantId) void reload(); });
 </script>
 

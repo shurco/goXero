@@ -2,7 +2,6 @@
 	import { itemApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import type { Item } from '$lib/types';
-	import { onMount } from 'svelte';
 	import { formatCurrency } from '$lib/utils/format';
 
 	let items = $state<Item[]>([]);
@@ -19,7 +18,6 @@
 		}
 	}
 
-	onMount(reload);
 	$effect(() => { if ($session.tenantId) void reload(); });
 
 	async function create() {
