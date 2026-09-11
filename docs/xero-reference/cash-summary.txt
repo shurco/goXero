@@ -1,0 +1,42 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1039
+
+Cash Summary
+Demo Company (Global)
+For the year ended 31 December 2026
+
+--- report output (tab-separated) ---
+
+	2026	Yearly average (YTD)	Variance	Variance for Variance
+Income				
+Sales	21,054.73	-	-	
+Total Income	21,054.73	-	-	
+Less Expenses				
+Advertising	5,500.00	-	-	
+Bank Fees	30.00	-	-	
+Cleaning	1,110.00	-	-	
+Consulting & Accounting	58.00	-	-	
+Entertainment	1,553.60	-	-	
+General Expenses	46.19	-	-	
+Historical Adjustment	(4,130.98)	-	-	
+Light, Power, Heating	235.50	-	-	
+Motor Vehicle Expenses	654.36	-	-	
+Office Expenses	700.37	-	-	
+Printing & Stationery	94.41	-	-	
+Rent	3,273.66	-	-	
+Repairs and Maintenance	1,745.61	-	-	
+Telephone & Internet	186.37	-	-	
+Travel - National	209.68	-	-	
+Total Expenses	11,266.77	-	-	
+Surplus (Deficit)	9,787.96	-	-	
+Plus Other Cash Movements				
+Fixed Assets	(2,728.29)	-	-	
+Total Other Cash Movements	(2,728.29)	-	-	
+Plus Tax Movements				
+Tax Collected	1,844.56	-	-	
+Tax Paid	(1,474.01)	-	-	
+Net Tax Movements	370.55	-	-	
+Net Cash Movement	7,430.22	-	-	
+Summary				
+Opening Balance	-	-	-	
+Plus Net Cash Movement	7,430.22	-	-	
+Cash Balance	7,430.22	-	-	

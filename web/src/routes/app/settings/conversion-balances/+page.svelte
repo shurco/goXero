@@ -1,21 +1,28 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { accountApi, orgApi } from '$lib/api';
+	import { accountApi, conversionBalanceApi, orgApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import { formatCurrency, formatDate } from '$lib/utils/format';
 	import SettingsHeader from '$lib/components/SettingsHeader.svelte';
-	import type { Account, Organisation } from '$lib/types';
+	import { BALANCE_SHEET_CLASSES } from '$lib/chart-of-accounts';
+	import type { Account, ConversionBalanceLine, Organisation } from '$lib/types';
 
 	interface Row {
 		id: string;
-		accountId?: string;
+		/**
+		 * Empty on a row the person has just added. The rest of the row is the
+		 * two columns the screen edits; the API takes one signed amount, and the
+		 * two are the same figure seen twice (see toLine).
+		 */
+		accountId: string;
+		/** The ledger's own name for the account, so a saved row still names it
+		 *  when the picker's active chart no longer lists it. */
 		code: string;
-		name: string;
 		debit: number;
 		credit: number;
 	}
 
 	let loading = $state(true);
+	let err = $state('');
 	let org = $state<Organisation | null>(null);
 	let accounts = $state<Account[]>([]);
 	let rows = $state<Row[]>([]);
@@ -23,49 +30,77 @@
 	let showAllAccounts = $state(false);
 	let locked = $state(false);
 	let openStep = $state<number | null>(1);
+	let nextRowID = 1;
+
+	/** A row the person has not entered the API yet. Ids keep their identity when
+	 *  one is removed, and are local to this form. */
+	function newRow(): Row {
+		return { id: `new-${nextRowID++}`, accountId: '', code: '', debit: 0, credit: 0 };
+	}
 
 	async function reload() {
 		loading = true;
+		err = '';
 		try {
-			const [o, accs] = await Promise.all([
+			const [o, accs, cb] = await Promise.all([
 				orgApi.current().catch(() => null),
-				accountApi.list({ status: 'ACTIVE' }).catch(() => [] as Account[])
+				accountApi.list({ status: 'ACTIVE' }).catch(() => [] as Account[]),
+				conversionBalanceApi.get()
 			]);
 			org = o ?? null;
 			accounts = accs ?? [];
-			if (rows.length === 0) {
-				rows = defaultRows(accounts);
-			}
+			locked = cb.Locked;
+			if (cb.ConversionDate) conversionDate = cb.ConversionDate;
+			// The saved balances win over the seeded rows: an organisation that has
+			// converted has opening balances to show, and one that has not has none
+			// to make up.
+			rows = cb.Lines.length > 0 ? cb.Lines.map(toRow) : defaultRows(accounts);
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Failed to load conversion balances';
 		} finally {
 			loading = false;
 		}
 	}
 
-	// Seed with a handful of common accounts so the table isn't empty — mimics
-	// Xero's starter rows (Bank, Receivables, Payables).
+	// Xero's conversion-balances screen starts with the accounts an opening
+	// balance is actually entered against: every account money sits in, plus the
+	// two document control accounts. Both are read from the organisation's own
+	// chart — the bank accounts by their type, the control accounts by the role
+	// they declare — so this seeds a chart it has never seen, not the codes of
+	// one it has. No balance is filled in: an opening balance is the one figure
+	// in the books that cannot come from anywhere but the person entering it.
 	function defaultRows(accs: Account[]): Row[] {
-		const seeds = ['090', '120', '200'];
-		const picked = seeds
-			.map((code) => accs.find((a) => a.Code === code))
-			.filter((a): a is Account => !!a);
-		const result: Row[] =
-			picked.length > 0
-				? picked.map((a, i) => ({
-						id: `seed-${i}`,
-						accountId: a.AccountID,
-						code: a.Code,
-						name: a.Name,
-						debit: i === 0 ? 4130.98 : 0,
-						credit: 0
-					}))
-				: [];
-		if (result.length === 0) {
-			return [{ id: 'seed-0', code: '', name: '', debit: 0, credit: 0 }];
-		}
-		return result;
+		const picked = accs.filter(
+			(a) => a.Type === 'BANK' || a.SystemAccount === 'DEBTORS' || a.SystemAccount === 'CREDITORS'
+		);
+		if (picked.length === 0) return [newRow()];
+		return picked.map((a) => ({ ...newRow(), accountId: a.AccountID ?? '', code: a.Code }));
 	}
 
-	onMount(reload);
+	/**
+	 * A saved line is one signed amount — a debit positive, a credit negative —
+	 * while the screen edits two columns. The credit column is exactly the
+	 * amount's negation, so the split loses nothing and the two columns cannot
+	 * disagree with a third figure that says something else.
+	 */
+	function toRow(line: ConversionBalanceLine): Row {
+		const amount = Number(line.Amount) || 0;
+		return {
+			id: `saved-${line.AccountID}`,
+			accountId: line.AccountID,
+			code: line.Code ?? '',
+			debit: amount > 0 ? amount : 0,
+			credit: amount < 0 ? -amount : 0
+		};
+	}
+
+	function toLine(r: Row) {
+		return {
+			AccountID: r.accountId,
+			Amount: (Number(r.debit || 0) - Number(r.credit || 0)).toFixed(2)
+		};
+	}
+
 	$effect(() => {
 		if ($session.tenantId) void reload();
 	});
@@ -75,10 +110,7 @@
 	const adjustments = $derived(Math.abs(totalDebits - totalCredits));
 
 	function addLine() {
-		rows = [
-			...rows,
-			{ id: `new-${Date.now()}`, code: '', name: '', debit: 0, credit: 0 }
-		];
+		rows = [...rows, newRow()];
 	}
 
 	function removeLine(id: string) {
@@ -92,30 +124,45 @@
 	function setAccount(rowId: string, accountId: string) {
 		const acc = accounts.find((a) => a.AccountID === accountId);
 		rows = rows.map((r) =>
-			r.id === rowId
-				? { ...r, accountId, code: acc?.Code || r.code, name: acc?.Name || r.name }
-				: r
+			r.id === rowId ? { ...r, accountId, code: acc?.Code || r.code } : r
 		);
 	}
 
 	const visibleAccounts = $derived(
 		showAllAccounts
 			? accounts
-			: accounts.filter((a) =>
-					['BANK', 'CURRENT', 'NONCURRENT', 'CURRLIAB', 'LIABILITY', 'EQUITY', 'FIXED'].includes(
-						a.Type
-					)
-				)
+			: accounts.filter((a) => BALANCE_SHEET_CLASSES.includes(a.Class ?? ''))
 	);
+
+	/**
+	 * The picker offers the active chart, which need not hold the account a saved
+	 * balance sits on — an archived account, or one outside the balance-sheet
+	 * tabs. Without this the row would open on "Choose an account…" and its
+	 * account would be lost the moment anything was saved.
+	 */
+	function accountInPicker(row: Row): boolean {
+		return visibleAccounts.some((a) => a.AccountID === row.accountId);
+	}
 
 	let saving = $state(false);
 	async function save() {
 		saving = true;
+		err = '';
 		try {
-			await new Promise((r) => setTimeout(r, 300));
-			alert(
-				'Conversion balances captured locally. Persisting requires a dedicated /api/v1/conversion-balances endpoint.'
-			);
+			const cb = await conversionBalanceApi.save({
+				ConversionDate: conversionDate,
+				Locked: locked,
+				Lines: rows.filter((r) => r.accountId).map(toLine)
+			});
+			// The screen takes the server's answer rather than assuming its own: the
+			// balances are posted as a journal, and a set whose columns differed comes
+			// back with the adjustment line the server added. What the reports will
+			// print is what the screen now shows.
+			locked = cb.Locked;
+			if (cb.ConversionDate) conversionDate = cb.ConversionDate;
+			rows = cb.Lines.map(toRow);
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Save failed';
 		} finally {
 			saving = false;
 		}
@@ -154,6 +201,10 @@
 </script>
 
 <SettingsHeader title="Conversion balances" description={org?.Name ?? ''} />
+
+{#if err}
+	<div class="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3 border border-red-100 mb-5">{err}</div>
+{/if}
 
 <div class="flex flex-wrap items-center gap-3 mb-5">
 	<button class="btn-secondary" type="button" disabled>
@@ -207,13 +258,16 @@
 									<select
 										class="select"
 										aria-label="Account"
-										value={r.accountId ?? ''}
+										value={r.accountId}
 										onchange={(e) => setAccount(r.id, (e.target as HTMLSelectElement).value)}
 									>
 										<option value="">Choose an account…</option>
 										{#each visibleAccounts as a (a.AccountID)}
 											<option value={a.AccountID}>{a.Code} - {a.Name}</option>
 										{/each}
+										{#if r.accountId && !accountInPicker(r)}
+											<option value={r.accountId}>{r.code}</option>
+										{/if}
 									</select>
 								</td>
 								<td class="text-right">

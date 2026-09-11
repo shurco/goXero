@@ -1,0 +1,5 @@
+contact,date,claim_total,status,paid_date,paid_amount,description,account_code,account_name,tax_rate,tax_amount,line_amount
+Xero Demo,2026-09-10,115.95,unpaid,,0.00,Xero Demo - Battery pack & power cable for home office,453,Office Expenses,Tax on Purchases (8.25%),8.84,107.11
+Orlena Greenville,2026-08-11,29.50,paid,2026-08-11,29.50,Orlena Greenville - Print/bind report,461,Printing & Stationery,Tax on Purchases (8.25%),2.25,27.25
+Orlena Greenville,2026-07-11,34.90,paid,2026-07-27,34.90,Orlena Greenville - Parking for MRE conference,493,Travel - National,Tax on Purchases (8.25%),1.37,16.63
+Orlena Greenville,2026-07-11,34.90,paid,2026-07-27,34.90,Orlena Greenville - Breakfast before MRE conference,493,Travel - National,Tax on Purchases (8.25%),1.29,15.61

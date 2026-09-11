@@ -7,8 +7,15 @@
 	interface Props {
 		ruleId: string | null;
 		initialRuleType?: BankRuleType;
+		/**
+		 * A rule to start from. The reconcile screen sends the user here from a
+		 * statement line, with the payee already in the condition and the account
+		 * already chosen — writing a rule from a line you are looking at is when
+		 * it is obvious what the rule should say.
+		 */
+		initialRule?: BankRule | null;
 	}
-	let { ruleId, initialRuleType = 'SPEND' }: Props = $props();
+	let { ruleId, initialRuleType = 'SPEND', initialRule = null }: Props = $props();
 
 	const FIELD_OPTIONS = [
 		{ value: 'ANY_TEXT', label: 'Any text field' },
@@ -49,7 +56,7 @@
 
 	$effect(() => {
 		if (ruleId) return;
-		rule = emptyRule(initialRuleType);
+		rule = initialRule ?? emptyRule(initialRuleType);
 	});
 	let err = $state('');
 	let accounts = $state<Account[]>([]);

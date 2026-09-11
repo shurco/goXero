@@ -3,7 +3,7 @@
 </script>
 <ReportView
 	title="General Ledger Detail"
-	endpoint="/api/v1/reports/journal-report"
+	endpoint="/api/v1/reports/general-ledger-detail"
 	fields={[
 		{ name: 'fromDate', label: 'From', type: 'date' },
 		{ name: 'toDate', label: 'To', type: 'date' }

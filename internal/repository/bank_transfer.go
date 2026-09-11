@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -61,16 +60,25 @@ func (r *BankTransferRepository) GetByID(ctx context.Context, orgID, id uuid.UUI
 
 func (r *BankTransferRepository) Create(ctx context.Context, orgID uuid.UUID, t *models.BankTransfer) error {
 	if !t.Amount.IsPositive() {
-		return fmt.Errorf("amount must be positive")
+		return ErrInvalidInput
 	}
 	if t.FromBankAccountID == t.ToBankAccountID {
-		return fmt.Errorf("cannot transfer to same account")
+		return ErrInvalidInput
 	}
 	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
+
+	// Both legs post to the general ledger; an account on another tenant's book
+	// would take a journal entry there, so each must be the caller's own.
+	if err := requireAccountInOrg(ctx, tx, orgID, t.FromBankAccountID); err != nil {
+		return err
+	}
+	if err := requireAccountInOrg(ctx, tx, orgID, t.ToBankAccountID); err != nil {
+		return err
+	}
 
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO bank_transfers (organisation_id, from_bank_account_id, to_bank_account_id,

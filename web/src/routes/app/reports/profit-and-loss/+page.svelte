@@ -6,6 +6,7 @@
 	endpoint="/api/v1/reports/profit-and-loss"
 	fields={[
 		{ name: 'fromDate', label: 'From', type: 'date' },
-		{ name: 'toDate', label: 'To', type: 'date' }
+		{ name: 'toDate', label: 'To', type: 'date' },
+		{ name: 'compare', label: 'Compare with previous year', type: 'checkbox' }
 	]}
 />

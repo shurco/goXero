@@ -52,9 +52,16 @@ func main() {
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 		ErrorHandler: errorHandler,
+		// Fiber's BodyLimit is app-wide (there is no per-route override), so
+		// this cap applies to every endpoint. It is raised from the 4 MB default
+		// because a multi-year OFX/CSV bank-statement export can be tens of
+		// megabytes; the import handler validates the parsed size on top.
+		BodyLimit: 32 << 20,
 	})
 
-	router.Register(app, cfg, repos)
+	bankFeeds := router.Register(app, cfg, repos)
+	// Feeds refresh themselves instead of waiting for the Sync button.
+	bankFeeds.StartSyncScheduler(ctx, cfg.BankFeed.SyncInterval)
 
 	go func() {
 		addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)

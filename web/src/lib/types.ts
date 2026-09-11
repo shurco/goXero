@@ -133,6 +133,8 @@ export interface Account {
 	Class?: string;
 	SystemAccount?: string;
 	UpdatedDateUTC?: string;
+	/** Whether this bank account reconciles imports by itself. */
+	AutoReconcile?: boolean;
 }
 
 export interface Address {
@@ -414,4 +416,248 @@ export interface Report {
 	ReportDate?: string;
 	UpdatedDateUTC?: string;
 	Rows?: ReportRow[];
+}
+
+// ── Bank statement lines (unified feed + manual-import inbox) ──────────────
+
+export type StatementLineSource = 'FEED' | 'IMPORT';
+export type StatementLineStatus = 'NEW' | 'IMPORTED' | 'IGNORED';
+
+export interface BankRuleSuggestion {
+	BankRuleID?: string;
+	RuleName?: string;
+	AccountID?: string;
+	TaxType?: string;
+	ContactID?: string;
+}
+
+/**
+ * Xero's "suggest previous entries": the coding this bank account used the last
+ * time it saw the same payee. Advisory — the Create panel opens with it filled
+ * in and every field can be changed before saving.
+ */
+export interface PreviousEntrySuggestion {
+	/** The payee the previous entries were filed under. */
+	Payee?: string;
+	/** How many previous entries share this payee. */
+	MatchCount: number;
+	LastUsedAt?: string;
+	ContactID?: string;
+	ContactName?: string;
+	AccountCode?: string;
+	AccountID?: string;
+	AccountName?: string;
+	TaxType?: string;
+	Description?: string;
+	Reference?: string;
+}
+
+export interface BankStatementLine {
+	StatementLineID: string;
+	FeedAccountID?: string;
+	BankAccountID?: string;
+	ImportID?: string;
+	/** Where the line came from — a live bank feed or an uploaded statement. */
+	Source: StatementLineSource;
+	ProviderTxID?: string;
+	PostedAt: string;
+	/** Signed: negative is money out. */
+	Amount: string | number;
+	/** Running balance printed on the statement, when the bank provides one. */
+	Balance?: string | number;
+	CurrencyCode?: string;
+	Payee?: string;
+	Description?: string;
+	Counterparty?: string;
+	Reference?: string;
+	ChequeNumber?: string;
+	Status: StatementLineStatus;
+	BankTransactionID?: string;
+	CodedAt?: string;
+	CodedBy?: string;
+	ImportedAt?: string;
+	CreatedDateUTC?: string;
+	// Cash-coding scratch fields — filled in by the client, not stored.
+	AccountCode?: string;
+	AccountID?: string;
+	TaxType?: string;
+	/** Read-only: where the transaction this line became was coded. */
+	CodedAccountCode?: string;
+	CodedAccountName?: string;
+	/**
+	 * How many notes the line carries. Xero marks the Discuss tab with a
+	 * " *" whenever there is one, so the count has to arrive with the line
+	 * rather than with the thread, which is only read once the tab is opened.
+	 */
+	CommentCount?: number;
+	Suggestions?: BankRuleSuggestion[];
+	/** Suggested coding from history, when the caller asked for it. */
+	PreviousEntry?: PreviousEntrySuggestion;
+	/**
+	 * Set only when AutoReconcile itself dealt with the line — it is what lets
+	 * the banner count its own work rather than every reconciled line.
+	 */
+	AutoReconciledAt?: string;
+	/** The Discuss thread, when the caller asked for it. */
+	Comments?: BankStatementLineComment[];
+}
+
+/** One note on a statement line — Xero's "Discuss". */
+export interface BankStatementLineComment {
+	CommentID: string;
+	StatementLineID: string;
+	UserID?: string;
+	AuthorName?: string;
+	Body: string;
+	CreatedDateUTC: string;
+}
+
+/**
+ * The number over the reconcile inbox: how many of the lines that arrived in
+ * the window were reconciled by AutoReconcile rather than by hand, plus the
+ * per-account setting the banner is where you turn on.
+ */
+export interface AutoReconcileReport {
+	Days: number;
+	Total: number;
+	AutoReconciled: number;
+	Enabled: boolean;
+	UnreconciledLeft: number;
+}
+
+/**
+ * One day of a bank account's balance graph: the account's ledger balance —
+ * "Balance in Xero" — at the end of that calendar day. Days nothing posted
+ * carry the previous day's figure forward, so there is always one point per
+ * day and the last one is the figure printed above the graph.
+ */
+export interface LedgerBalancePoint {
+	/** YYYY-MM-DD. */
+	Date: string;
+	Balance: string | number;
+}
+
+export interface StatementBalance {
+	BankAccountID: string;
+	LedgerBalance: string | number;
+	StatementBalance: string | number;
+	Difference: string | number;
+	UnreconciledCount: number;
+	ReconciledCount: number;
+	LastStatementEnd?: string;
+	LastImportedAt?: string;
+	LastSyncAt?: string;
+}
+
+// ── Manual statement import (the wizard) ───────────────────────────────────
+
+export type StatementImportStatus = 'STAGED' | 'IMPORTED' | 'FAILED';
+export type StatementFormat = 'CSV' | 'OFX' | 'QFX' | 'QBO' | 'QIF';
+
+export interface StatementImport {
+	ImportID: string;
+	BankAccountID: string;
+	Filename?: string;
+	Format: StatementFormat;
+	Status: StatementImportStatus;
+	LineCount: number;
+	ImportedCount: number;
+	DuplicateCount: number;
+	CurrencyCode?: string;
+	StatementStart?: string;
+	StatementEnd?: string;
+	OpeningBalance?: string | number;
+	ClosingBalance?: string | number;
+	Mapping?: Record<string, unknown>;
+	LastError?: string;
+	CreatedDateUTC?: string;
+	CommittedAt?: string;
+}
+
+/** The wizard's column mapping — mirrors the server's csv.Mapping. */
+export interface StatementMapping {
+	HasHeader: boolean;
+	SkipRows: number;
+	DateFormat?: string;
+	DecimalSeparator?: string;
+	AmountMode?: 'SIGNED' | 'DEBIT_CREDIT' | 'AMOUNT_WITH_TYPE';
+	Date?: string;
+	Amount?: string;
+	Debit?: string;
+	Credit?: string;
+	Type?: string;
+	Payee?: string;
+	Description?: string;
+	Reference?: string;
+	ChequeNumber?: string;
+	Balance?: string;
+	NegativeIsDebit?: boolean;
+}
+
+export interface DetectedColumn {
+	Name: string;
+	Index: number;
+	Samples?: string[];
+	/** The Mapping field this column looks like, or "" when unrecognised. */
+	Guess?: string;
+}
+
+export interface StatementPreviewRow {
+	Date: string;
+	Amount: string | number;
+	Payee?: string;
+	Description?: string;
+	Reference?: string;
+	ChequeNumber?: string;
+	Balance?: string | number;
+	Duplicate?: boolean;
+}
+
+/** Everything step 2 of the wizard needs, returned by the upload call. */
+export interface StatementParseResult {
+	Import: StatementImport;
+	Columns?: string[];
+	HasHeader?: boolean;
+	Delimiter?: string;
+	Mapping?: StatementMapping;
+	Detected?: DetectedColumn[];
+	Preview: StatementPreviewRow[];
+	Duplicates: number;
+}
+
+export interface BankReconcilePeriod {
+	PeriodID: string;
+	BankAccountID: string;
+	StartDate: string;
+	EndDate: string;
+	StatementBalance: string | number;
+	CreatedDateUTC?: string;
+}
+
+export interface StatementLineCoding {
+	StatementLineID: string;
+	AccountCode: string;
+	TaxType?: string;
+	ContactID?: string;
+	Reference?: string;
+	Description?: string;
+}
+
+// ── Conversion balances (settings → conversion balances) ───────────────────
+/**
+ * The opening balances an organisation brings in when it converts to goXero.
+ * ConversionDate is a calendar date ("YYYY-MM-DD") and is empty until the
+ * organisation converts; Amount is signed the way the ledger signs it, so a
+ * debit is positive and a credit negative.
+ */
+export interface ConversionBalance {
+	ConversionDate: string;
+	Locked: boolean;
+	Lines: ConversionBalanceLine[];
+}
+
+export interface ConversionBalanceLine {
+	AccountID: string;
+	Code?: string;
+	Amount: string;
 }

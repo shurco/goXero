@@ -29,6 +29,11 @@ type Organisation struct {
 	UpdatedAt             time.Time           `json:"UpdatedDateUTC"`
 }
 
+// Organisation role a member holds within one organisation
+// (organisation_users.role). ADMIN is the creator's role and the one that may
+// act on settings a lock otherwise freezes.
+const OrganisationRoleAdmin = "ADMIN"
+
 // OrganisationProfile holds contact & display settings not mapped to top-level columns.
 type OrganisationProfile struct {
 	ShowExtraOnInvoices bool                `json:"ShowExtraOnInvoices,omitempty"`

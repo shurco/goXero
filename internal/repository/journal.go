@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,12 +29,12 @@ func (r *JournalRepository) List(ctx context.Context, orgID uuid.UUID, f Journal
 	if f.From != nil {
 		idx++
 		args = append(args, *f.From)
-		where += " AND journal_date >= $" + itoa(idx)
+		where += " AND journal_date >= $" + strconv.Itoa(idx)
 	}
 	if f.To != nil {
 		idx++
 		args = append(args, *f.To)
-		where += " AND journal_date <= $" + itoa(idx)
+		where += " AND journal_date <= $" + strconv.Itoa(idx)
 	}
 	var total int
 	if err := r.pool.QueryRow(ctx,
@@ -45,7 +46,7 @@ func (r *JournalRepository) List(ctx context.Context, orgID uuid.UUID, f Journal
 	             COALESCE(reference,''), source_id, source_type
 	        FROM gl_journals` + where +
 		" ORDER BY journal_number DESC" +
-		" LIMIT $" + itoa(len(args)-1) + " OFFSET $" + itoa(len(args))
+		" LIMIT $" + strconv.Itoa(len(args)-1) + " OFFSET $" + strconv.Itoa(len(args))
 	rows, err := r.pool.Query(ctx, q, args...)
 	if err != nil {
 		return nil, 0, err
@@ -103,28 +104,4 @@ func (r *JournalRepository) loadLines(ctx context.Context, ids []uuid.UUID) (map
 		out[jid] = append(out[jid], l)
 	}
 	return out, rows.Err()
-}
-
-func itoa(n int) string {
-	const digits = "0123456789"
-	if n == 0 {
-		return "0"
-	}
-	neg := false
-	if n < 0 {
-		neg = true
-		n = -n
-	}
-	var buf [20]byte
-	i := len(buf)
-	for n > 0 {
-		i--
-		buf[i] = digits[n%10]
-		n /= 10
-	}
-	if neg {
-		i--
-		buf[i] = '-'
-	}
-	return string(buf[i:])
 }

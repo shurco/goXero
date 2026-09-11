@@ -3,7 +3,6 @@
 	import { session } from '$lib/stores/session';
 	import { page as pageStore } from '$app/stores';
 	import type { Contact, Pagination } from '$lib/types';
-	import { onMount } from 'svelte';
 	import { formatDate, statusClass } from '$lib/utils/format';
 
 	let loading = $state(true);
@@ -39,7 +38,6 @@
 		}
 	}
 
-	onMount(reload);
 	$effect(() => { if ($session.tenantId) void reload(); });
 
 	async function create() {

@@ -169,7 +169,7 @@ func (h *OrganisationHandler) Create(c fiber.Ctx) error {
 	if err := h.repos.Organisations.Create(c.Context(), org); err != nil {
 		return httpError(err)
 	}
-	if err := h.repos.Users.LinkOrganisation(c.Context(), org.OrganisationID, middleware.UserIDFrom(c), "ADMIN"); err != nil {
+	if err := h.repos.Users.LinkOrganisation(c.Context(), org.OrganisationID, middleware.UserIDFrom(c), models.OrganisationRoleAdmin); err != nil {
 		return httpError(err)
 	}
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"organisation": org})

@@ -13,9 +13,11 @@ package repository
 // A well-formed journal MUST sum to zero.
 //
 // Accounts are resolved by `code` inside the invoice/bank-tx line items
-// (Xero's model). A couple of control accounts are referenced by their
-// SystemAccount tag (`DEBTORS`, `CREDITORS`). The fallback contra account is
-// whichever account has SystemAccount = DEBTORS / CREDITORS for sales/bills.
+// (Xero's model). The control accounts are not: they are resolved by the role
+// the organisation declared for them, Account.SystemAccount -- DEBTORS and
+// CREDITORS for the two document control accounts, GST for the sales tax
+// account. See models/account.go for the roles and migration 00027 for this
+// chart's. No account code is written into this file.
 
 import (
 	"context"
@@ -31,49 +33,73 @@ import (
 )
 
 func debtorsAccountID(ctx context.Context, q pgx.Tx, orgID uuid.UUID) (uuid.UUID, error) {
-	return systemAccountID(ctx, q, orgID, "DEBTORS")
+	return systemAccountID(ctx, q, orgID, models.SystemAccountDebtors)
 }
 
 func creditorsAccountID(ctx context.Context, q pgx.Tx, orgID uuid.UUID) (uuid.UUID, error) {
-	return systemAccountID(ctx, q, orgID, "CREDITORS")
+	return systemAccountID(ctx, q, orgID, models.SystemAccountCreditors)
 }
 
-// systemAccountID returns the account_id marked as the given system role
-// (DEBTORS for Accounts Receivable, CREDITORS for Accounts Payable).
-// If no account is tagged, falls back to account code 610/800 (Xero defaults).
-func systemAccountID(ctx context.Context, q pgx.Tx, orgID uuid.UUID, system string) (uuid.UUID, error) {
-	var id uuid.UUID
-	err := q.QueryRow(ctx,
-		`SELECT account_id FROM accounts
-		 WHERE organisation_id=$1 AND system_account=$2
-		 LIMIT 1`, orgID, system).Scan(&id)
-	if err == nil {
-		return id, nil
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
+// systemAccountID returns the account the organisation has declared as the given
+// Xero system role (SystemAccount on the Account resource): DEBTORS for
+// Accounts Receivable, CREDITORS for Accounts Payable, GST for the sales tax
+// account. models/account.go lists the roles with Xero's own strings.
+//
+// The role is the whole of the lookup, and there is deliberately no fallback to
+// an account code. A code is the organisation's own label and Xero lets it be
+// anything, so "the account coded 820" is the sales tax account in one chart and
+// an arbitrary expense in the next; a fallback that guessed by code would post
+// to the wrong account and say nothing, which is worse than either working or
+// stopping. An organisation that has not declared the role gets an error naming
+// the role -- a state that can be seen and fixed.
+func systemAccountID(ctx context.Context, q pgx.Tx, orgID uuid.UUID, role string) (uuid.UUID, error) {
+	id, ok, err := systemAccountIDOrNil(ctx, q, orgID, role)
+	if err != nil {
 		return uuid.Nil, err
 	}
-	fallback := map[string]string{"DEBTORS": "610", "CREDITORS": "800"}[system]
-	if fallback == "" {
-		return uuid.Nil, fmt.Errorf("no account tagged %s", system)
-	}
-	if err := q.QueryRow(ctx,
-		`SELECT account_id FROM accounts
-		 WHERE organisation_id=$1 AND code=$2 LIMIT 1`, orgID, fallback).Scan(&id); err != nil {
-		return uuid.Nil, fmt.Errorf("missing control account %s: %w", system, err)
+	if !ok {
+		return uuid.Nil, fmt.Errorf("no account is tagged %s: the organisation has not declared which account holds that role", role)
 	}
 	return id, nil
 }
 
+// systemAccountIDOrNil is systemAccountID for callers that have a defined
+// behaviour for the role being absent -- a document's tax is folded into its
+// counterpart line rather than posted to a control account. It reports the
+// absence rather than failing so the caller decides, and the lookup is still by
+// role, never by code.
+func systemAccountIDOrNil(ctx context.Context, q pgx.Tx, orgID uuid.UUID, role string) (uuid.UUID, bool, error) {
+	var id uuid.UUID
+	err := q.QueryRow(ctx,
+		`SELECT account_id FROM accounts
+		 WHERE organisation_id=$1 AND system_account=$2
+		 LIMIT 1`, orgID, role).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return uuid.Nil, false, nil
+	}
+	if err != nil {
+		return uuid.Nil, false, err
+	}
+	return id, true, nil
+}
+
+// accountIDByCode resolves a line's AccountCode. The code comes from the
+// client's own document, so a code this organisation has no account for is a
+// bad request and is reported as one -- only the "no such row" case, never a
+// query failure, which is a server fault and must stay a 500.
 func accountIDByCode(ctx context.Context, q pgx.Tx, orgID uuid.UUID, code string) (uuid.UUID, error) {
 	if code == "" {
-		return uuid.Nil, fmt.Errorf("line item is missing AccountCode")
+		return uuid.Nil, fmt.Errorf("line item is missing AccountCode: %w", ErrInvalidInput)
 	}
 	var id uuid.UUID
-	if err := q.QueryRow(ctx,
+	err := q.QueryRow(ctx,
 		`SELECT account_id FROM accounts
-		 WHERE organisation_id=$1 AND code=$2 LIMIT 1`, orgID, code).Scan(&id); err != nil {
-		return uuid.Nil, fmt.Errorf("unknown account code %q: %w", code, err)
+		 WHERE organisation_id=$1 AND code=$2 LIMIT 1`, orgID, code).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return uuid.Nil, fmt.Errorf("unknown account code %q: %w", code, ErrInvalidInput)
+	}
+	if err != nil {
+		return uuid.Nil, err
 	}
 	return id, nil
 }
@@ -136,6 +162,59 @@ func signedTaxFromNet(net, tax decimal.Decimal) decimal.Decimal {
 	return tax
 }
 
+// documentTaxTotal is the tax a document actually posts, summed over its lines.
+//
+// A "NoTax" document posts none, whatever TaxAmount arrived on its lines: the
+// client sends the line's tax independently of the document's LineAmountTypes,
+// and the document's own totals already ignore it (recalculateTotals zeroes
+// TotalTax), so the journal has to ignore it too. Posting it anyway added a tax
+// leg that nothing on the other side cancelled, and the document was refused
+// with "unbalanced journal".
+func documentTaxTotal(amountTypes string, lines []models.LineItem) decimal.Decimal {
+	if amountTypes == models.LineAmountTypesNoTax {
+		return decimal.Zero
+	}
+	total := decimal.Zero
+	for _, li := range lines {
+		total = total.Add(li.TaxAmount)
+	}
+	return total
+}
+
+// documentLineNet splits one document line into the amount to post to its own
+// account and the tax to post — or to fold in.
+//
+// `lineAmount` is the line's own figure and `amountTypes` says whether that
+// figure already contains its tax (Inclusive) or not (Exclusive). NoTax is its
+// own case: the line carries no tax to separate out or fold in, so it is posted
+// exactly as it stands.
+//
+// When a tax control account exists the line carries the net and the tax goes on
+// its own line; when it does not, the tax has to stay in the line, so the line
+// carries the gross and the returned tax is zero — recording it as well would
+// count it twice in the line's gross.
+//
+// Every posting path shares this so their journals balance the same way: the
+// inclusive case was previously handled only for bank transactions, leaving
+// tax-inclusive invoices and credit notes unbalanced.
+func documentLineNet(amountTypes string, lineAmount, taxAmount decimal.Decimal, taxAccOK bool) (net, tax decimal.Decimal) {
+	if amountTypes == models.LineAmountTypesNoTax {
+		return lineAmount, decimal.Zero
+	}
+	net, tax = lineAmount, taxAmount
+	if amountTypes == models.LineAmountTypesInclusive {
+		if taxAccOK {
+			net = net.Sub(tax)
+		}
+	} else if !taxAccOK {
+		net = net.Add(tax)
+	}
+	if !taxAccOK {
+		tax = decimal.Zero
+	}
+	return net, tax
+}
+
 // postInvoiceJournal posts a Sales invoice (ACCREC) or a Bill (ACCPAY).
 //
 // ACCREC example (sale of 100 + 10 GST):
@@ -174,15 +253,14 @@ func postInvoiceJournal(ctx context.Context, tx pgx.Tx, orgID uuid.UUID, inv *mo
 
 	// Resolve the tax control account up-front; if it doesn't exist we fold
 	// tax back into each revenue/expense line so the journal still balances.
-	taxTotal := decimal.Zero
-	for _, li := range inv.LineItems {
-		taxTotal = taxTotal.Add(li.TaxAmount)
-	}
+	taxTotal := documentTaxTotal(inv.LineAmountTypes, inv.LineItems)
 	taxAccID, taxAccOK := uuid.Nil, false
 	if !taxTotal.IsZero() {
-		if id, err := accountIDByCode(ctx, tx, orgID, "820"); err == nil {
-			taxAccID, taxAccOK = id, true
+		id, ok, err := systemAccountIDOrNil(ctx, tx, orgID, models.SystemAccountGST)
+		if err != nil {
+			return err
 		}
+		taxAccID, taxAccOK = id, ok
 	}
 
 	lines := make([]journalLineInput, 0, len(inv.LineItems)+2)
@@ -196,16 +274,13 @@ func postInvoiceJournal(ctx context.Context, tx pgx.Tx, orgID uuid.UUID, inv *mo
 		if err != nil {
 			return err
 		}
-		gross := li.LineAmount
-		if !taxAccOK {
-			gross = gross.Add(li.TaxAmount)
-		}
+		net, tax := documentLineNet(inv.LineAmountTypes, li.LineAmount, li.TaxAmount, taxAccOK)
 		lines = append(lines, journalLineInput{
 			AccountID:   accID,
 			Description: li.Description,
 			TaxType:     li.TaxType,
-			TaxAmount:   li.TaxAmount,
-			NetAmount:   gross.Mul(controlSign.Neg()),
+			TaxAmount:   tax,
+			NetAmount:   net.Mul(controlSign.Neg()),
 		})
 	}
 	if taxAccOK {
@@ -282,15 +357,14 @@ func postBankTransactionJournal(ctx context.Context, tx pgx.Tx, orgID uuid.UUID,
 		bt.Type == models.BankTransactionTypeSpendPrepmt {
 		bankSign = decimal.NewFromInt(-1)
 	}
-	taxTotal := decimal.Zero
-	for _, li := range bt.LineItems {
-		taxTotal = taxTotal.Add(li.TaxAmount)
-	}
+	taxTotal := documentTaxTotal(bt.LineAmountTypes, bt.LineItems)
 	taxAccID, taxAccOK := uuid.Nil, false
 	if !taxTotal.IsZero() {
-		if id, err := accountIDByCode(ctx, tx, orgID, "820"); err == nil {
-			taxAccID, taxAccOK = id, true
+		id, ok, err := systemAccountIDOrNil(ctx, tx, orgID, models.SystemAccountGST)
+		if err != nil {
+			return err
 		}
+		taxAccID, taxAccOK = id, ok
 	}
 
 	lines := make([]journalLineInput, 0, len(bt.LineItems)+2)
@@ -303,16 +377,13 @@ func postBankTransactionJournal(ctx context.Context, tx pgx.Tx, orgID uuid.UUID,
 		if err != nil {
 			return err
 		}
-		gross := li.LineAmount
-		if !taxAccOK {
-			gross = gross.Add(li.TaxAmount)
-		}
+		net, tax := documentLineNet(bt.LineAmountTypes, li.LineAmount, li.TaxAmount, taxAccOK)
 		lines = append(lines, journalLineInput{
 			AccountID:   accID,
 			Description: li.Description,
 			TaxType:     li.TaxType,
-			TaxAmount:   li.TaxAmount,
-			NetAmount:   gross.Mul(bankSign.Neg()),
+			TaxAmount:   tax,
+			NetAmount:   net.Mul(bankSign.Neg()),
 		})
 	}
 	if taxAccOK {
@@ -458,15 +529,14 @@ func postCreditNoteJournal(ctx context.Context, tx pgx.Tx, orgID uuid.UUID, cn *
 		return err
 	}
 
-	taxTotal := decimal.Zero
-	for _, li := range cn.LineItems {
-		taxTotal = taxTotal.Add(li.TaxAmount)
-	}
+	taxTotal := documentTaxTotal(cn.LineAmountTypes, cn.LineItems)
 	taxAccID, taxAccOK := uuid.Nil, false
 	if !taxTotal.IsZero() {
-		if id, err := accountIDByCode(ctx, tx, orgID, "820"); err == nil {
-			taxAccID, taxAccOK = id, true
+		id, ok, err := systemAccountIDOrNil(ctx, tx, orgID, models.SystemAccountGST)
+		if err != nil {
+			return err
 		}
+		taxAccID, taxAccOK = id, ok
 	}
 
 	lines := make([]journalLineInput, 0, len(cn.LineItems)+2)
@@ -479,16 +549,13 @@ func postCreditNoteJournal(ctx context.Context, tx pgx.Tx, orgID uuid.UUID, cn *
 		if err != nil {
 			return err
 		}
-		gross := li.LineAmount
-		if !taxAccOK {
-			gross = gross.Add(li.TaxAmount)
-		}
+		net, tax := documentLineNet(cn.LineAmountTypes, li.LineAmount, li.TaxAmount, taxAccOK)
 		lines = append(lines, journalLineInput{
 			AccountID:   id,
 			Description: li.Description,
 			TaxType:     li.TaxType,
-			TaxAmount:   li.TaxAmount,
-			NetAmount:   gross.Mul(sign.Neg()),
+			TaxAmount:   tax,
+			NetAmount:   net.Mul(sign.Neg()),
 		})
 	}
 	if taxAccOK {

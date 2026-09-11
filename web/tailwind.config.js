@@ -22,6 +22,30 @@ export default {
 					900: '#10253d',
 					950: '#0a1627'
 				},
+				// Xero's own reconcile-screen palette, measured off go.xero.com.
+				// The reconcile list is the one screen that is deliberately Xero's
+				// rather than ours, so its colours are named as themselves instead
+				// of being approximated with brand/ink.
+				xero: {
+					ink:    '#000a1e', // date, payee, reference, amounts
+					muted:  '#59606d', // the instruction row above the list
+					label:  '#404756', // "Spent" / "Received", inactive tabs
+					blue:   '#0078c8', // links and the OK button
+					blueDark: '#006bb3',
+					rule:   '#e6e7e9', // the 1px rules inside a row
+					border: '#ccced2', // the list container
+					band:   '#ecf2f6', // the band the rows sit on
+					// The line the books answered for you. Xero paints its
+					// `.xoDone` / `.matched` blocks in this green — read off
+					// bankrec.css: "background:#bae58c;border-color:#a7d35b;
+					// color:#2d7300" — so the one thing on the screen nobody
+					// typed is also the one thing that is marked.
+					done:     '#bae58c',
+					doneRule: '#a7d35b',
+					doneInk:  '#2d7300',
+					negative: '#d0021b' // Xero's red, e.g. "Total is out by:"
+
+				},
 				ink: {
 					50:  '#f7f8fa',
 					100: '#eef0f4',

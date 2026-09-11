@@ -1,0 +1,59 @@
+code,name,type,tax_rate,description,ytd
+090,Business Bank Account,Bank,Tax Exempt (0%),,7430.22
+091,Business Savings Account,Bank,Tax Exempt (0%),,0.00
+200,Sales,Revenue,Tax on Consulting (8.25%),Income from any normal business activity,29539.18
+260,Other Revenue,Revenue,Tax on Consulting (8.25%),Any other income that does not relate to normal business activities and is not recurring,0.00
+270,Interest Income,Revenue,Tax Exempt (0%),Interest income,0.00
+300,Purchases,Direct Costs,Tax on Purchases (8.25%),Goods purchased with the intention of selling these to customers,775.98
+310,Cost of Goods Sold,Direct Costs,Tax on Purchases (8.25%),Cost of goods sold by the business.,0.00
+400,Advertising,Expense,Tax on Purchases (8.25%),Expenses incurred for advertising while trying to increase sales,9657.05
+404,Bank Fees,Expense,Tax Exempt (0%),Fees charged by your bank for transactions regarding your bank account(s).,30.00
+408,Cleaning,Expense,Tax on Purchases (8.25%),Expenses incurred for cleaning business property.,1110.00
+412,Consulting & Accounting,Expense,Tax on Purchases (8.25%),Expenses related to paying consultants,87.00
+416,Depreciation,Expense,Tax Exempt (0%),The amount of the asset's cost (based on the useful life) that was consumed during the period,0.00
+420,Entertainment,Expense,Tax Exempt (0%),Expenses paid by company for the business but are not deductable for income tax purposes.,1553.60
+425,Freight & Courier,Expense,Tax on Purchases (8.25%),Expenses incurred on courier & freight costs,105.50
+429,General Expenses,Expense,Tax on Purchases (8.25%),General expenses related to the running of the business.,166.28
+433,Insurance,Expense,Tax on Purchases (8.25%),Expenses incurred for insuring the business' assets,0.00
+437,Interest Expense,Expense,Tax Exempt (0%),"Any interest expenses paid to your tax authority, business bank accounts or credit card accounts.",0.00
+441,Legal expenses,Expense,Tax on Purchases (8.25%),Expenses incurred on any legal matters,0.00
+445,"Light, Power, Heating",Expense,Tax on Purchases (8.25%),"Expenses incurred for lighting, powering or heating the premises",335.82
+449,Motor Vehicle Expenses,Expense,Tax on Purchases (8.25%),Expenses incurred on the running of company motor vehicles,654.36
+453,Office Expenses,Expense,Tax on Purchases (8.25%),General expenses related to the running of the business office.,862.48
+461,Printing & Stationery,Expense,Tax on Purchases (8.25%),Expenses incurred by the entity as a result of printing and stationery,94.41
+469,Rent,Expense,Tax on Purchases (8.25%),The payment to lease a building or area.,3273.66
+473,Repairs and Maintenance,Expense,Tax on Purchases (8.25%),Expenses incurred on a damaged or run down asset that will bring the asset back to its original condition.,1896.70
+477,Wages and Salaries,Expense,Tax Exempt (0%),Payment to employees in exchange for their resources,0.00
+478,Superannuation,Expense,Tax Exempt (0%),Superannuation contributions,0.00
+485,Subscriptions,Expense,Tax on Purchases (8.25%),"E.g. Magazines, professional bodies",0.00
+489,Telephone & Internet,Expense,Tax on Purchases (8.25%),"Expenditure incurred from any business-related phone calls, phone lines, or internet connections",236.37
+493,Travel - National,Expense,Tax on Purchases (8.25%),Expenses incurred from domestic travel which has a business purpose,433.24
+494,Travel - International,Expense,Tax Exempt (0%),Expenses incurred from international travel which has a business purpose,0.00
+497,Bank Revaluations,Expense,Tax Exempt (0%),Bank account revaluations due for foreign exchange rate changes,Details
+498,Unrealised Currency Gains,Expense,Tax Exempt (0%),Unrealised currency gains on outstanding items,Details
+499,Realised Currency Gains,Expense,Tax Exempt (0%),Gains or losses made due to currency exchange rate changes,0.00
+505,Income Tax Expense,Expense,Tax Exempt (0%),A percentage of total earnings paid to the government.,0.00
+610,Accounts Receivable,Current Asset,Tax Exempt (0%),Outstanding invoices the company has issued out to the client but has not yet received in cash at balance date.,9194.51
+620,Prepayments,Current Asset,Tax Exempt (0%),An expenditure that has been paid for in advance.,0.00
+630,Inventory,Inventory,Tax Exempt (0%),Value of tracked inventory items for resale.,0.00
+710,Office Equipment,Fixed Asset,Tax on Purchases (8.25%),Office equipment that is owned and controlled by the business,923.79
+711,Less Accumulated Depreciation on Office Equipment,Fixed Asset,Tax Exempt (0%),The total amount of office equipment cost that has been consumed by the entity (based on the useful life),0.00
+720,Computer Equipment,Fixed Asset,Tax on Purchases (8.25%),Computer equipment that is owned and controlled by the business,3774.49
+721,Less Accumulated Depreciation on Computer Equipment,Fixed Asset,Tax Exempt (0%),The total amount of computer equipment cost that has been consumed by the business (based on the useful life),0.00
+800,Accounts Payable,Current Liability,Tax Exempt (0%),Outstanding invoices the company has received from suppliers but has not yet paid at balance date,8386.76
+801,Unpaid Expense Claims,Current Liability,Tax Exempt (0%),Expense claims typically made by employees/shareholder employees still outstanding.,115.95
+820,Sales Tax,Current Liability,Tax Exempt (0%),"The balance in this account represents Sales Tax owing to or from your tax authority. At the end of the tax period, it is this account that should be used to code against either the 'refunds from' or 'payments to' your tax authority that will appear on the bank statement. Xero has been designed to use only one sales tax account to track sales taxes on income and expenses, so there is no need to add any new sales tax accounts to Xero.",422.59
+825,Employee Tax Payable,Current Liability,Tax Exempt (0%),The amount of tax that has been deducted from wages or salaries paid to employes and is due to be paid,0.00
+826,Superannuation Payable,Current Liability,Tax Exempt (0%),The amount of superannuation that is due to be paid,0.00
+830,Income Tax Payable,Current Liability,Tax Exempt (0%),"The amount of income tax that is due to be paid, also resident withholding tax paid on interest received.",0.00
+835,Revenue Received in Advance,Current Liability,Tax Exempt (0%),When customers pay in advance of work/services.,0.00
+840,Historical Adjustment,Current Liability,Tax Exempt (0%),For accountant adjustments,4130.98
+850,Suspense,Current Liability,Tax Exempt (0%),"An entry that allows an unknown transaction to be entered, so the accounts can still be worked on in balance and the entry can be dealt with later.",0.00
+855,Clearing Account,Current Liability,Tax Exempt (0%),,0.00
+860,Rounding,Current Liability,Tax Exempt (0%),An adjustment entry to allow for rounding,0.00
+877,Tracking Transfers,Current Liability,Tax Exempt (0%),Transfers between tracking categories,0.00
+880,Owner A Drawings,Current Liability,Tax Exempt (0%),Withdrawals by the owners,0.00
+881,Owner A Funds Introduced,Current Liability,Tax Exempt (0%),Funds contributed by the owner,0.00
+900,Loan,Non-current Liability,Tax Exempt (0%),Money that has been borrowed from a creditor,0.00
+960,Retained Earnings,Equity,Tax Exempt (0%),Do not Use,0.00
+970,Owner A Share Capital,Equity,Tax Exempt (0%),The value of shares purchased by the shareholders,0.00

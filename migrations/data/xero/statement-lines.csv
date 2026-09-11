@@ -1,0 +1,102 @@
+account_name,date,payee,reference,amount,direction,status,balance
+Business Bank Account,11 Sep 2026,Telus Mobility,Business mobile plan,110.00,out,reconciled,13985.32
+Business Bank Account,11 Sep 2026,7-Eleven,,6.00,out,reconciled,14095.32
+Business Bank Account,10 Sep 2026,MCO Cleaning Services,M000471,216.50,out,reconciled,14101.32
+Business Bank Account,10 Sep 2026,7-Eleven,,15.50,out,unreconciled,14317.82
+Business Bank Account,10 Sep 2026,e-Cash dep,,200.00,in,unreconciled,14333.32
+Business Bank Account,10 Sep 2026,Ridgeway Bank,Acct fee,15.00,out,unreconciled,14133.32
+Business Bank Account,10 Sep 2026,Parkside Kiosk,,10.50,out,unreconciled,14148.32
+Business Bank Account,10 Sep 2026,Central City Parking,,12.00,out,unreconciled,14158.82
+Business Bank Account,9 Sep 2026,Passing Places Parking,,12.00,out,reconciled,14170.82
+Business Bank Account,9 Sep 2026,Petrie McCloud,INV-0036,2240.78,in,reconciled,14182.82
+Business Bank Account,9 Sep 2026,Parkside Kiosk,,14.30,out,unreconciled,11942.04
+Business Bank Account,9 Sep 2026,Central City Parking,,12.00,out,unreconciled,11956.34
+Business Bank Account,9 Sep 2026,Majestic Contracting,Sublet RM2031,450.00,in,unreconciled,11968.34
+Business Bank Account,8 Sep 2026,New World,EFT 000389991,34.60,out,unreconciled,11518.34
+Business Bank Account,8 Sep 2026,e-Bank dep,,1500.00,in,unreconciled,11552.94
+Business Bank Account,8 Sep 2026,Central City Parking,,12.00,out,unreconciled,10052.94
+Business Bank Account,7 Sep 2026,Boom FM,INV-0033,541.25,in,reconciled,10064.94
+Business Bank Account,7 Sep 2026,Boom FM,INV-0034,3897.00,in,reconciled,9523.69
+Business Bank Account,7 Sep 2026,Whitcoulls,,29.80,out,unreconciled,5626.69
+Business Bank Account,7 Sep 2026,ACL Conferences,Reg 8018922,85.00,out,unreconciled,5656.49
+Business Bank Account,7 Sep 2026,Central City Parking,,12.00,out,unreconciled,5741.49
+Business Bank Account,6 Sep 2026,7-Eleven,,12.00,out,reconciled,5753.49
+Business Bank Account,6 Sep 2026,Passing Places Parking,,12.00,out,reconciled,5765.49
+Business Bank Account,6 Sep 2026,Bank West,INV-0032,324.75,in,reconciled,5777.49
+Business Bank Account,6 Sep 2026,7-Eleven,,8.00,out,reconciled,5452.74
+Business Bank Account,6 Sep 2026,Central City Parking,,12.00,out,unreconciled,5460.74
+Business Bank Account,6 Sep 2026,Cooper St Bakery,Eft,11.90,out,unreconciled,5472.74
+Business Bank Account,6 Sep 2026,e-Bank dep,,1000.00,in,unreconciled,5484.64
+Business Bank Account,6 Sep 2026,Gateway Motors,,411.35,out,unreconciled,4484.64
+Business Bank Account,5 Sep 2026,MCO Cleaning Services,M000463,216.50,out,reconciled,4895.99
+Business Bank Account,5 Sep 2026,Swanston Security,,59.55,out,unreconciled,5112.49
+Business Bank Account,5 Sep 2026,Cooper St Bakery,Eft,15.75,out,unreconciled,5172.04
+Business Bank Account,5 Sep 2026,7-Eleven,,15.50,out,unreconciled,5187.79
+Business Bank Account,5 Sep 2026,Ridgeway Banking Corporation,Fee,15.00,out,unreconciled,5203.29
+Business Bank Account,3 Sep 2026,Passing Places Parking,,12.00,out,reconciled,5218.29
+Business Bank Account,3 Sep 2026,City Agency,INV-0031,104.40,in,reconciled,5230.29
+Business Bank Account,2 Sep 2026,7-Eleven,,4.00,out,reconciled,5125.89
+Business Bank Account,1 Sep 2026,Jakaranda Maple Systems,DEPOSIT ADV,2000.00,in,unreconciled,5129.89
+Business Bank Account,31 Aug 2026,7-Eleven,,5.50,out,reconciled,3129.89
+Business Bank Account,31 Aug 2026,Passing Places Parking,,12.00,out,reconciled,3135.39
+Business Bank Account,31 Aug 2026,MCO Cleaning Services,M000456,216.50,out,reconciled,3147.39
+Business Bank Account,31 Aug 2026,Truxton Property Management,,1181.25,out,unreconciled,3363.89
+Business Bank Account,31 Aug 2026,City Limousines,0006-PART,100.00,in,unreconciled,4545.14
+Business Bank Account,31 Aug 2026,SMART Agency 01950210,Eft,4500.00,out,unreconciled,4445.14
+Business Bank Account,30 Aug 2026,7-Eleven,,12.50,out,reconciled,8945.14
+Business Bank Account,30 Aug 2026,MCO Cleaning Services,M000442,216.50,out,reconciled,8957.64
+Business Bank Account,28 Aug 2026,Ridgeway University,0025,6187.50,in,unreconciled,9174.14
+Business Bank Account,26 Aug 2026,7-Eleven,,6.00,out,reconciled,2986.64
+Business Bank Account,26 Aug 2026,Passing Places Parking,,12.00,out,reconciled,2992.64
+Business Bank Account,26 Aug 2026,Passing Places Parking,,12.00,out,reconciled,3004.64
+Business Bank Account,24 Aug 2026,Passing Places Parking,,12.00,out,reconciled,3016.64
+Business Bank Account,23 Aug 2026,MCO Cleaning Services,M000435,216.50,out,reconciled,3028.64
+Business Bank Account,22 Aug 2026,Passing Places Parking,,12.00,out,reconciled,3245.14
+Business Bank Account,21 Aug 2026,Passing Places Parking,,12.00,out,reconciled,3257.14
+Business Bank Account,21 Aug 2026,Rex Media Group,0021,541.25,in,reconciled,3269.14
+Business Bank Account,21 Aug 2026,Port & Philip Freight Limited,0020,541.25,in,reconciled,2727.89
+Business Bank Account,21 Aug 2026,Young Brothers Transport,0019,541.25,in,reconciled,2186.64
+Business Bank Account,21 Aug 2026,ABC Furniture,710,1000.00,out,reconciled,1645.39
+Business Bank Account,21 Aug 2026,Hoyt Productions Limited,08-4123,5953.75,out,reconciled,2645.39
+Business Bank Account,21 Aug 2026,Hamilton Smith,0018,541.25,in,reconciled,8599.14
+Business Bank Account,21 Aug 2026,Carlton Functions,,1500.00,out,reconciled,8057.89
+Business Bank Account,21 Aug 2026,FastPay,FP103778,1363.92,out,reconciled,9557.89
+Business Bank Account,20 Aug 2026,Passing Places Parking,,12.00,out,reconciled,10921.81
+Business Bank Account,20 Aug 2026,24 Locks Limited,CHK000411,69.50,out,reconciled,10933.81
+Business Bank Account,20 Aug 2026,Berry Brew,,22.00,out,reconciled,11003.31
+Business Bank Account,19 Aug 2026,Passing Places Parking,,12.00,out,reconciled,11025.31
+Business Bank Account,18 Aug 2026,Passing Places Parking,,12.00,out,reconciled,11037.31
+Business Bank Account,16 Aug 2026,Passing Places Parking,,12.00,out,reconciled,11049.31
+Business Bank Account,15 Aug 2026,Passing Places Parking,,12.00,out,reconciled,11061.31
+Business Bank Account,14 Aug 2026,Passing Places Parking,,12.00,out,reconciled,11073.31
+Business Bank Account,14 Aug 2026,Office Supplies Company,Eft,49.20,out,reconciled,11085.31
+Business Bank Account,13 Aug 2026,Passing Places Parking,,12.00,out,reconciled,11134.51
+Business Bank Account,12 Aug 2026,Melrose Parking,CHK000410,148.50,out,reconciled,11146.51
+Business Bank Account,11 Aug 2026,Gable Print,,29.50,out,reconciled,11295.01
+Business Bank Account,11 Aug 2026,DIISR,0021,216.50,in,reconciled,11324.51
+Business Bank Account,11 Aug 2026,Woolworths Oaktown,Eft,34.10,out,reconciled,11108.01
+Business Bank Account,11 Aug 2026,DIISR,0016,568.31,in,reconciled,11142.11
+Business Bank Account,11 Aug 2026,"Greenville, O.",,29.50,out,reconciled,10573.80
+Business Bank Account,11 Aug 2026,Ridgeway University,0009,6187.50,in,reconciled,10603.30
+Business Bank Account,11 Aug 2026,Boom FM,0013,1082.50,in,reconciled,4415.80
+Business Bank Account,11 Aug 2026,Petrie McLoud Watson,0011,1407.25,in,reconciled,3333.30
+Business Bank Account,8 Aug 2026,Xero,Ref 08162,31.39,out,reconciled,1926.05
+Business Bank Account,1 Aug 2026,PC Complete,,270.63,out,reconciled,1957.44
+Business Bank Account,1 Aug 2026,Ridgeway Banking Corporation,Bank Fee,15.00,out,reconciled,2228.07
+Business Bank Account,30 Jul 2026,Net Connect,Ref 0293,1463.88,out,reconciled,2243.07
+Business Bank Account,27 Jul 2026,City Agency,0007,593.23,in,reconciled,3706.95
+Business Bank Account,27 Jul 2026,FastPay,FP101897,1088.08,out,reconciled,3113.72
+Business Bank Account,21 Jul 2026,Bank West,0008,1299.00,in,reconciled,4201.80
+Business Bank Account,21 Jul 2026,FastPay,FP089876,3027.99,out,reconciled,2902.80
+Business Bank Account,20 Jul 2026,Port & Philip Freight,0003,541.25,in,reconciled,5930.79
+Business Bank Account,20 Jul 2026,Rex Media Group,0004,541.25,in,reconciled,5389.54
+Business Bank Account,20 Jul 2026,Melrose Parking Services,CHQ 6543-000409,148.50,out,reconciled,4848.29
+Business Bank Account,20 Jul 2026,Hamilton Smith,0001,541.25,in,reconciled,4996.79
+Business Bank Account,20 Jul 2026,Young Brothers,0002,541.25,in,reconciled,4455.54
+Business Bank Account,18 Jul 2026,Berry Brew Cafe,,15.60,out,reconciled,3914.29
+Business Bank Account,15 Jul 2026,Brunswick Flower Suppliers T/A Brunswick Petals,,50.00,out,reconciled,3929.89
+Business Bank Account,11 Jul 2026,Woolworths Oaktown,,65.20,out,reconciled,3979.89
+Business Bank Account,8 Jul 2026,Xero,,31.39,out,reconciled,4045.09
+Business Bank Account,8 Jul 2026,Espresso 31 Ltd,,16.00,out,reconciled,4076.48
+Business Bank Account,6 Jul 2026,Office Supplies Company,,23.50,out,reconciled,4092.48
+Business Bank Account,1 Jul 2026,Ridgeway Banking Corporation,Fee,15.00,out,reconciled,4115.98

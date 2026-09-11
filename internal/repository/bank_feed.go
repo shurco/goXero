@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,13 +36,13 @@ func (r *BankFeedRepository) CreateConnection(ctx context.Context, orgID uuid.UU
 }
 
 // UpdateConnectionStatus transitions a connection's status, optionally setting
-// last_error / last_synced_at. Passing an empty string leaves the existing
-// value untouched (NULLIF pattern).
+// last_error / last_synced_at. A blank lastError clears any previous error
+// (success paths pass ""), while a non-blank one records why the feed failed.
 func (r *BankFeedRepository) UpdateConnectionStatus(ctx context.Context, orgID, connID uuid.UUID, status, lastError string, syncedAt *time.Time) error {
 	cmd, err := r.pool.Exec(ctx,
 		`UPDATE bank_feed_connections
 		 SET status         = $3,
-		     last_error     = CASE WHEN $4 = '' THEN last_error ELSE $4 END,
+		     last_error     = NULLIF($4, ''),
 		     last_synced_at = COALESCE($5, last_synced_at),
 		     updated_at     = now()
 		 WHERE organisation_id = $1 AND connection_id = $2`,
@@ -90,12 +89,18 @@ func (r *BankFeedRepository) ListConnections(ctx context.Context, orgID uuid.UUI
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+	// One grouped query for every connection's accounts instead of one query
+	// per connection (N+1).
+	ids := make([]uuid.UUID, len(out))
 	for i := range out {
-		accs, err := r.listAccountsByConnection(ctx, out[i].ConnectionID)
-		if err != nil {
-			return nil, err
-		}
-		out[i].Accounts = accs
+		ids[i] = out[i].ConnectionID
+	}
+	accounts, err := r.listAccountsByConnections(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	for i := range out {
+		out[i].Accounts = accounts[out[i].ConnectionID]
 	}
 	return out, nil
 }
@@ -124,11 +129,11 @@ func (r *BankFeedRepository) GetConnection(ctx context.Context, orgID, connID uu
 		}
 		return nil, err
 	}
-	accs, err := r.listAccountsByConnection(ctx, connID)
+	accs, err := r.listAccountsByConnections(ctx, []uuid.UUID{connID})
 	if err != nil {
 		return nil, err
 	}
-	c.Accounts = accs
+	c.Accounts = accs[connID]
 	return &c, nil
 }
 
@@ -183,19 +188,28 @@ func (r *BankFeedRepository) BindAccount(ctx context.Context, orgID, feedAccount
 	return nil
 }
 
-func (r *BankFeedRepository) listAccountsByConnection(ctx context.Context, connID uuid.UUID) ([]models.BankFeedAccount, error) {
+// listAccountsByConnections loads the accounts for several connections in one
+// query, keyed by connection id, so list screens avoid an N+1.
+func (r *BankFeedRepository) listAccountsByConnections(ctx context.Context, connIDs []uuid.UUID) (map[uuid.UUID][]models.BankFeedAccount, error) {
+	out := make(map[uuid.UUID][]models.BankFeedAccount, len(connIDs))
+	if len(connIDs) == 0 {
+		return out, nil
+	}
+	ids := make([]string, len(connIDs))
+	for i, id := range connIDs {
+		ids[i] = id.String()
+	}
 	rows, err := r.pool.Query(ctx,
 		`SELECT feed_account_id, connection_id, account_id, external_account_id,
 		        COALESCE(display_name,''), COALESCE(iban,''),
 		        COALESCE(currency_code,''), balance, updated_at
 		 FROM bank_feed_accounts
-		 WHERE connection_id = $1
-		 ORDER BY created_at`, connID)
+		 WHERE connection_id = ANY($1::uuid[])
+		 ORDER BY created_at`, ids)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var out []models.BankFeedAccount
 	for rows.Next() {
 		var a models.BankFeedAccount
 		var bal *decimal.Decimal
@@ -206,158 +220,64 @@ func (r *BankFeedRepository) listAccountsByConnection(ctx context.Context, connI
 			return nil, err
 		}
 		a.Balance = bal
-		out = append(out, a)
+		out[a.ConnectionID] = append(out[a.ConnectionID], a)
 	}
 	return out, rows.Err()
 }
 
-// UpsertStatementLine is the idempotent ingestion point: sync loops push rows
-// here and dedup happens on (feed_account_id, provider_tx_id).
-// Returns true when the row was newly inserted.
-func (r *BankFeedRepository) UpsertStatementLine(ctx context.Context, orgID, feedAccountID uuid.UUID, s *models.BankFeedStatementLine, raw []byte) (inserted bool, err error) {
+// UpsertStatementLine is the idempotent ingestion point for the sync loop:
+// rows are keyed on (feed_account_id, provider_tx_id) so re-syncing a window
+// updates rather than duplicates. Returns true when the row was new.
+func (r *BankFeedRepository) UpsertStatementLine(ctx context.Context, orgID, feedAccountID uuid.UUID, s *models.BankStatementLine, raw []byte) (inserted bool, err error) {
 	err = r.pool.QueryRow(ctx,
-		`INSERT INTO bank_feed_statement_lines
-			(organisation_id, feed_account_id, provider_tx_id, posted_at,
-			 amount, currency_code, description, counterparty, reference, raw)
-		 VALUES ($1,$2,$3,$4,$5,$6,NULLIF($7,''),NULLIF($8,''),NULLIF($9,''),$10)
+		`INSERT INTO bank_statement_lines
+			(organisation_id, feed_account_id, source, provider_tx_id, posted_at,
+			 amount, currency_code, payee, description, counterparty, reference, raw)
+		 VALUES ($1,$2,'FEED',$3,$4,$5,$6,NULLIF($7,''),NULLIF($8,''),NULLIF($9,''),NULLIF($10,''),$11)
 		 ON CONFLICT (feed_account_id, provider_tx_id) DO UPDATE SET
 			posted_at     = EXCLUDED.posted_at,
 			amount        = EXCLUDED.amount,
 			currency_code = EXCLUDED.currency_code,
-			description   = COALESCE(EXCLUDED.description,   bank_feed_statement_lines.description),
-			counterparty  = COALESCE(EXCLUDED.counterparty,  bank_feed_statement_lines.counterparty),
-			reference     = COALESCE(EXCLUDED.reference,     bank_feed_statement_lines.reference),
-			raw           = COALESCE(EXCLUDED.raw,           bank_feed_statement_lines.raw)
+			payee         = COALESCE(EXCLUDED.payee,        bank_statement_lines.payee),
+			description   = COALESCE(EXCLUDED.description,  bank_statement_lines.description),
+			counterparty  = COALESCE(EXCLUDED.counterparty, bank_statement_lines.counterparty),
+			reference     = COALESCE(EXCLUDED.reference,    bank_statement_lines.reference),
+			raw           = COALESCE(EXCLUDED.raw,          bank_statement_lines.raw)
 		 RETURNING statement_line_id, created_at, (xmax = 0) AS inserted`,
 		orgID, feedAccountID, s.ProviderTxID, s.PostedAt,
-		s.Amount, s.CurrencyCode, s.Description, s.Counterparty, s.Reference, raw,
+		s.Amount, s.CurrencyCode, s.Payee, s.Description, s.Counterparty, s.Reference, raw,
 	).Scan(&s.StatementLineID, &s.CreatedAt, &inserted)
 	return inserted, err
 }
 
-// ListStatementLines is the feed inbox. Callers can narrow by status (NEW by
-// default) or by feed account.
-func (r *BankFeedRepository) ListStatementLines(ctx context.Context, orgID uuid.UUID, feedAccountID *uuid.UUID, status string, p models.Pagination) ([]models.BankFeedStatementLine, int, error) {
-	args := []any{orgID}
-	where := " WHERE organisation_id = $1"
-	if feedAccountID != nil {
-		args = append(args, *feedAccountID)
-		where += " AND feed_account_id = $2"
-	}
-	if status != "" {
-		args = append(args, status)
-		where += " AND status = $" + strconv.Itoa(len(args))
-	}
-	var total int
-	if err := r.pool.QueryRow(ctx, "SELECT COUNT(*) FROM bank_feed_statement_lines"+where, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
-	args = append(args, p.PageSize, p.Offset())
-	q := `SELECT statement_line_id, feed_account_id, provider_tx_id, posted_at,
-	             amount, currency_code, COALESCE(description,''),
-	             COALESCE(counterparty,''), COALESCE(reference,''),
-	             status, bank_transaction_id, imported_at, created_at
-	      FROM bank_feed_statement_lines` + where +
-		" ORDER BY posted_at DESC, created_at DESC" +
-		" LIMIT $" + strconv.Itoa(len(args)-1) + " OFFSET $" + strconv.Itoa(len(args))
-	rows, err := r.pool.Query(ctx, q, args...)
+// ScheduledConnection is one row of the background sync sweep: which tenant
+// owns a connection and what has to be pulled for it.
+type ScheduledConnection struct {
+	OrganisationID uuid.UUID
+	ConnectionID   uuid.UUID
+	Provider       string
+}
+
+// ListLinkedConnections returns every connection that is ready to sync, across
+// all tenants. It backs the background poller, which has no request and
+// therefore no tenant of its own.
+func (r *BankFeedRepository) ListLinkedConnections(ctx context.Context) ([]ScheduledConnection, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT organisation_id, connection_id, provider
+		 FROM bank_feed_connections
+		 WHERE status = $1
+		 ORDER BY last_synced_at NULLS FIRST`, models.BankFeedStatusLinked)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	defer rows.Close()
-	var out []models.BankFeedStatementLine
+	var out []ScheduledConnection
 	for rows.Next() {
-		var s models.BankFeedStatementLine
-		if err := rows.Scan(
-			&s.StatementLineID, &s.FeedAccountID, &s.ProviderTxID, &s.PostedAt,
-			&s.Amount, &s.CurrencyCode, &s.Description,
-			&s.Counterparty, &s.Reference,
-			&s.Status, &s.BankTransactionID, &s.ImportedAt, &s.CreatedAt,
-		); err != nil {
-			return nil, 0, err
+		var c ScheduledConnection
+		if err := rows.Scan(&c.OrganisationID, &c.ConnectionID, &c.Provider); err != nil {
+			return nil, err
 		}
-		out = append(out, s)
+		out = append(out, c)
 	}
-	return out, total, rows.Err()
-}
-
-// MarkLineImported flips a staging line to IMPORTED and records which
-// bank_transaction it produced so re-imports don't double-book.
-func (r *BankFeedRepository) MarkLineImported(ctx context.Context, orgID, lineID, bankTxID uuid.UUID) error {
-	cmd, err := r.pool.Exec(ctx,
-		`UPDATE bank_feed_statement_lines
-		 SET status = 'IMPORTED', bank_transaction_id = $3, imported_at = now()
-		 WHERE organisation_id = $1 AND statement_line_id = $2 AND status <> 'IMPORTED'`,
-		orgID, lineID, bankTxID)
-	if err != nil {
-		return err
-	}
-	if cmd.RowsAffected() == 0 {
-		return ErrNotFound
-	}
-	return nil
-}
-
-// MarkLineIgnored lets users skip rows they don't want to post (internal
-// transfers, test payments etc.).
-func (r *BankFeedRepository) MarkLineIgnored(ctx context.Context, orgID, lineID uuid.UUID) error {
-	cmd, err := r.pool.Exec(ctx,
-		`UPDATE bank_feed_statement_lines SET status = 'IGNORED'
-		 WHERE organisation_id = $1 AND statement_line_id = $2 AND status = 'NEW'`,
-		orgID, lineID)
-	if err != nil {
-		return err
-	}
-	if cmd.RowsAffected() == 0 {
-		return ErrNotFound
-	}
-	return nil
-}
-
-// GetStatementLine loads one staging row scoped to the tenant.
-func (r *BankFeedRepository) GetStatementLine(ctx context.Context, orgID, lineID uuid.UUID) (*models.BankFeedStatementLine, error) {
-	var s models.BankFeedStatementLine
-	err := r.pool.QueryRow(ctx,
-		`SELECT statement_line_id, feed_account_id, provider_tx_id, posted_at,
-		        amount, currency_code, COALESCE(description,''),
-		        COALESCE(counterparty,''), COALESCE(reference,''),
-		        status, bank_transaction_id, imported_at, created_at
-		 FROM bank_feed_statement_lines
-		 WHERE organisation_id = $1 AND statement_line_id = $2`, orgID, lineID).Scan(
-		&s.StatementLineID, &s.FeedAccountID, &s.ProviderTxID, &s.PostedAt,
-		&s.Amount, &s.CurrencyCode, &s.Description,
-		&s.Counterparty, &s.Reference,
-		&s.Status, &s.BankTransactionID, &s.ImportedAt, &s.CreatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-	return &s, nil
-}
-
-// GetFeedAccount is used by the import handler to resolve a line back to its
-// mapped ledger account.
-func (r *BankFeedRepository) GetFeedAccount(ctx context.Context, orgID, feedAccountID uuid.UUID) (*models.BankFeedAccount, error) {
-	var a models.BankFeedAccount
-	var bal *decimal.Decimal
-	err := r.pool.QueryRow(ctx,
-		`SELECT feed_account_id, connection_id, account_id, external_account_id,
-		        COALESCE(display_name,''), COALESCE(iban,''),
-		        COALESCE(currency_code,''), balance, updated_at
-		 FROM bank_feed_accounts
-		 WHERE organisation_id = $1 AND feed_account_id = $2`, orgID, feedAccountID).Scan(
-		&a.FeedAccountID, &a.ConnectionID, &a.AccountID, &a.ExternalAccountID,
-		&a.DisplayName, &a.IBAN, &a.CurrencyCode, &bal, &a.UpdatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-	a.Balance = bal
-	return &a, nil
+	return out, rows.Err()
 }

@@ -14,8 +14,10 @@ import (
 	"github.com/shurco/goxero/internal/repository"
 )
 
-// Register wires up every route on the Fiber app.
-func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories) {
+// Register wires up every route on the Fiber app. It returns the bank feed
+// handler so the caller can start its background sync poller — the scheduler
+// needs the server's context, which only main has.
+func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories) *handlers.BankFeedHandler {
 	app.Use(requestid.New())
 	app.Use(recover.New())
 	app.Use(logger.New())
@@ -40,8 +42,10 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	bankTxHandler := handlers.NewBankTransactionHandler(repos)
 	bankTransferHandler := handlers.NewBankTransferHandler(repos)
 	bankRuleHandler := handlers.NewBankRuleHandler(repos)
+	bankStatementHandler := handlers.NewBankStatementHandler(repos)
 	manualJournalHandler := handlers.NewManualJournalHandler(repos)
 	journalHandler := handlers.NewJournalHandler(repos)
+	conversionBalanceHandler := handlers.NewConversionBalanceHandler(repos)
 	quoteHandler := handlers.NewQuoteHandler(repos)
 	poHandler := handlers.NewPurchaseOrderHandler(repos)
 	contactGroupHandler := handlers.NewContactGroupHandler(repos)
@@ -95,6 +99,9 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 
 	apiV1.Get("/accounts", accountHandler.List)
 	apiV1.Post("/accounts", accountHandler.Create)
+	// Ahead of /accounts/:id: a static segment loses to a parameter otherwise,
+	// and the chart template would be looked up as an account id.
+	apiV1.Get("/accounts/standard-chart", accountHandler.StandardChart)
 	apiV1.Get("/accounts/:id", accountHandler.Get)
 	apiV1.Put("/accounts/:id", accountHandler.Update)
 	apiV1.Post("/accounts/:id", accountHandler.Update)
@@ -151,6 +158,9 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Get("/bank-transactions", bankTxHandler.List)
 	apiV1.Post("/bank-transactions", bankTxHandler.Create)
 	apiV1.Get("/bank-transactions/:id", bankTxHandler.Get)
+	apiV1.Put("/bank-transactions/:id", bankTxHandler.Update)
+	apiV1.Post("/bank-transactions/:id", bankTxHandler.Update)
+	apiV1.Post("/bank-transactions/:id/reconcile", bankTxHandler.Reconcile)
 	apiV1.Delete("/bank-transactions/:id", bankTxHandler.Delete)
 
 	apiV1.Get("/bank-transfers", bankTransferHandler.List)
@@ -159,6 +169,9 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 
 	apiV1.Get("/bank-rules", bankRuleHandler.List)
 	apiV1.Post("/bank-rules", bankRuleHandler.Create)
+	// Registered before /:id so "order" is not read as a rule id.
+	apiV1.Put("/bank-rules/order", bankRuleHandler.Reorder)
+	apiV1.Post("/bank-rules/order", bankRuleHandler.Reorder)
 	apiV1.Get("/bank-rules/:id", bankRuleHandler.Get)
 	apiV1.Put("/bank-rules/:id", bankRuleHandler.Update)
 	apiV1.Post("/bank-rules/:id", bankRuleHandler.Update)
@@ -170,6 +183,9 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Delete("/manual-journals/:id", manualJournalHandler.Delete)
 
 	apiV1.Get("/journals", journalHandler.List)
+
+	apiV1.Get("/conversion-balances", conversionBalanceHandler.Get)
+	apiV1.Put("/conversion-balances", conversionBalanceHandler.Update)
 
 	apiV1.Get("/quotes", quoteHandler.List)
 	apiV1.Post("/quotes", quoteHandler.Create)
@@ -258,9 +274,44 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Post("/bank-feeds/connections/:id/sync", bankFeedHandler.SyncConnection)
 	apiV1.Delete("/bank-feeds/connections/:id", bankFeedHandler.DeleteConnection)
 	apiV1.Put("/bank-feeds/accounts/:feedAccountId", bankFeedHandler.BindFeedAccount)
-	apiV1.Get("/bank-feeds/statement-lines", bankFeedHandler.ListStatementLines)
-	apiV1.Post("/bank-feeds/statement-lines/:id/import", bankFeedHandler.ImportStatementLine)
-	apiV1.Post("/bank-feeds/statement-lines/:id/ignore", bankFeedHandler.IgnoreStatementLine)
+	// Bank statement inbox: the unified feed + imported line model and the
+	// manual import wizard — these are the endpoints the reconcile screen uses.
+	apiV1.Get("/statement-lines", bankStatementHandler.ListStatementLines)
+	// Fixed sub-paths must precede /:id or Fiber would match them as an id.
+	apiV1.Get("/statement-lines/balance", bankStatementHandler.Balance)
+	apiV1.Get("/statement-lines/balance-series", bankStatementHandler.BalanceSeries)
+	apiV1.Get("/statement-lines/auto-reconcile", bankStatementHandler.AutoReconcileStatus)
+	apiV1.Post("/statement-lines/auto-reconcile-settings", bankStatementHandler.SetAutoReconcile)
+	apiV1.Get("/statement-lines/:id", bankStatementHandler.GetStatementLine)
+	apiV1.Post("/statement-lines/:id/ignore", bankStatementHandler.IgnoreStatementLine)
+	apiV1.Post("/statement-lines/:id/unignore", bankStatementHandler.UnignoreStatementLine)
+	apiV1.Post("/statement-lines/:id/create", bankStatementHandler.CreateFromLine)
+	apiV1.Post("/statement-lines/:id/match", bankStatementHandler.Match)
+	apiV1.Get("/statement-lines/:id/matches", bankStatementHandler.MatchCandidates)
+	apiV1.Post("/statement-lines/:id/transfer", bankStatementHandler.Transfer)
+	apiV1.Post("/statement-lines/:id/adjustment", bankStatementHandler.Adjustment)
+	apiV1.Post("/statement-lines/:id/reconcile", bankStatementHandler.ReconcileSelection)
+	apiV1.Get("/statement-lines/:id/comments", bankStatementHandler.ListComments)
+	apiV1.Post("/statement-lines/:id/comments", bankStatementHandler.CreateComment)
+	apiV1.Delete("/statement-lines/:id", bankStatementHandler.DeleteStatementLine)
+	apiV1.Post("/statement-lines/bulk", bankStatementHandler.BulkLineAction)
+	apiV1.Post("/statement-lines/apply-rule", bankStatementHandler.ApplyRule)
+	apiV1.Post("/statement-lines/cash-code", bankStatementHandler.CashCode)
+	apiV1.Post("/statement-lines/auto-reconcile", bankStatementHandler.AutoReconcile)
+
+	// Manual statement import (OFX / QFX / QBO / QIF / CSV).
+	apiV1.Post("/statement-imports", bankStatementHandler.ParseStatement)
+	apiV1.Get("/statement-imports", bankStatementHandler.ListImports)
+	apiV1.Get("/statement-imports/:id", bankStatementHandler.GetImport)
+	apiV1.Post("/statement-imports/:id/remap", bankStatementHandler.RemapImport)
+	apiV1.Post("/statement-imports/:id/commit", bankStatementHandler.CommitImport)
+	apiV1.Delete("/statement-imports/:id", bankStatementHandler.UndoImport)
+
+	// Reconcile periods — the monthly statement reconciliations Xero keeps a
+	// history of.
+	apiV1.Get("/reconcile-periods", bankStatementHandler.ListPeriods)
+	apiV1.Post("/reconcile-periods", bankStatementHandler.CreatePeriod)
+	apiV1.Delete("/reconcile-periods/:id", bankStatementHandler.DeletePeriod)
 
 	// Organisation Files (inbox/archive) — must be registered before /:subject/:id/attachments.
 	apiV1.Post("/files/move", orgFileHandler.Move)
@@ -287,13 +338,28 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Get("/reports/balance-sheet", reportHandler.BalanceSheet)
 	apiV1.Get("/reports/aged-receivables", reportHandler.AgedReceivables)
 	apiV1.Get("/reports/aged-payables", reportHandler.AgedPayables)
-	apiV1.Get("/reports/aged-receivables-by-contact", reportHandler.AgedReceivables)
-	apiV1.Get("/reports/aged-payables-by-contact", reportHandler.AgedPayables)
+	// The by-contact routes are the per-contact drill-down, not aliases of the
+	// summary above: they answer with the contact's own invoices and a
+	// different ReportName, so a client can tell the two apart.
+	apiV1.Get("/reports/aged-receivables-by-contact", reportHandler.AgedReceivablesByContact)
+	apiV1.Get("/reports/aged-payables-by-contact", reportHandler.AgedPayablesByContact)
 	apiV1.Get("/reports/bank-summary", reportHandler.BankSummary)
 	apiV1.Get("/reports/cash-summary", reportHandler.CashSummary)
 	apiV1.Get("/reports/executive-summary", reportHandler.ExecutiveSummary)
 	apiV1.Get("/reports/budget-summary", reportHandler.BudgetSummary)
 	apiV1.Get("/reports/bas", reportHandler.BAS)
-	apiV1.Get("/reports/sales-tax", reportHandler.BAS)
+	apiV1.Get("/reports/sales-tax", reportHandler.SalesTax)
 	apiV1.Get("/reports/journal-report", reportHandler.JournalReport)
+	apiV1.Get("/reports/account-transactions", reportHandler.AccountTransactions)
+	apiV1.Get("/reports/general-ledger-detail", reportHandler.GeneralLedgerDetail)
+	apiV1.Get("/reports/general-ledger", reportHandler.GeneralLedgerDetail)
+	apiV1.Get("/reports/form-1120", reportHandler.Form1120)
+
+	// Xero-compatible path for the same report. Xero's Reporting API answers on
+	// GET /api.xro/2.0/Reports/<ReportID>, so a client written against Xero can
+	// ask for this workpaper the way it asks for ProfitAndLoss.
+	apiXro := app.Group("/api.xro/2.0", mw.JWTAuth(cfg.Auth), mw.Tenant(cfg.Auth, repos))
+	apiXro.Get("/Reports/Form1120", reportHandler.Form1120)
+
+	return bankFeedHandler
 }

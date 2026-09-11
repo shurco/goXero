@@ -1,0 +1,28 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1000
+
+Aged Payables Summary
+Demo Company (Global)
+As at 31 December 2026
+Ageing by due date
+
+--- report output (tab-separated) ---
+
+Contact	< 1 Month	1 Month	2 Months	3 Months	Older	Total
+Aged Payables
+Bayside Club	-	-	-	130.00	-	130.00
+Bayside Wholesale	-	-	-	840.00	-	840.00
+Capital Cab Co	-	-	-	242.00	-	242.00
+Central Copiers	-	-	-	-	163.56	163.56
+Net Connect	-	-	-	54.13	-	54.13
+PC Complete	-	-	2,132.51	-	-	2,132.51
+PowerDirect	-	-	-	108.60	-	108.60
+SMART Agency	-	-	-	2,500.00	2,000.00	4,500.00
+Swanston Security	-	-	-	-	59.54	59.54
+Xero	-	-	-	31.39	-	31.39
+Young Bros Transport	-	-	-	125.03	-	125.03
+Total Aged Payables	-	-	2,132.51	4,031.15	2,223.10	8,386.76
+Expense Claims
+Adam Michkevich	-	-	-	115.95	-	115.95
+Total Expense Claims	-	-	-	115.95	-	115.95
+Total	-	-	2,132.51	4,147.10	2,223.10	8,502.71
+Percentage of total	-	-	25.08%	48.77%	26.15%	100.00%

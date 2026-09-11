@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { orgApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import ModuleHeader from '$lib/components/ModuleHeader.svelte';
@@ -263,7 +262,6 @@
 		}
 	}
 
-	onMount(reload);
 	$effect(() => {
 		if ($session.tenantId) void reload();
 	});

@@ -27,9 +27,21 @@ type bankTxRequest struct {
 
 func (h *BankTransactionHandler) List(c fiber.Ctx) error {
 	p := paginationFromQuery(c)
+	bankAccountID, err := optionalQueryUUID(c, "bankAccountId")
+	if err != nil {
+		return err
+	}
+	var isReconciled *bool
+	if raw := c.Query("isReconciled"); raw != "" {
+		v := raw == "true" || raw == "1"
+		isReconciled = &v
+	}
 	list, total, err := h.repos.BankTransactions.List(c.Context(), middleware.OrganisationIDFrom(c), repository.BankTransactionFilter{
-		Type:   c.Query("type"),
-		Status: c.Query("status"),
+		Type:          c.Query("type"),
+		Status:        c.Query("status"),
+		BankAccountID: bankAccountID,
+		IsReconciled:  isReconciled,
+		Search:        c.Query("search"),
 	}, p)
 	if err != nil {
 		return httpError(err)
@@ -86,6 +98,87 @@ func (h *BankTransactionHandler) Create(c fiber.Ctx) error {
 		return httpError(err)
 	}
 	return rawOne(c, fiber.StatusCreated, "BankTransactions", bt)
+}
+
+// Update replaces a bank transaction — header, line items and the GL journal it
+// posted. The reconcile screen calls this when a user edits the coding of a
+// transaction before approving it; POST and PUT are both accepted because the
+// SvelteKit client and the Xero SDKs disagree about which one to use.
+func (h *BankTransactionHandler) Update(c fiber.Ctx) error {
+	orgID, id, err := tenantAndID(c)
+	if err != nil {
+		return err
+	}
+	existing, err := h.repos.BankTransactions.GetByID(c.Context(), orgID, id)
+	if err != nil {
+		return httpError(err)
+	}
+	req, err := bindBody[bankTxRequest](c)
+	if err != nil {
+		return err
+	}
+	bt := req.BankTransaction
+	bt.BankTransactionID = id
+	// Fields the client did not send stay as they were: a PATCH-shaped caller
+	// should not have to echo the whole record back to change one amount.
+	if bt.BankAccountID == nil {
+		bt.BankAccountID = existing.BankAccountID
+	}
+	if bt.ContactID == nil {
+		bt.ContactID = existing.ContactID
+	}
+	if bt.Status == "" {
+		bt.Status = existing.Status
+	}
+	if bt.LineAmountTypes == "" {
+		bt.LineAmountTypes = existing.LineAmountTypes
+	}
+	if bt.Date == nil {
+		bt.Date = existing.Date
+	}
+	if bt.CurrencyCode == "" {
+		bt.CurrencyCode = existing.CurrencyCode
+	}
+	if len(bt.LineItems) == 0 {
+		bt.LineItems = existing.LineItems
+	}
+	if err := h.repos.BankTransactions.Update(c.Context(), orgID, &bt); err != nil {
+		return httpError(err)
+	}
+	fresh, err := h.repos.BankTransactions.GetByID(c.Context(), orgID, id)
+	if err != nil {
+		return httpError(err)
+	}
+	return rawOne(c, fiber.StatusOK, "BankTransactions", *fresh)
+}
+
+// Reconcile approves (or un-approves) a transaction without touching its
+// amounts. This is the endpoint the reconcile screen must call — the previous
+// implementation POSTed a copy of the transaction instead, which booked the
+// money twice.
+func (h *BankTransactionHandler) Reconcile(c fiber.Ctx) error {
+	orgID, id, err := tenantAndID(c)
+	if err != nil {
+		return err
+	}
+	body, err := bindBody[struct {
+		IsReconciled *bool `json:"IsReconciled"`
+	}](c)
+	if err != nil {
+		return err
+	}
+	reconciled := true
+	if body.IsReconciled != nil {
+		reconciled = *body.IsReconciled
+	}
+	if err := h.repos.BankTransactions.Reconcile(c.Context(), orgID, id, reconciled); err != nil {
+		return httpError(err)
+	}
+	fresh, err := h.repos.BankTransactions.GetByID(c.Context(), orgID, id)
+	if err != nil {
+		return httpError(err)
+	}
+	return rawOne(c, fiber.StatusOK, "BankTransactions", *fresh)
 }
 
 func (h *BankTransactionHandler) Delete(c fiber.Ctx) error {

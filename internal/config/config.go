@@ -59,6 +59,7 @@ type AuthConfig struct {
 type BankFeedConfig struct {
 	RedirectURL            string        // where providers send the browser after consent
 	SyncWindow             time.Duration // how far back to pull per /sync call
+	SyncInterval           time.Duration // how often to poll every linked connection; 0 disables
 	GoCardlessBADSecretID  string
 	GoCardlessBADSecretKey string
 }
@@ -114,6 +115,13 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Feeds used to sync only when a user pressed the button. Polling every six
+	// hours is what makes the inbox feel like Xero's; set the env var to "0" to
+	// turn the background poller off entirely.
+	syncInterval, err := durationEnv("BANKFEED_SYNC_INTERVAL", 6*time.Hour)
+	if err != nil {
+		return nil, err
+	}
 
 	env := getEnv("APP_ENV", "development")
 	jwtSecret := getEnv("JWT_SECRET", defaultJWTSecret)
@@ -153,6 +161,7 @@ func Load() (*Config, error) {
 		BankFeed: BankFeedConfig{
 			RedirectURL:            getEnv("BANKFEED_REDIRECT_URL", "http://localhost:5173/app/bank-feeds/callback"),
 			SyncWindow:             syncWindow,
+			SyncInterval:           syncInterval,
 			GoCardlessBADSecretID:  getEnv("GOCARDLESS_BAD_SECRET_ID", ""),
 			GoCardlessBADSecretKey: getEnv("GOCARDLESS_BAD_SECRET_KEY", ""),
 		},

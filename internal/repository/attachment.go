@@ -15,8 +15,8 @@ import (
 
 // Org file inbox (Xero Files) — polymorphic row with subject_id = organisation_id.
 const (
-	SubjectOrgFile   = "ORGFILE"
-	FileFolderInbox  = "INBOX"
+	SubjectOrgFile    = "ORGFILE"
+	FileFolderInbox   = "INBOX"
 	FileFolderArchive = "ARCHIVE"
 )
 

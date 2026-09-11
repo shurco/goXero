@@ -2,7 +2,7 @@
 	import { contactApi, invoiceApi, accountApi, itemApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import { goto } from '$app/navigation';
-	import type { Account, Contact, Item, LineItem } from '$lib/types';
+	import type { Account, Contact, Invoice, Item, LineItem } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { formatCurrency } from '$lib/utils/format';
 
@@ -17,13 +17,34 @@
 	let date = $state(new Date().toISOString().slice(0, 10));
 	let dueDate = $state('');
 	let lineAmountTypes = $state<'Exclusive' | 'Inclusive' | 'NoTax'>('Exclusive');
-	let status = $state<'DRAFT' | 'AUTHORISED'>('DRAFT');
 	let saving = $state(false);
 	let error = $state<string | null>(null);
 
-	let lines = $state<LineItem[]>([
-		{ Description: '', Quantity: 1, UnitAmount: 0, AccountCode: '200', TaxType: '', TaxAmount: 0 }
-	]);
+	/**
+	 * A line being edited, carrying an id of its own so the row keeps its
+	 * identity when one is removed: without it the rows left below the deleted
+	 * one are reused as-is and their inputs can end up showing another line's
+	 * values. The id is local to this form and never reaches the API.
+	 */
+	type DraftLine = LineItem & { uid: number };
+	let nextLineUID = 1;
+	function blankLine(): DraftLine {
+		return {
+			uid: nextLineUID++,
+			Description: '',
+			Quantity: 1,
+			UnitAmount: 0,
+			AccountCode: '',
+			TaxType: '',
+			TaxAmount: 0
+		};
+	}
+
+	// A new line starts with no account. This used to open on code '200', which
+	// is a fact about one chart: here 200 is Sales, elsewhere it is Accounts
+	// Payable, and on a bill it is neither. The account is the person's to
+	// choose, and the picker below says so.
+	let lines = $state<DraftLine[]>([blankLine()]);
 
 	onMount(async () => {
 		const [cs, as, its] = await Promise.all([
@@ -37,7 +58,7 @@
 	});
 
 	function addLine() {
-		lines = [...lines, { Description: '', Quantity: 1, UnitAmount: 0, AccountCode: '200', TaxType: '', TaxAmount: 0 }];
+		lines = [...lines, blankLine()];
 	}
 
 	function removeLine(i: number) {
@@ -51,11 +72,10 @@
 	const total = $derived(lineAmountTypes === 'Exclusive' ? subTotal + totalTax : subTotal);
 
 	async function save(newStatus: 'DRAFT' | 'AUTHORISED') {
-		status = newStatus;
 		saving = true;
 		error = null;
 		try {
-			const payload = {
+			const payload: Partial<Invoice> = {
 				Type: type,
 				ContactID: contactId,
 				InvoiceNumber: invoiceNumber,
@@ -74,7 +94,7 @@
 					ItemCode: l.ItemCode
 				}))
 			};
-			const res = await invoiceApi.create(payload as unknown as Parameters<typeof invoiceApi.create>[0]);
+			const res = await invoiceApi.create(payload);
 			const created = res.Invoices?.[0];
 			if (created) goto(`/app/invoices/${created.InvoiceID}`);
 			else goto('/app/invoices');
@@ -85,16 +105,20 @@
 		}
 	}
 
+	// A bill is priced and coded from the item's PurchaseDetails, a sales invoice
+	// from SalesDetails. Reading the sale side for both meant every bill took the
+	// sale price — wrong wherever the two differ, and zero where only the
+	// purchase side was filled in.
 	function applyItem(i: number, code: string) {
 		const it = items.find((x) => x.Code === code);
 		if (!it) return;
-		const price = it.SalesDetails?.UnitPrice ?? 0;
+		const details = type === 'ACCPAY' ? it.PurchaseDetails : it.SalesDetails;
 		lines[i] = {
 			...lines[i],
 			ItemCode: it.Code,
 			Description: it.Name || it.Description || '',
-			UnitAmount: Number(price),
-			AccountCode: it.SalesDetails?.AccountCode || lines[i].AccountCode
+			UnitAmount: Number(details?.UnitPrice ?? 0),
+			AccountCode: details?.AccountCode || lines[i].AccountCode
 		};
 	}
 </script>
@@ -131,7 +155,7 @@
 					<label class="label" for="inv-contact">Contact</label>
 					<select id="inv-contact" class="select" bind:value={contactId}>
 						<option value="">— Select contact —</option>
-						{#each contacts as c}
+						{#each contacts as c (c.ContactID)}
 							<option value={c.ContactID}>{c.Name}</option>
 						{/each}
 					</select>
@@ -183,12 +207,12 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each lines as line, i}
+							{#each lines as line, i (line.uid)}
 								<tr>
 									<td>
 										<select class="select" value={line.ItemCode ?? ''} onchange={(e) => applyItem(i, (e.target as HTMLSelectElement).value)}>
 											<option value="">—</option>
-											{#each items as it}
+											{#each items as it (it.Code)}
 												<option value={it.Code}>{it.Code}</option>
 											{/each}
 										</select>
@@ -198,7 +222,8 @@
 									<td><input class="input text-right" type="number" step="0.01" bind:value={line.UnitAmount} /></td>
 									<td>
 										<select class="select" bind:value={line.AccountCode}>
-											{#each accounts as acc}
+											<option value="">Choose an account…</option>
+											{#each accounts as acc (acc.Code)}
 												<option value={acc.Code}>{acc.Code} — {acc.Name}</option>
 											{/each}
 										</select>

@@ -1,4 +1,10 @@
 <script lang="ts">
-	import ComingSoon from '$lib/components/ComingSoon.svelte';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+
+	// Cash flow is served by /reports/cash-summary; this route predates that
+	// page and is kept so old links land on the real report.
+	onMount(() => {
+		goto('/app/reports/cash-summary', { replaceState: true });
+	});
 </script>
-<ComingSoon title="Cash flow manager" description="Forecast cash inflows and outflows." backHref="/app/reports" />

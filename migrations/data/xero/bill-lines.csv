@@ -1,0 +1,48 @@
+bill_number,contact,bill_date,description,quantity,unit_amount,account_code,tax_rate,tax_amount,line_amount
+AP,Xero,2026-07-08,Monthly subscription,1.0000,29.0000,412,Tax on Purchases (8.25%),2.39,29.00
+RENT,Truxton Property Management,2026-07-11,Monthy rent in advance,1.0000,1091.2240,469,Tax on Purchases (8.25%),90.03,1091.22
+Rpt,PowerDirect,2026-07-11,Monthly power supply,1.0000,110.0000,445,Tax on Purchases (8.25%),9.08,110.00
+Rpt,Net Connect,2026-07-12,Cable internet,1.0000,41.5000,489,Tax on Purchases (8.25%),3.42,41.50
+945-OCon,Central Copiers,2026-07-19,Photocopier repair & drum replacement,1.0000,982.5000,473,Tax on Purchases (8.25%),81.06,982.50
+9781,Net Connect,2026-07-20,Network diagnostics software,1.0000,500.0000,453,Tax on Goods (8.75%),43.75,500.00
+9781,Net Connect,2026-07-20,Replacement hub & network switches,1.0000,850.0000,473,Tax on Purchases (8.25%),70.13,850.00
+,PC Complete,2026-07-21,Laptop (Oliver),1.0000,1804.5000,720,Tax on Purchases (8.25%),148.87,1804.50
+5679,MCO Cleaning Services,2026-07-21,Office Cleaning for month,1.0000,110.0000,408,Tax on Purchases (8.25%),9.08,110.00
+AP,Swanston Security,2026-07-21,Our share building doorman/security,1.0000,55.0000,453,Tax on Purchases (8.25%),4.54,55.00
+SM0195,SMART Agency,2026-07-21,Design concepts for Oaktown Business Leader ad series,1.0000,1847.5751,400,Tax on Purchases (8.25%),152.42,1847.58
+OG laptop,PC Complete,2026-08-01,DVD writer for laptop,1.0000,250.0000,453,Tax on Purchases (8.25%),20.63,250.00
+AP,Xero,2026-08-08,Monthly subscription,1.0000,29.0000,412,Tax on Purchases (8.25%),2.39,29.00
+M000435,MCO Cleaning Services,2026-08-08,Office Cleaning - daily rate,5.0000,40.0000,408,Tax on Purchases (8.25%),16.50,200.00
+08-4123,Hoyt Productions,2026-08-11,20-second still frame ad shown in 5 city cinemas 5 times each,1.0000,5500.0000,400,Tax on Purchases (8.25%),453.75,5500.00
+Dep,Carlton Functions,2026-08-11,Deposit on venue hire for client function,1.0000,1500.0000,420,Tax Exempt (0%),0.00,1500.00
+RENT,Truxton Property Management,2026-08-11,Monthy rent in advance,1.0000,1091.2240,469,Tax on Purchases (8.25%),90.03,1091.22
+Rpt,PowerDirect,2026-08-11,Monthly power supply,1.0000,125.5000,445,Tax on Purchases (8.25%),10.35,125.50
+Rpt,Net Connect,2026-08-12,Cable internet,1.0000,43.2500,489,Tax on Purchases (8.25%),3.57,43.25
+M000442,MCO Cleaning Services,2026-08-15,Office Cleaning - daily rate,5.0000,40.0000,408,Tax on Purchases (8.25%),16.50,200.00
+710,ABC Furniture,2026-08-21,Coffee table for reception,1.0000,923.7875,710,Tax on Purchases (8.25%),76.21,923.79
+AP,Swanston Security,2026-08-21,Our share building doorman/security,1.0000,55.0000,453,Tax on Purchases (8.25%),4.54,55.00
+M000456,MCO Cleaning Services,2026-08-22,Office Cleaning - daily rate,5.0000,40.0000,408,Tax on Purchases (8.25%),16.50,200.00
+M000463,MCO Cleaning Services,2026-08-29,Office Cleaning - daily rate,5.0000,40.0000,408,Tax on Purchases (8.25%),16.50,200.00
+RENT,Truxton Property Management,2026-08-31,Monthy rent in advance,1.0000,1091.2240,469,Tax on Purchases (8.25%),90.03,1091.22
+SM0210,SMART Agency,2026-08-31,Prototype media banner & print mockups for Oaktown Business Leader ad series,1.0000,2309.4688,400,Tax on Purchases (8.25%),190.53,2309.47
+,Bayside Club,2026-09-05,Room hire,1.0000,120.0924,429,Tax on Purchases (8.25%),9.91,120.09
+,PC Complete,2026-09-05,Laptop (Tracy),1.0000,1969.9900,720,Tax on Purchases (8.25%),162.52,1969.99
+M000471,MCO Cleaning Services,2026-09-05,Office Cleaning - daily rate,5.0000,40.0000,408,Tax on Purchases (8.25%),16.50,200.00
+,Gateway Motors,2026-09-06,Annual service company car,1.0000,380.0000,449,Tax on Purchases (8.25%),31.35,380.00
+,Young Bros Transport,2026-09-07,Delivery of new reception desk,1.0000,115.5000,425,Tax on Purchases (8.25%),9.53,115.50
+AP,Xero,2026-09-07,Monthly subscription,1.0000,29.0000,412,Tax on Purchases (8.25%),2.39,29.00
+GB1-White,Bayside Wholesale,2026-09-08,Golf balls - white single,200.0000,3.8799,300,Tax on Purchases (8.25%),64.02,775.98
+Rpt,PowerDirect,2026-09-10,Monthly power supply,1.0000,100.3200,445,Tax on Purchases (8.25%),8.28,100.32
+CS815,Capital Cab Co,2026-09-11,Taxi services,1.0000,223.5566,493,Tax on Purchases (8.25%),18.44,223.56
+Rpt,Net Connect,2026-09-11,Cable internet,1.0000,50.0000,489,Tax on Purchases (8.25%),4.13,50.00
+AP,Swanston Security,2026-09-20,Our share building doorman/security,1.0000,55.0000,453,Tax on Purchases (8.25%),4.54,55.00
+AP,Xero,2026-10-08,Monthly subscription,1.0000,29.0000,412,Tax on Purchases (8.25%),2.39,29.00
+RENT,Truxton Property Management,2026-10-11,Monthy rent in advance,1.0000,1091.2240,469,Tax on Purchases (8.25%),90.03,1091.22
+Rpt,PowerDirect,2026-10-11,Monthly power supply,1.0000,105.0000,445,Tax on Purchases (8.25%),8.66,105.00
+Rpt,Net Connect,2026-10-12,Cable internet,1.0000,39.0000,489,Tax on Purchases (8.25%),3.22,39.00
+AP,Swanston Security,2026-10-21,Our share building doorman/security,1.0000,55.0000,453,Tax on Purchases (8.25%),4.54,55.00
+AP,Xero,2026-11-08,Monthly subscription,1.0000,29.0000,412,Tax on Purchases (8.25%),2.39,29.00
+RENT,Truxton Property Management,2026-11-11,Monthy rent in advance,1.0000,1091.2240,469,Tax on Purchases (8.25%),90.03,1091.22
+Rpt,PowerDirect,2026-11-11,Monthly power supply,1.0000,105.0000,445,Tax on Purchases (8.25%),8.66,105.00
+Rpt,Net Connect,2026-11-12,Cable internet,1.0000,39.0000,489,Tax on Purchases (8.25%),3.22,39.00
+AP,Swanston Security,2026-11-19,Our share building doorman/security,1.0000,55.0000,453,Tax on Purchases (8.25%),4.54,55.00

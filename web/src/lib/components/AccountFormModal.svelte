@@ -28,29 +28,6 @@
 	let showInExpenseClaims = $state(false);
 	let showOnDashboard = $state(false);
 
-	function classForAccountType(t: string): string {
-		const asset = new Set([
-			'BANK',
-			'CURRENT',
-			'FIXED',
-			'INVENTORY',
-			'NONCURRENT',
-			'PREPAYMENT'
-		]);
-		const liab = new Set([
-			'CURRLIAB',
-			'LIABILITY',
-			'TERMLIAB',
-			'PAYGLIABILITY',
-			'SUPERANNUATIONLIABILITY'
-		]);
-		if (asset.has(t)) return 'ASSET';
-		if (liab.has(t)) return 'LIABILITY';
-		if (t === 'EQUITY') return 'EQUITY';
-		if (t === 'REVENUE' || t === 'SALES') return 'REVENUE';
-		return 'EXPENSE';
-	}
-
 	function uniqueTaxOptions(rates: TaxRate[]): TaxRate[] {
 		const seen = new Set<string>();
 		const out: TaxRate[] = [];
@@ -144,7 +121,6 @@
 				BankAccountType: type === 'BANK' ? 'BANK' : undefined,
 				TaxType: taxType.trim() || undefined,
 				Status: status,
-				Class: classForAccountType(type),
 				EnablePaymentsToAccount: enablePayments,
 				ShowInExpenseClaims: showInExpenseClaims
 			};

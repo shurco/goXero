@@ -28,6 +28,21 @@ func (h *AccountHandler) List(c fiber.Ctx) error {
 	return envelopeList(c, "Accounts", list)
 }
 
+// StandardChart serves the chart the Accounts screen's "Import standard chart"
+// offers: Xero's own standard chart, read from the reference table rather than
+// from a list the frontend carries. The rows are shaped as this organisation's
+// accounts so that importing one is a POST of what was read.
+//
+// The route is registered ahead of /accounts/:id — a static segment loses to a
+// parameter in Fiber otherwise, and "standard-chart" would be read as an id.
+func (h *AccountHandler) StandardChart(c fiber.Ctx) error {
+	list, err := h.repos.Accounts.StandardChart(c.Context(), middleware.OrganisationIDFrom(c))
+	if err != nil {
+		return httpError(err)
+	}
+	return envelopeList(c, "Accounts", list)
+}
+
 func (h *AccountHandler) Get(c fiber.Ctx) error {
 	orgID, id, err := tenantAndID(c)
 	if err != nil {

@@ -1,0 +1,30 @@
+https://go.xero.com/app/!!6Sp3/settings
+https://go.xero.com/Setup/FinancialSettings.aspx
+https://go.xero.com/app/!!6Sp3/organisation-details
+
+Organisation: Demo Company (Global)
+Short code: !!6Sp3
+Organisation ID: d57aa90f-6a2d-4b7f-9c13-af6440d454dd
+Region: GLOBAL
+Organisation type: Demo
+Edition: BUSINESS
+Country: Canada (CNTRY/CA)
+Is demo organisation: true
+
+Base currency: USD - United States Dollar
+Financial year end: 31 December
+Current financial year (as read on 11 Sep 2026): 1 January 2026 - 31 December 2026
+Tax basis: Accrual Basis
+Tax period: 3 Monthly
+Tax ID number: 101-2-303
+Tax ID display name: Tax reg
+Time zone: (UTC-05:00) Eastern Time (US & Canada)
+Soft lock date: 30 Sep 2008
+Hard lock date: (empty)
+
+Organisation details
+	Organisation name: Demo Company (Global)
+	Trading name: Demo Company (Global)
+	Town / City: Marineville
+	Postal / Zip code: 12345
+	Telephone: 800 1234 5678

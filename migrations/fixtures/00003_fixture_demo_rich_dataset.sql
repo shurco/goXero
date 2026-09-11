@@ -729,7 +729,7 @@ FROM accounts a
 WHERE a.organisation_id = '6823b27b-c48f-4099-bb27-4202a4f496a2' AND a.code = '090'
 LIMIT 1;
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 )
@@ -2161,7 +2161,7 @@ SELECT
     ),
     TRUE;
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 ) VALUES (
@@ -2178,7 +2178,7 @@ INSERT INTO bank_feed_statement_lines (
     'NEW'
 );
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 ) VALUES (
@@ -2195,7 +2195,7 @@ INSERT INTO bank_feed_statement_lines (
     'NEW'
 );
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 ) VALUES (
@@ -2212,7 +2212,7 @@ INSERT INTO bank_feed_statement_lines (
     'IMPORTED'
 );
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 ) VALUES (
@@ -2229,7 +2229,7 @@ INSERT INTO bank_feed_statement_lines (
     'NEW'
 );
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 ) VALUES (
@@ -2246,7 +2246,7 @@ INSERT INTO bank_feed_statement_lines (
     'IMPORTED'
 );
 
-INSERT INTO bank_feed_statement_lines (
+INSERT INTO bank_statement_lines (
     statement_line_id, organisation_id, feed_account_id, provider_tx_id, posted_at, amount, currency_code,
     description, counterparty, reference, status
 ) VALUES (
@@ -2523,7 +2523,7 @@ LIMIT 1;
 
 -- +goose Down
 -- +goose StatementBegin
-DELETE FROM bank_feed_statement_lines WHERE statement_line_id IN (
+DELETE FROM bank_statement_lines WHERE statement_line_id IN (
     'f2a30601-0909-4909-8909-000000000001',
     'f2a30601-0909-4909-8909-000000000002',
     'f2a30601-0909-4909-8909-000000000003',

@@ -1,0 +1,109 @@
+https://reporting.xero.com/!!6Sp3/v1/Run/1009
+
+Account Transactions
+Demo Company (Global)
+For the period 1 January 2026 to 31 December 2026
+
+--- report output (tab-separated) ---
+
+Date	Source	Description	Reference	Debit	Credit	Running Balance	Gross	Tax
+Accounts Payable
+Opening Balance				-	-	-	-	-
+8 Jul 2026	Payable Invoice	Xero	AP	-	31.39	31.39	31.39	-
+8 Jul 2026	Payable Payment	Payment: Xero	AP	31.39	-	-	(31.39)	-
+11 Jul 2026	Payable Invoice	PowerDirect	Rpt	-	119.08	119.08	119.08	-
+11 Jul 2026	Payable Invoice	Truxton Property Management	RENT	-	1,181.25	1,300.33	1,181.25	-
+12 Jul 2026	Payable Invoice	Net Connect	Rpt	-	44.92	1,345.25	44.92	-
+19 Jul 2026	Payable Invoice	Central Copiers	945-OCon	-	1,063.56	2,408.81	1,063.56	-
+20 Jul 2026	Payable Invoice	Net Connect	9781	-	1,463.88	3,872.69	1,463.88	-
+21 Jul 2026	Payable Invoice	Swanston Security	AP	-	59.54	3,932.23	59.54	-
+21 Jul 2026	Payable Payment	Payment: PowerDirect	Rpt	119.08	-	3,813.15	(119.08)	-
+21 Jul 2026	Payable Invoice	MCO Cleaning Services	5679	-	119.08	3,932.23	119.08	-
+21 Jul 2026	Payable Payment	Payment: Truxton Property Management	RENT	1,181.25	-	2,750.98	(1,181.25)	-
+21 Jul 2026	Payable Invoice	PC Complete		-	1,953.37	4,704.35	1,953.37	-
+21 Jul 2026	Payable Payment	Payment: Net Connect	Rpt	44.92	-	4,659.43	(44.92)	-
+21 Jul 2026	Payable Payment	Payment: PC Complete		1,682.74	-	2,976.69	(1,682.74)	-
+21 Jul 2026	Payable Invoice	SMART Agency	SM0195	-	2,000.00	4,976.69	2,000.00	-
+27 Jul 2026	Payable Credit Note Allocation	PC Complete	OG laptop	-	270.63	5,247.32	270.63	-
+27 Jul 2026	Payable Credit Note Allocation	PC Complete	OG laptop	270.63	-	4,976.69	(270.63)	-
+27 Jul 2026	Payable Payment	Payment: Central Copiers	945-OCon	900.00	-	4,076.69	(900.00)	-
+27 Jul 2026	Payable Credit Note Allocation	Swanston Security	Refund	-	25.44	4,102.13	25.44	-
+27 Jul 2026	Payable Credit Note Allocation	Swanston Security	Refund	25.44	-	4,076.69	(25.44)	-
+27 Jul 2026	Payable Payment	Payment: Swanston Security	AP	34.10	-	4,042.59	(34.10)	-
+27 Jul 2026	Payable Credit Note	PC Complete	OG laptop	270.63	-	3,771.96	(270.63)	-
+27 Jul 2026	Payable Credit Note	Swanston Security	Refund	25.44	-	3,746.52	(25.44)	-
+27 Jul 2026	Payable Payment	Payment: MCO Cleaning Services	5679	119.08	-	3,627.44	(119.08)	-
+30 Jul 2026	Payable Payment	Payment: Net Connect	9781	1,463.88	-	2,163.56	(1,463.88)	-
+1 Aug 2026	Payable Invoice	PC Complete	OG laptop	-	270.63	2,434.19	270.63	-
+1 Aug 2026	Payable Payment	Payment: PC Complete	OG laptop	270.63	-	2,163.56	(270.63)	-
+8 Aug 2026	Payable Payment	Payment: Xero	AP	31.39	-	2,132.17	(31.39)	-
+8 Aug 2026	Payable Invoice	Xero	AP	-	31.39	2,163.56	31.39	-
+8 Aug 2026	Payable Invoice	MCO Cleaning Services	M000435	-	216.50	2,380.06	216.50	-
+11 Aug 2026	Payable Invoice	Hoyt Productions	08-4123	-	5,953.75	8,333.81	5,953.75	-
+11 Aug 2026	Payable Invoice	Truxton Property Management	RENT	-	1,181.25	9,515.06	1,181.25	-
+11 Aug 2026	Payable Invoice	PowerDirect	Rpt	-	135.85	9,650.91	135.85	-
+11 Aug 2026	Payable Invoice	Carlton Functions	Dep	-	1,500.00	11,150.91	1,500.00	-
+12 Aug 2026	Payable Invoice	Net Connect	Rpt	-	46.82	11,197.73	46.82	-
+15 Aug 2026	Payable Invoice	MCO Cleaning Services	M000442	-	216.50	11,414.23	216.50	-
+21 Aug 2026	Payable Payment	Payment: Net Connect	Rpt	46.82	-	11,367.41	(46.82)	-
+21 Aug 2026	Payable Payment	Payment: Carlton Functions	Dep	1,500.00	-	9,867.41	(1,500.00)	-
+21 Aug 2026	Payable Payment	Payment: Truxton Property Management	RENT	1,181.25	-	8,686.16	(1,181.25)	-
+21 Aug 2026	Payable Invoice	ABC Furniture	710	-	1,000.00	9,686.16	1,000.00	-
+21 Aug 2026	Payable Invoice	Swanston Security	AP	-	59.54	9,745.70	59.54	-
+21 Aug 2026	Payable Payment	Payment: PowerDirect	Rpt	135.85	-	9,609.85	(135.85)	-
+21 Aug 2026	Payable Payment	Payment: ABC Furniture	710	1,000.00	-	8,609.85	(1,000.00)	-
+21 Aug 2026	Payable Payment	Payment: Hoyt Productions	08-4123	5,953.75	-	2,656.10	(5,953.75)	-
+22 Aug 2026	Payable Invoice	MCO Cleaning Services	M000456	-	216.50	2,872.60	216.50	-
+23 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000435	216.50	-	2,656.10	(216.50)	-
+29 Aug 2026	Payable Invoice	MCO Cleaning Services	M000463	-	216.50	2,872.60	216.50	-
+30 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000442	216.50	-	2,656.10	(216.50)	-
+31 Aug 2026	Payable Invoice	Truxton Property Management	RENT	-	1,181.25	3,837.35	1,181.25	-
+31 Aug 2026	Payable Invoice	SMART Agency	SM0210	-	2,500.00	6,337.35	2,500.00	-
+31 Aug 2026	Payable Payment	Payment: Truxton Property Management	RENT	1,181.25	-	5,156.10	(1,181.25)	-
+31 Aug 2026	Payable Payment	Payment: MCO Cleaning Services	M000456	216.50	-	4,939.60	(216.50)	-
+5 Sep 2026	Payable Invoice	Bayside Club		-	130.00	5,069.60	130.00	-
+5 Sep 2026	Payable Invoice	PC Complete		-	2,132.51	7,202.11	2,132.51	-
+5 Sep 2026	Payable Invoice	MCO Cleaning Services	M000471	-	216.50	7,418.61	216.50	-
+5 Sep 2026	Payable Payment	Payment: MCO Cleaning Services	M000463	216.50	-	7,202.11	(216.50)	-
+6 Sep 2026	Payable Invoice	Gateway Motors		-	411.35	7,613.46	411.35	-
+7 Sep 2026	Payable Invoice	Young Bros Transport		-	125.03	7,738.49	125.03	-
+7 Sep 2026	Payable Invoice	Xero	AP	-	31.39	7,769.88	31.39	-
+7 Sep 2026	Payable Payment	Payment: Gateway Motors		411.35	-	7,358.53	(411.35)	-
+8 Sep 2026	Payable Invoice	Bayside Wholesale	GB1-White	-	840.00	8,198.53	840.00	-
+10 Sep 2026	Payable Invoice	PowerDirect	Rpt	-	108.60	8,307.13	108.60	-
+10 Sep 2026	Payable Payment	Payment: MCO Cleaning Services	M000471	216.50	-	8,090.63	(216.50)	-
+11 Sep 2026	Payable Invoice	Net Connect	Rpt	-	54.13	8,144.76	54.13	-
+11 Sep 2026	Payable Invoice	Capital Cab Co	CS815	-	242.00	8,386.76	242.00	-
+Total Accounts Payable				18,963.37	27,350.13	8,386.76	8,386.76	-
+Closing Balance				-	8,386.76	8,386.76	-	-
+Accounts Receivable
+Opening Balance				-	-	-	-	-
+10 Jul 2026	Receivable Invoice	City Limousines	P/O 9711	250.00	-	250.00	250.00	-
+11 Jul 2026	Receivable Invoice	Rex Media Group	Monthly Support	541.25	-	791.25	541.25	-
+11 Jul 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	541.25	-	1,332.50	541.25	-
+11 Jul 2026	Receivable Invoice	Young Bros Transport	Monthly Support	541.25	-	1,873.75	541.25	-
+11 Jul 2026	Receivable Invoice	Port & Philip Freight	Monthly Support	541.25	-	2,415.00	541.25	-
+12 Jul 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	541.25	-	2,956.25	541.25	-
+13 Jul 2026	Receivable Invoice	Bank West	Training	1,299.00	-	4,255.25	1,299.00	-
+14 Jul 2026	Receivable Invoice	City Agency	Workshop	593.23	-	4,848.48	593.23	-
+19 Jul 2026	Receivable Invoice	Boom FM	Training	541.25	-	5,389.73	541.25	-
+20 Jul 2026	Receivable Payment	Payment: Port & Philip Freight	Monthly Support	-	541.25	4,848.48	(541.25)	-
+20 Jul 2026	Receivable Payment	Payment: Hamilton Smith Ltd	Monthly Support	-	541.25	4,307.23	(541.25)	-
+20 Jul 2026	Receivable Invoice	Ridgeway University	P/O CRM08-12	6,187.50	-	10,494.73	6,187.50	-
+20 Jul 2026	Receivable Payment	Payment: Rex Media Group	Monthly Support	-	541.25	9,953.48	(541.25)	-
+20 Jul 2026	Receivable Payment	Payment: Young Bros Transport	Monthly Support	-	541.25	9,412.23	(541.25)	-
+21 Jul 2026	Receivable Payment	Payment: Bank West	Training	-	1,299.00	8,113.23	(1,299.00)	-
+25 Jul 2026	Receivable Invoice	Petrie McLoud Watson & Associates	Portal Proj	1,407.25	-	9,520.48	1,407.25	-
+25 Jul 2026	Receivable Payment	Payment: City Agency	Workshop	-	593.23	8,927.25	(593.23)	-
+27 Jul 2026	Receivable Invoice	City Limousines	P/O 9711	216.50	-	9,143.75	216.50	-
+30 Jul 2026	Receivable Invoice	City Limousines	Book	21.70	-	9,165.45	21.70	-
+30 Jul 2026	Receivable Invoice	Boom FM	Training	1,082.50	-	10,247.95	1,082.50	-
+30 Jul 2026	Receivable Credit Note Allocation	Boom FM	Training	541.25	-	10,789.20	541.25	-
+30 Jul 2026	Receivable Credit Note Allocation	Boom FM	Training	-	541.25	10,247.95	(541.25)	-
+30 Jul 2026	Receivable Credit Note	Boom FM	Training	-	541.25	9,706.70	(541.25)	-
+1 Aug 2026	Receivable Invoice	DIISR - Small Business Services	Yr Ref W08-143	838.94	-	10,545.64	838.94	-
+11 Aug 2026	Receivable Invoice	Rex Media Group	Monthly Support	541.25	-	11,086.89	541.25	-
+11 Aug 2026	Receivable Payment	Payment: Ridgeway University	P/O CRM08-12	-	6,187.50	4,899.39	(6,187.50)	-
+11 Aug 2026	Receivable Payment	Payment: DIISR - Small Business Services	Yr Ref W08-143	-	568.31	4,331.08	(568.31)	-
+11 Aug 2026	Receivable Invoice	Hamilton Smith Ltd	Monthly Support	541.25	-	4,872.33	541.25	-
+11 Aug 2026	Receivable Payment	Payment: DIISR - Small Business Services	Yr Ref W08-143	-	216.50	4,655.83	(216.50)	-
