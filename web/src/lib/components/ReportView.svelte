@@ -1,19 +1,28 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { get } from 'svelte/store';
+	import { untrack } from 'svelte';
+	import { reportApi } from '$lib/api';
 	import { session } from '$lib/stores/session';
 	import type { Report, ReportRow } from '$lib/types';
+
+	interface Field {
+		name: string;
+		label: string;
+		type?: 'date' | 'text' | 'checkbox' | 'select';
+		/** Options for a select field. */
+		options?: { value: string; label: string }[];
+	}
 
 	interface Props {
 		title: string;
 		endpoint: string;
 		defaults?: Record<string, string>;
-		fields?: { name: string; label: string; type?: 'date' | 'text' }[];
+		fields?: Field[];
 	}
 	let { title, endpoint, defaults = {}, fields = [] }: Props = $props();
 
-	let params = $state<Record<string, string>>({});
-	$effect(() => { params = { ...defaults }; });
+	// Seeded once from the defaults; doing this in an $effect would wipe whatever
+	// the user typed every time the parent re-rendered.
+	let params = $state<Record<string, string>>(untrack(() => ({ ...defaults })));
 	let report = $state<Report | null>(null);
 	let loading = $state(false);
 	let error = $state('');
@@ -22,14 +31,7 @@
 		loading = true;
 		error = '';
 		try {
-			const qs = new URLSearchParams(params).toString();
-			const sess = get(session);
-			const headers: Record<string, string> = { Accept: 'application/json' };
-			if (sess.token) headers['Authorization'] = `Bearer ${sess.token}`;
-			if (sess.tenantId) headers['Xero-Tenant-Id'] = sess.tenantId;
-			const res = await fetch(`${endpoint}${qs ? `?${qs}` : ''}`, { headers });
-			const data = await res.json();
-			if (!res.ok) throw new Error(data?.Message ?? res.statusText);
+			const data = await reportApi.run(endpoint, params);
 			report = data?.Reports?.[0] ?? data?.Payload?.Reports?.[0] ?? null;
 		} catch (e) {
 			error = (e as Error).message;
@@ -38,7 +40,6 @@
 		}
 	}
 
-	onMount(run);
 	$effect(() => { if ($session.tenantId) void run(); });
 </script>
 
@@ -46,11 +47,32 @@
 	<div class="flex items-start justify-between flex-wrap gap-3">
 		<h1 class="section-title">{title}</h1>
 		<div class="flex gap-2 items-end flex-wrap">
-			{#each fields as f}
-				<label class="block">
-					<span class="label">{f.label}</span>
-					<input class="input" type={f.type ?? 'text'} bind:value={params[f.name]} />
-				</label>
+			{#each fields as f (f.name)}
+				{#if f.type === 'checkbox'}
+					<label class="flex items-center gap-2 pb-2">
+						<input
+							type="checkbox"
+							checked={params[f.name] === 'true'}
+							onchange={(e) =>
+								(params[f.name] = e.currentTarget.checked ? 'true' : '')}
+						/>
+						<span class="text-sm">{f.label}</span>
+					</label>
+				{:else if f.type === 'select'}
+					<label class="block">
+						<span class="label">{f.label}</span>
+						<select class="input" bind:value={params[f.name]}>
+							{#each f.options ?? [] as o (o.value)}
+								<option value={o.value}>{o.label}</option>
+							{/each}
+						</select>
+					</label>
+				{:else}
+					<label class="block">
+						<span class="label">{f.label}</span>
+						<input class="input" type={f.type ?? 'text'} bind:value={params[f.name]} />
+					</label>
+				{/if}
 			{/each}
 			<button class="btn-primary" onclick={run} disabled={loading}>Run</button>
 		</div>

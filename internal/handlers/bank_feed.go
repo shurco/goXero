@@ -3,12 +3,11 @@ package handlers
 import (
 	"context"
 	"errors"
-	"strings"
+	"log/slog"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 
 	"github.com/shurco/goxero/internal/bankfeed"
 	"github.com/shurco/goxero/internal/middleware"
@@ -198,65 +197,154 @@ func (h *BankFeedHandler) FinalizeConnection(c fiber.Ctx) error {
 	return rawOne(c, fiber.StatusOK, "Connections", *refreshed)
 }
 
-// SyncConnection pulls statement lines for every account on the connection
-// and upserts them into the staging table. Response is a summary tally.
+// SyncConnection pulls statement lines for every account on the connection and
+// upserts them into the staging inbox. Response is a summary tally.
 func (h *BankFeedHandler) SyncConnection(c fiber.Ctx) error {
-	id, err := parseID(c, "id")
+	orgID := middleware.OrganisationIDFrom(c)
+	conn, err := h.getOwnedConnection(c, orgID)
 	if err != nil {
 		return err
 	}
-	orgID := middleware.OrganisationIDFrom(c)
-	conn, err := h.repos.BankFeeds.GetConnection(c.Context(), orgID, id)
+	fetched, newLines, err := h.syncConnection(c.Context(), orgID, conn)
 	if err != nil {
+		// resolveProvider returns *fiber.Error (400/404); httpError would mask
+		// those as 500, so pass fiber errors through unchanged.
+		var fe *fiber.Error
+		if errors.As(err, &fe) {
+			return fe
+		}
 		return httpError(err)
 	}
-	if conn.Status != models.BankFeedStatusLinked {
-		return fiber.NewError(fiber.StatusBadRequest, "connection is not linked")
+	return c.JSON(fiber.Map{"Fetched": fetched, "NewLines": newLines})
+}
+
+// getOwnedConnection loads the connection named by the :id route parameter and
+// checks it belongs to the caller's tenant.
+func (h *BankFeedHandler) getOwnedConnection(c fiber.Ctx, orgID uuid.UUID) (*models.BankFeedConnection, error) {
+	id, err := parseID(c, "id")
+	if err != nil {
+		return nil, err
 	}
+	conn, err := h.repos.BankFeeds.GetConnection(c.Context(), orgID, id)
+	if err != nil {
+		return nil, httpError(err)
+	}
+	if conn.Status != models.BankFeedStatusLinked {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "connection is not linked")
+	}
+	return conn, nil
+}
+
+// syncConnection is the shared core of the manual "Sync" button and the
+// background poller: it pulls the sync window for every account on the
+// connection and upserts each line idempotently. The provider's own error is
+// recorded on the connection so the UI can explain why a feed went quiet.
+func (h *BankFeedHandler) syncConnection(ctx context.Context, orgID uuid.UUID, conn *models.BankFeedConnection) (fetched, newLines int, err error) {
 	p, err := h.resolveProvider(conn.Provider)
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
+	// GetConnection always loads the connection's accounts eagerly, so this is
+	// already the complete list.
+	accounts := conn.Accounts
 
 	to := time.Now().UTC()
 	from := to.Add(-h.syncWindow)
 
-	var totalFetched, totalNew int
-	for _, a := range conn.Accounts {
-		lines, err := p.FetchStatementLines(c.Context(), a.ExternalAccountID, from, to)
+	for _, a := range accounts {
+		lines, err := p.FetchStatementLines(ctx, a.ExternalAccountID, from, to)
 		if err != nil {
-			_ = h.repos.BankFeeds.UpdateConnectionStatus(c.Context(), orgID, id,
+			_ = h.repos.BankFeeds.UpdateConnectionStatus(ctx, orgID, conn.ConnectionID,
 				models.BankFeedStatusError, err.Error(), nil)
-			return httpError(err)
+			return fetched, newLines, err
 		}
 		for _, l := range lines {
-			row := &models.BankFeedStatementLine{
-				FeedAccountID: a.FeedAccountID,
+			feedAccountID := a.FeedAccountID
+			row := &models.BankStatementLine{
+				FeedAccountID: &feedAccountID,
+				Source:        models.StatementLineSourceFeed,
 				ProviderTxID:  l.ProviderTxID,
 				PostedAt:      l.PostedAt,
 				Amount:        l.Amount,
 				CurrencyCode:  l.CurrencyCode,
-				Description:   l.Description,
-				Counterparty:  l.Counterparty,
-				Reference:     l.Reference,
-				Status:        models.BankFeedLineStatusNew,
+				// The provider's counterparty is what the user sees in the
+				// payee column; the description stays as the bank sent it.
+				Payee:        l.Counterparty,
+				Description:  l.Description,
+				Counterparty: l.Counterparty,
+				Reference:    l.Reference,
 			}
-			inserted, err := h.repos.BankFeeds.UpsertStatementLine(c.Context(), orgID, a.FeedAccountID, row, l.Raw)
+			inserted, err := h.repos.BankFeeds.UpsertStatementLine(ctx, orgID, a.FeedAccountID, row, l.Raw)
 			if err != nil {
-				return httpError(err)
+				return fetched, newLines, err
 			}
-			totalFetched++
+			fetched++
 			if inserted {
-				totalNew++
+				newLines++
 			}
 		}
 	}
 	now := time.Now().UTC()
-	if err := h.repos.BankFeeds.UpdateConnectionStatus(c.Context(), orgID, id,
+	if err := h.repos.BankFeeds.UpdateConnectionStatus(ctx, orgID, conn.ConnectionID,
 		models.BankFeedStatusLinked, "", &now); err != nil {
-		return httpError(err)
+		return fetched, newLines, err
 	}
-	return c.JSON(fiber.Map{"Fetched": totalFetched, "NewLines": totalNew})
+	return fetched, newLines, nil
+}
+
+// SyncAllConnections is the background sweep: every linked connection of every
+// tenant is refreshed once. One tenant's broken consent must not stop the rest,
+// so failures are counted and logged rather than returned.
+func (h *BankFeedHandler) SyncAllConnections(ctx context.Context) (synced, failed int) {
+	conns, err := h.repos.BankFeeds.ListLinkedConnections(ctx)
+	if err != nil {
+		slog.Error("bank feed sweep: could not list connections", "err", err)
+		return 0, 0
+	}
+	for _, c := range conns {
+		if ctx.Err() != nil {
+			return synced, failed
+		}
+		conn, err := h.repos.BankFeeds.GetConnection(ctx, c.OrganisationID, c.ConnectionID)
+		if err != nil {
+			slog.Error("bank feed sweep: could not load connection",
+				"connectionId", c.ConnectionID, "err", err)
+			failed++
+			continue
+		}
+		fetched, newLines, err := h.syncConnection(ctx, c.OrganisationID, conn)
+		if err != nil {
+			slog.Warn("bank feed sweep: sync failed",
+				"connectionId", c.ConnectionID, "provider", c.Provider, "err", err)
+			failed++
+			continue
+		}
+		synced++
+		slog.Info("bank feed sweep: synced",
+			"connectionId", c.ConnectionID, "fetched", fetched, "newLines", newLines)
+	}
+	return synced, failed
+}
+
+// StartSyncScheduler polls every linked connection on an interval until the
+// context is cancelled. An interval of zero disables it, which is what tests
+// and single-tenant deployments want.
+func (h *BankFeedHandler) StartSyncScheduler(ctx context.Context, interval time.Duration) {
+	if interval <= 0 {
+		return
+	}
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				h.SyncAllConnections(ctx)
+			}
+		}
+	}()
 }
 
 // BindFeedAccount links a feed account to an existing BANK ledger account.
@@ -273,117 +361,6 @@ func (h *BankFeedHandler) BindFeedAccount(c fiber.Ctx) error {
 		return err
 	}
 	if err := h.repos.BankFeeds.BindAccount(c.Context(), middleware.OrganisationIDFrom(c), feedID, body.AccountID); err != nil {
-		return httpError(err)
-	}
-	return noContent(c)
-}
-
-// ListStatementLines returns the staging inbox. Filters:
-//
-//	?feedAccountId=<uuid>
-//	?status=NEW|IMPORTED|IGNORED   (default NEW)
-func (h *BankFeedHandler) ListStatementLines(c fiber.Ctx) error {
-	var feedAccountID *uuid.UUID
-	if raw := c.Query("feedAccountId"); raw != "" {
-		id, err := uuid.Parse(raw)
-		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid feedAccountId")
-		}
-		feedAccountID = &id
-	}
-	status := c.Query("status", models.BankFeedLineStatusNew)
-	p := paginationFromQuery(c)
-	items, total, err := h.repos.BankFeeds.ListStatementLines(c.Context(), middleware.OrganisationIDFrom(c), feedAccountID, status, p)
-	if err != nil {
-		return httpError(err)
-	}
-	p.Total = total
-	return c.JSON(fiber.Map{"StatementLines": items, "Pagination": p})
-}
-
-// ImportStatementLine materialises a staging row as a bank_transaction so it
-// flows into GL + P&L. The caller optionally overrides the destination
-// account / contact; when omitted we fall back to the feed's linked account.
-func (h *BankFeedHandler) ImportStatementLine(c fiber.Ctx) error {
-	id, err := parseID(c, "id")
-	if err != nil {
-		return err
-	}
-	body, err := bindBody[struct {
-		BankAccountID *uuid.UUID       `json:"BankAccountID"`
-		ContactID     *uuid.UUID       `json:"ContactID"`
-		AccountCode   string           `json:"AccountCode"`
-		Reference     string           `json:"Reference"`
-		TaxAmount     *decimal.Decimal `json:"TaxAmount"`
-	}](c)
-	if err != nil {
-		return err
-	}
-	if strings.TrimSpace(body.AccountCode) == "" {
-		return fiber.NewError(fiber.StatusBadRequest, "AccountCode is required")
-	}
-	orgID := middleware.OrganisationIDFrom(c)
-
-	line, err := h.repos.BankFeeds.GetStatementLine(c.Context(), orgID, id)
-	if err != nil {
-		return httpError(err)
-	}
-	if line.Status == models.BankFeedLineStatusImported {
-		return fiber.NewError(fiber.StatusConflict, "statement line already imported")
-	}
-
-	bankAccountID := body.BankAccountID
-	if bankAccountID == nil {
-		fa, err := h.repos.BankFeeds.GetFeedAccount(c.Context(), orgID, line.FeedAccountID)
-		if err != nil {
-			return httpError(err)
-		}
-		if fa.AccountID == nil {
-			return fiber.NewError(fiber.StatusBadRequest, "feed account is not bound to a bank account; pass BankAccountID")
-		}
-		bankAccountID = fa.AccountID
-	}
-
-	txType := models.BankTransactionTypeReceive
-	amount := line.Amount
-	if amount.IsNegative() {
-		txType = models.BankTransactionTypeSpend
-		amount = amount.Neg()
-	}
-	posted := line.PostedAt
-	bt := &models.BankTransaction{
-		Type:            txType,
-		BankAccountID:   bankAccountID,
-		ContactID:       body.ContactID,
-		Date:            &posted,
-		Reference:       firstNonBlank(body.Reference, line.Reference, line.Description),
-		CurrencyCode:    line.CurrencyCode,
-		Status:          "AUTHORISED",
-		LineAmountTypes: models.LineAmountTypesInclusive,
-		LineItems: []models.LineItem{{
-			Description: line.Description,
-			Quantity:    decimal.NewFromInt(1),
-			UnitAmount:  amount,
-			AccountCode: body.AccountCode,
-			TaxAmount:   zeroIfNil(body.TaxAmount),
-		}},
-	}
-	if err := h.repos.BankTransactions.Create(c.Context(), orgID, bt); err != nil {
-		return httpError(err)
-	}
-	if err := h.repos.BankFeeds.MarkLineImported(c.Context(), orgID, id, bt.BankTransactionID); err != nil {
-		return httpError(err)
-	}
-	return rawOne(c, fiber.StatusCreated, "BankTransactions", *bt)
-}
-
-// IgnoreStatementLine hides a row from the inbox.
-func (h *BankFeedHandler) IgnoreStatementLine(c fiber.Ctx) error {
-	id, err := parseID(c, "id")
-	if err != nil {
-		return err
-	}
-	if err := h.repos.BankFeeds.MarkLineIgnored(c.Context(), middleware.OrganisationIDFrom(c), id); err != nil {
 		return httpError(err)
 	}
 	return noContent(c)

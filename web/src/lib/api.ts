@@ -4,7 +4,9 @@ import { session } from './stores/session';
 import { get } from 'svelte/store';
 import type {
 	Account,
+	BankReconcilePeriod,
 	BankRule,
+	BankStatementLine,
 	BankTransaction,
 	Contact,
 	Currency,
@@ -20,6 +22,11 @@ import type {
 	Payment,
 	Quote,
 	RefreshResponse,
+	Report,
+	StatementBalance,
+	StatementImport,
+	StatementLineCoding,
+	StatementParseResult,
 	TaxRate
 } from './types';
 
@@ -389,19 +396,20 @@ export const bankTransactionApi = {
 			'/api/v1/bank-transactions' + (qs ? `?${qs}` : '')
 		);
 	},
-	get: async (id: string) => {
-		const res = await request<XeroEnvelope<'BankTransactions', BankTransaction>>(
-			`/api/v1/bank-transactions/${id}`
-		);
-		return unwrap(res, 'BankTransactions')[0];
-	},
 	create: (payload: Partial<BankTransaction>) =>
 		request<{ BankTransactions: BankTransaction[] }>(`/api/v1/bank-transactions`, {
 			method: 'POST',
 			body: JSON.stringify(payload)
 		}),
-	delete: (id: string) =>
-		request<void>(`/api/v1/bank-transactions/${id}`, { method: 'DELETE' })
+	/**
+	 * Approve a transaction without sending its amounts back. Creating a copy
+	 * instead — which is what this app used to do — books the money twice.
+	 */
+	reconcile: (id: string, isReconciled = true) =>
+		request<{ BankTransactions: BankTransaction[] }>(
+			`/api/v1/bank-transactions/${id}/reconcile`,
+			{ method: 'POST', body: JSON.stringify({ IsReconciled: isReconciled }) }
+		)
 };
 
 // ── Bank rules ─────────────────────────────────────────────────────────────
@@ -424,7 +432,157 @@ export const bankRuleApi = {
 			method: 'PUT',
 			body: JSON.stringify(payload)
 		}),
-	delete: (id: string) => request<void>(`/api/v1/bank-rules/${id}`, { method: 'DELETE' })
+	delete: (id: string) => request<void>(`/api/v1/bank-rules/${id}`, { method: 'DELETE' }),
+	/** Rewrite the evaluation order — the first matching rule wins. */
+	reorder: (bankRuleIds: string[]) =>
+		request<{ BankRules: BankRule[] }>('/api/v1/bank-rules/order', {
+			method: 'PUT',
+			body: JSON.stringify({ BankRuleIDs: bankRuleIds })
+		})
+};
+
+// ── Bank statement inbox ───────────────────────────────────────────────────
+export const statementApi = {
+	list: (params: Record<string, string> = {}) => {
+		const qs = new URLSearchParams(params).toString();
+		return request<{ StatementLines: BankStatementLine[]; Pagination: Pagination }>(
+			'/api/v1/statement-lines' + (qs ? `?${qs}` : '')
+		);
+	},
+	/** The two numbers at the top of the reconcile screen. */
+	balance: (bankAccountId: string) =>
+		request<{ Balance: StatementBalance }>(
+			`/api/v1/statement-lines/balance?bankAccountId=${encodeURIComponent(bankAccountId)}`
+		),
+	ignore: (id: string) =>
+		request<void>(`/api/v1/statement-lines/${id}/ignore`, { method: 'POST' }),
+	unignore: (id: string) =>
+		request<void>(`/api/v1/statement-lines/${id}/unignore`, { method: 'POST' }),
+	bulk: (statementLineIds: string[], action: 'IGNORE' | 'UNIGNORE') =>
+		request<void>('/api/v1/statement-lines/bulk', {
+			method: 'POST',
+			body: JSON.stringify({ StatementLineIDs: statementLineIds, Action: action })
+		}),
+	/** Turn one line into a new bank transaction. */
+	create: (
+		id: string,
+		payload: { AccountCode: string; TaxType?: string; ContactID?: string; Reference?: string; Description?: string }
+	) =>
+		request<{ BankTransactions: BankTransaction[] }>(`/api/v1/statement-lines/${id}/create`, {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	/** Link a line to a transaction that already exists. */
+	match: (id: string, bankTransactionId: string) =>
+		request<{ BankTransactions: BankTransaction[] }>(`/api/v1/statement-lines/${id}/match`, {
+			method: 'POST',
+			body: JSON.stringify({ BankTransactionID: bankTransactionId })
+		}),
+	/** Candidates for Find & match, best first. */
+	matches: (id: string, search = '') => {
+		const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+		return request<{ BankTransactions: BankTransaction[]; Pagination: Pagination }>(
+			`/api/v1/statement-lines/${id}/matches${qs}`
+		);
+	},
+	transfer: (id: string, payload: { FromBankAccountID?: string; ToBankAccountID: string; Reference?: string }) =>
+		request<{ BankTransfers: unknown[] }>(`/api/v1/statement-lines/${id}/transfer`, {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	/** Evaluate the tenant's bank rules over the inbox without saving anything. */
+	applyRule: (payload: { BankAccountID?: string; StatementLineIDs?: string[] }) =>
+		request<{ StatementLines: BankStatementLine[] }>('/api/v1/statement-lines/apply-rule', {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	/** Save the cash-coding grid: each row becomes a bank transaction. */
+	cashCode: (rows: StatementLineCoding[]) =>
+		request<{ Coded: number }>('/api/v1/statement-lines/cash-code', {
+			method: 'POST',
+			body: JSON.stringify({ Rows: rows })
+		}),
+	/** Match every inbox line that agrees on date and amount. */
+	autoReconcile: (bankAccountId: string) =>
+		request<{ Matched: number; Scanned: number; Remaining: number }>(
+			`/api/v1/statement-lines/auto-reconcile?bankAccountId=${encodeURIComponent(bankAccountId)}`,
+			{ method: 'POST' }
+		)
+};
+
+// ── Manual statement import (upload → import settings → review) ────────────
+export const statementImportApi = {
+	/** Step 1: upload the file. Parsing happens server-side and nothing is saved yet. */
+	upload: (file: File, bankAccountId: string, extra: { format?: string; mapping?: string } = {}) => {
+		const fd = new FormData();
+		fd.append('file', file);
+		fd.append('bankAccountId', bankAccountId);
+		if (extra.format) fd.append('format', extra.format);
+		if (extra.mapping) fd.append('mapping', extra.mapping);
+		return request<{ StatementImports: StatementParseResult[] }>('/api/v1/statement-imports', {
+			method: 'POST',
+			body: fd
+		});
+	},
+	/** Step 2: re-apply a corrected column mapping to the staged file. */
+	remap: (importId: string, file: File, mapping: unknown) => {
+		const fd = new FormData();
+		fd.append('file', file);
+		fd.append('mapping', JSON.stringify(mapping));
+		return request<{ StatementImports: StatementParseResult[] }>(
+			`/api/v1/statement-imports/${importId}/remap`,
+			{ method: 'POST', body: fd }
+		);
+	},
+	list: (params: Record<string, string> = {}) => {
+		const qs = new URLSearchParams(params).toString();
+		return request<{ StatementImports: StatementImport[]; Pagination: Pagination }>(
+			'/api/v1/statement-imports' + (qs ? `?${qs}` : '')
+		);
+	},
+	/** Step 3: materialise the lines. Duplicates are skipped unless told otherwise. */
+	commit: (importId: string, includeDuplicates = false) =>
+		request<{ Import: StatementImport; Imported: number; Skipped: number }>(
+			`/api/v1/statement-imports/${importId}/commit`,
+			{ method: 'POST', body: JSON.stringify({ IncludeDuplicates: includeDuplicates }) }
+		),
+	/** Undo an import that has not been reconciled yet. */
+	undo: (importId: string) =>
+		request<{ Deleted: number }>(`/api/v1/statement-imports/${importId}`, { method: 'DELETE' })
+};
+
+// ── Reports ────────────────────────────────────────────────────────────────
+export const reportApi = {
+	/** Run a report by its endpoint slug; the caller reads `Reports[0]`. */
+	run: (endpoint: string, params: Record<string, string> = {}) => {
+		const qs = new URLSearchParams(params).toString();
+		return request<{ Reports?: Report[]; Payload?: { Reports?: Report[] } }>(
+			endpoint + (qs ? `?${qs}` : '')
+		);
+	}
+};
+
+// ── Reconcile periods ──────────────────────────────────────────────────────
+export const reconcilePeriodApi = {
+	list: async (bankAccountId: string) =>
+		unwrap(
+			await request<XeroEnvelope<'ReconcilePeriods', BankReconcilePeriod>>(
+				`/api/v1/reconcile-periods?bankAccountId=${encodeURIComponent(bankAccountId)}`
+			),
+			'ReconcilePeriods'
+		),
+	create: (payload: {
+		BankAccountID: string;
+		StartDate: string;
+		EndDate: string;
+		StatementBalance?: number;
+	}) =>
+		request<{ ReconcilePeriods: BankReconcilePeriod[] }>('/api/v1/reconcile-periods', {
+			method: 'POST',
+			body: JSON.stringify(payload)
+		}),
+	delete: (periodId: string) =>
+		request<void>(`/api/v1/reconcile-periods/${periodId}`, { method: 'DELETE' })
 };
 
 // ── Users (GET /api/v1/users) ─────────────────────────────────────────────

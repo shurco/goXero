@@ -285,7 +285,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Bank Reconciliation',
-				href: null,
+				href: '/app/reports/bank-reconciliation',
 				description:
 					'Compare your balance in Xero with your bank balance, and check for missing, deleted or duplicated transactions.'
 			},
@@ -321,7 +321,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Uncoded Statement Lines',
-				href: null,
+				href: '/app/reports/uncoded-statement-lines',
 				description:
 					'A list of unreconciled statement lines that can be shared with clients, who can add comments and help with reconciliation.'
 			}
@@ -386,7 +386,7 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
 			},
 			{
 				label: 'Trial Balance',
-				href: null,
+				href: '/app/reports/trial-balance',
 				description: 'View account balances on a year-to-date basis.'
 			},
 			{

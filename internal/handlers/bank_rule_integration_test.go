@@ -25,6 +25,32 @@ func TestHTTP_BankRules_CRUD(t *testing.T) {
 	}, true)
 	assert.Equal(t, http.StatusBadRequest, status)
 
+	// A rule that matches lines but codes nothing is refused: saving it would
+	// leave a rule in the list that silently does nothing.
+	status, _ = h.do(t, http.MethodPost, "/api/v1/bank-rules", map[string]any{
+		"Name":     "Codes nothing",
+		"RuleType": "SPEND",
+		"Definition": map[string]any{
+			"Conditions": []map[string]any{
+				{"Field": "DESCRIPTION", "Operator": "CONTAINS", "Value": "starbucks"},
+			},
+		},
+	}, true)
+	assert.Equal(t, http.StatusBadRequest, status)
+
+	// An unknown condition operator is refused rather than stored.
+	status, _ = h.do(t, http.MethodPost, "/api/v1/bank-rules", map[string]any{
+		"Name":     "Bad operator",
+		"RuleType": "SPEND",
+		"Definition": map[string]any{
+			"Conditions": []map[string]any{
+				{"Field": "DESCRIPTION", "Operator": "SMELSLIKE", "Value": "starbucks"},
+			},
+			"PercentLines": []map[string]any{{"Description": "Coffee", "Percent": 100}},
+		},
+	}, true)
+	assert.Equal(t, http.StatusBadRequest, status)
+
 	// Happy path: create an inactive SPEND rule; server must honour IsActive=false.
 	status, body := h.do(t, http.MethodPost, "/api/v1/bank-rules", map[string]any{
 		"Name":     "Coffee shop",
@@ -33,6 +59,9 @@ func TestHTTP_BankRules_CRUD(t *testing.T) {
 		"Definition": map[string]any{
 			"Conditions": []map[string]any{
 				{"Field": "Description", "Operator": "CONTAINS", "Value": "starbucks"},
+			},
+			"PercentLines": []map[string]any{
+				{"Description": "Coffee", "AccountID": "429", "Percent": 100},
 			},
 		},
 	}, true)
@@ -65,6 +94,10 @@ func TestHTTP_BankRules_CRUD(t *testing.T) {
 		"IsActive": true,
 		"Definition": map[string]any{
 			"MatchMode": "ANY",
+			"Conditions": []map[string]any{
+				{"Field": "PAYEE", "Operator": "contains", "Value": "coffee"},
+			},
+			"PercentLines": []map[string]any{{"AccountID": "429", "Percent": 100}},
 		},
 	}, true)
 	assert.Equal(t, http.StatusOK, status)

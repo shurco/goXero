@@ -83,18 +83,46 @@ func summaryRow(label string, amounts ...decimal.Decimal) models.ReportRow {
 	return models.ReportRow{RowType: models.ReportRowTypeSummary, Cells: cells}
 }
 
+// moneyPtr renders an optional comparative amount. When no comparative period
+// was requested the cell is left empty, so the same renderer serves both the
+// plain and the comparative report.
+func moneyPtr(d *decimal.Decimal) models.ReportCell {
+	if d == nil {
+		return models.ReportCell{Value: ""}
+	}
+	return money(*d)
+}
+
+// summaryRowPtr is summaryRow for comparatives: the trailing optional amount
+// is rendered as a plain cell, preserving the SummaryRow row type.
+func summaryRowPtr(label string, base decimal.Decimal, cmp *decimal.Decimal) models.ReportRow {
+	return models.ReportRow{
+		RowType: models.ReportRowTypeSummary,
+		Cells:   []models.ReportCell{txt(label), money(base), moneyPtr(cmp)},
+	}
+}
+
+// hasComparative reports whether a comparative column should be rendered.
+func hasComparative(ptr *time.Time) bool { return ptr != nil }
+
+// dateRangeLabel renders "From 1 January 2026 To 31 March 2026".
+func dateRangeLabel(from, to time.Time) string {
+	return fmt.Sprintf("From %s To %s", xeroDate(from), xeroDate(to))
+}
+
 // xeroDate formats a date the way the Xero reports page shows it: "2 April 2026".
 func xeroDate(t time.Time) string { return t.Format("2 January 2006") }
 
 // renderTrialBalance groups TB rows by Account class (Revenue/Expense/Assets/…)
-// following Xero's layout.
-func renderTrialBalance(orgName string, asOf time.Time, rows []repository.TrialBalanceRow) models.Report {
+// following Xero's layout. The Debit/Credit columns cover the selected period;
+// YTD Debit/YTD Credit cover the financial year through the period end.
+func renderTrialBalance(orgName string, from, to time.Time, rows []repository.TrialBalanceRow) models.Report {
 	r := models.Report{
 		ReportID:     "TrialBalance",
 		ReportName:   "Trial Balance",
 		ReportType:   "TrialBalance",
-		ReportTitles: []string{"Trial Balance", orgName, "As at " + xeroDate(asOf)},
-		ReportDate:   xeroDate(asOf),
+		ReportTitles: []string{"Trial Balance", orgName, dateRangeLabel(from, to)},
+		ReportDate:   xeroDate(to),
 	}
 	r.Rows = []models.ReportRow{
 		headerRow("Account", "Debit", "Credit", "YTD Debit", "YTD Credit"),
@@ -112,14 +140,17 @@ func renderTrialBalance(orgName string, asOf time.Time, rows []repository.TrialB
 		{"Equity", setOf(models.AccountTypeEquity)},
 	}
 	grandDebit, grandCredit := decimal.Zero, decimal.Zero
+	grandYTDDebit, grandYTDCredit := decimal.Zero, decimal.Zero
 	for _, b := range buckets {
 		section := models.ReportRow{RowType: models.ReportRowTypeSection, Title: b.title}
 		totDR, totCR := decimal.Zero, decimal.Zero
+		totYTDR, totYTDC := decimal.Zero, decimal.Zero
 		for _, row := range rows {
 			if _, ok := b.types[row.AccountType]; !ok {
 				continue
 			}
-			if row.Debit.IsZero() && row.Credit.IsZero() {
+			if row.Debit.IsZero() && row.Credit.IsZero() &&
+				row.YTDDebit.IsZero() && row.YTDCredit.IsZero() {
 				continue
 			}
 			section.Rows = append(section.Rows, models.ReportRow{
@@ -134,15 +165,19 @@ func renderTrialBalance(orgName string, asOf time.Time, rows []repository.TrialB
 			})
 			totDR = totDR.Add(row.Debit)
 			totCR = totCR.Add(row.Credit)
+			totYTDR = totYTDR.Add(row.YTDDebit)
+			totYTDC = totYTDC.Add(row.YTDCredit)
 		}
 		if len(section.Rows) > 0 {
-			section.Rows = append(section.Rows, summaryRow("Total "+b.title, totDR, totCR, totDR, totCR))
+			section.Rows = append(section.Rows, summaryRow("Total "+b.title, totDR, totCR, totYTDR, totYTDC))
 			r.Rows = append(r.Rows, section)
 			grandDebit = grandDebit.Add(totDR)
 			grandCredit = grandCredit.Add(totCR)
+			grandYTDDebit = grandYTDDebit.Add(totYTDR)
+			grandYTDCredit = grandYTDCredit.Add(totYTDC)
 		}
 	}
-	r.Rows = append(r.Rows, summaryRow("Total", grandDebit, grandCredit, grandDebit, grandCredit))
+	r.Rows = append(r.Rows, summaryRow("Total", grandDebit, grandCredit, grandYTDDebit, grandYTDCredit))
 	return r
 }
 
@@ -154,22 +189,24 @@ func setOf(s ...string) map[string]struct{} {
 	return out
 }
 
-// renderProfitAndLoss renders the repo PnLReport as Xero-shaped rows.
+// renderProfitAndLoss renders the repo PnLReport as Xero-shaped rows. When a
+// comparative period was requested, a second amount column is emitted for
+// every line, section total and headline figure.
 func renderProfitAndLoss(orgName string, rep *repository.PnLReport) models.Report {
 	r := models.Report{
-		ReportID:   "ProfitAndLoss",
-		ReportName: "Profit and Loss",
-		ReportType: "ProfitAndLoss",
-		ReportTitles: []string{
-			"Profit and Loss",
-			orgName,
-			fmt.Sprintf("From %s To %s", xeroDate(rep.From), xeroDate(rep.To)),
-		},
-		ReportDate: xeroDate(rep.To),
+		ReportID:     "ProfitAndLoss",
+		ReportName:   "Profit and Loss",
+		ReportType:   "ProfitAndLoss",
+		ReportTitles: []string{"Profit and Loss", orgName, dateRangeLabel(rep.From, rep.To)},
+		ReportDate:   xeroDate(rep.To),
 	}
-	r.Rows = []models.ReportRow{headerRow("", xeroDate(rep.To))}
+	if hasComparative(rep.ComparativeTo) {
+		r.Rows = []models.ReportRow{headerRow("", xeroDate(rep.To), xeroDate(*rep.ComparativeTo))}
+	} else {
+		r.Rows = []models.ReportRow{headerRow("", xeroDate(rep.To))}
+	}
 
-	sec := func(title string, rows []repository.PnLRow, total decimal.Decimal) models.ReportRow {
+	sec := func(title string, rows []repository.PnLRow, total decimal.Decimal, cmpTotal *decimal.Decimal) models.ReportRow {
 		s := models.ReportRow{RowType: models.ReportRowTypeSection, Title: title}
 		for _, row := range rows {
 			s.Rows = append(s.Rows, models.ReportRow{
@@ -177,23 +214,27 @@ func renderProfitAndLoss(orgName string, rep *repository.PnLReport) models.Repor
 				Cells: []models.ReportCell{
 					accountCell(row.AccountID, row.AccountCode, row.AccountName),
 					money(row.Amount),
+					moneyPtr(row.Comparative),
 				},
 			})
 		}
-		s.Rows = append(s.Rows, summaryRow("Total "+strings.ToLower(title), total))
+		s.Rows = append(s.Rows, summaryRowPtr("Total "+strings.ToLower(title), total, cmpTotal))
 		return s
 	}
-	r.Rows = append(r.Rows, sec("Income", rep.Income, rep.TotalIncome))
+	r.Rows = append(r.Rows, sec("Income", rep.Income, rep.TotalIncome, rep.ComparativeIncome))
 	if len(rep.CostOfSales) > 0 {
-		r.Rows = append(r.Rows, sec("Less Cost of Sales", rep.CostOfSales, rep.TotalCostOfSales))
-		r.Rows = append(r.Rows, summaryRow("Gross Profit", rep.GrossProfit))
+		r.Rows = append(r.Rows, sec("Less Cost of Sales", rep.CostOfSales, rep.TotalCostOfSales, rep.ComparativeCostSales))
 	}
-	r.Rows = append(r.Rows, sec("Less Operating Expenses", rep.Expenses, rep.TotalExpenses))
-	r.Rows = append(r.Rows, summaryRow("Net Profit", rep.NetProfit))
+	// Xero always prints Gross Profit, even when there is no Cost of Sales.
+	r.Rows = append(r.Rows, summaryRowPtr("Gross Profit", rep.GrossProfit, rep.ComparativeGross))
+	r.Rows = append(r.Rows, sec("Less Operating Expenses", rep.Expenses, rep.TotalExpenses, rep.ComparativeExpenses))
+	r.Rows = append(r.Rows, summaryRowPtr("Net Profit", rep.NetProfit, rep.ComparativeNet))
 	return r
 }
 
-// renderBalanceSheet renders the repo BalanceSheet in Xero's format.
+// renderBalanceSheet renders the repo BalanceSheet in Xero's format. With
+// `?compare=true` the second column carries the beginning-of-year (or explicit
+// comparative) balances — the two columns IRS Schedule L asks for.
 func renderBalanceSheet(orgName string, bs *repository.BalanceSheet) models.Report {
 	r := models.Report{
 		ReportID:     "BalanceSheet",
@@ -202,33 +243,153 @@ func renderBalanceSheet(orgName string, bs *repository.BalanceSheet) models.Repo
 		ReportTitles: []string{"Balance Sheet", orgName, "As at " + xeroDate(bs.AsOf)},
 		ReportDate:   xeroDate(bs.AsOf),
 	}
-	r.Rows = []models.ReportRow{headerRow("", xeroDate(bs.AsOf))}
+	if hasComparative(bs.ComparativeAsOf) {
+		r.Rows = []models.ReportRow{headerRow("", xeroDate(bs.AsOf), xeroDate(*bs.ComparativeAsOf))}
+	} else {
+		r.Rows = []models.ReportRow{headerRow("", xeroDate(bs.AsOf))}
+	}
 
-	section := func(title string, rows []repository.BalanceSheetRow, total decimal.Decimal) models.ReportRow {
+	accountRow := func(row repository.BalanceSheetRow) models.ReportRow {
+		return models.ReportRow{
+			RowType: models.ReportRowTypeRow,
+			Cells: []models.ReportCell{
+				accountCell(row.AccountID, row.AccountCode, row.AccountName),
+				money(row.Amount),
+				moneyPtr(row.Comparative),
+			},
+		}
+	}
+	section := func(title string, rows []repository.BalanceSheetRow, total decimal.Decimal, cmpTotal *decimal.Decimal) models.ReportRow {
 		s := models.ReportRow{RowType: models.ReportRowTypeSection, Title: title}
 		for _, row := range rows {
-			s.Rows = append(s.Rows, models.ReportRow{
+			s.Rows = append(s.Rows, accountRow(row))
+		}
+		s.Rows = append(s.Rows, summaryRowPtr("Total "+title, total, cmpTotal))
+		return s
+	}
+	r.Rows = append(r.Rows, section("Assets", bs.Assets, bs.TotalAssets, bs.ComparativeTotalAssets))
+	r.Rows = append(r.Rows, section("Liabilities", bs.Liabilities, bs.TotalLiabilities, bs.ComparativeTotalLiabilities))
+	// Equity lists its accounts plus the retained-earnings roll-up, then one
+	// Total Equity row — built explicitly so it does not borrow the generic
+	// section's trailing total.
+	equity := models.ReportRow{RowType: models.ReportRowTypeSection, Title: "Equity"}
+	for _, row := range bs.Equity {
+		equity.Rows = append(equity.Rows, accountRow(row))
+	}
+	equity.Rows = append(equity.Rows,
+		models.ReportRow{
+			RowType: models.ReportRowTypeRow,
+			Cells: []models.ReportCell{
+				txt("Retained Earnings"),
+				money(bs.RetainedEarnings),
+				moneyPtr(bs.ComparativeRetainedEarnings),
+			},
+		},
+		summaryRowPtr("Total Equity", bs.TotalEquity, bs.ComparativeTotalEquity),
+	)
+	r.Rows = append(r.Rows, equity)
+	netAssets := bs.TotalAssets.Sub(bs.TotalLiabilities)
+	var cmpNetAssets *decimal.Decimal
+	if bs.ComparativeTotalAssets != nil && bs.ComparativeTotalLiabilities != nil {
+		v := bs.ComparativeTotalAssets.Sub(*bs.ComparativeTotalLiabilities)
+		cmpNetAssets = &v
+	}
+	r.Rows = append(r.Rows, summaryRowPtr("Net Assets", netAssets, cmpNetAssets))
+	return r
+}
+
+// renderAccountTransactions renders the raw GL postings of the selected
+// accounts — the drill-down behind every other report.
+func renderAccountTransactions(orgName string, from, to time.Time, lines []repository.JournalFeedRow) models.Report {
+	r := models.Report{
+		ReportID:     "AccountTransactions",
+		ReportName:   "Account Transactions",
+		ReportType:   "AccountTransactions",
+		ReportTitles: []string{"Account Transactions", orgName, dateRangeLabel(from, to)},
+		ReportDate:   xeroDate(to),
+		Rows: []models.ReportRow{
+			headerRow("Date", "Source", "Reference", "Description", "Account", "Debit", "Credit"),
+		},
+	}
+	section := models.ReportRow{RowType: models.ReportRowTypeSection}
+	totalDebit, totalCredit := decimal.Zero, decimal.Zero
+	for _, l := range lines {
+		section.Rows = append(section.Rows, models.ReportRow{
+			RowType: models.ReportRowTypeRow,
+			Cells: []models.ReportCell{
+				txt(l.Date.Format("2006-01-02")),
+				txt(l.Source),
+				txt(l.Reference),
+				txt(l.Description),
+				accountCell(l.AccountID, l.AccountCode, l.AccountName),
+				money(l.Debit),
+				money(l.Credit),
+			},
+		})
+		totalDebit = totalDebit.Add(l.Debit)
+		totalCredit = totalCredit.Add(l.Credit)
+	}
+	if len(section.Rows) > 0 {
+		section.Rows = append(section.Rows, summaryRow("Total", totalDebit, totalCredit))
+		r.Rows = append(r.Rows, section)
+	}
+	return r
+}
+
+// renderGeneralLedgerDetail renders one block per account: opening balance,
+// postings at a running balance, then the closing balance.
+func renderGeneralLedgerDetail(orgName string, from, to time.Time, groups []repository.GLAccountGroup) models.Report {
+	r := models.Report{
+		ReportID:     "GeneralLedgerDetail",
+		ReportName:   "General Ledger Detail",
+		ReportType:   "GeneralLedgerDetail",
+		ReportTitles: []string{"General Ledger Detail", orgName, dateRangeLabel(from, to)},
+		ReportDate:   xeroDate(to),
+		Rows: []models.ReportRow{
+			headerRow("Date", "Source", "Reference", "Description", "Debit", "Credit", "Balance"),
+		},
+	}
+	for _, g := range groups {
+		if len(g.Lines) == 0 && g.Opening.IsZero() && g.Closing.IsZero() {
+			continue
+		}
+		section := models.ReportRow{
+			RowType: models.ReportRowTypeSection,
+			Title:   fmt.Sprintf("%s (%s)", g.AccountName, g.AccountCode),
+			Cells: []models.ReportCell{
+				accountCell(g.AccountID, g.AccountCode, g.AccountName),
+			},
+		}
+		section.Rows = append(section.Rows, models.ReportRow{
+			RowType: models.ReportRowTypeRow,
+			Cells: []models.ReportCell{
+				txt(""), txt(""), txt(""), txt("Opening Balance"),
+				txt(""), txt(""), money(g.Opening),
+			},
+		})
+		for _, l := range g.Lines {
+			section.Rows = append(section.Rows, models.ReportRow{
 				RowType: models.ReportRowTypeRow,
 				Cells: []models.ReportCell{
-					accountCell(row.AccountID, row.AccountCode, row.AccountName),
-					money(row.Amount),
+					txt(l.Date.Format("2006-01-02")),
+					txt(l.Source),
+					txt(l.Reference),
+					txt(l.Description),
+					money(l.Debit),
+					money(l.Credit),
+					money(l.Balance),
 				},
 			})
 		}
-		s.Rows = append(s.Rows, summaryRow("Total "+title, total))
-		return s
+		section.Rows = append(section.Rows, models.ReportRow{
+			RowType: models.ReportRowTypeSummary,
+			Cells: []models.ReportCell{
+				txt("Closing Balance"), txt(""), txt(""), txt(""),
+				money(g.Debit), money(g.Credit), money(g.Closing),
+			},
+		})
+		r.Rows = append(r.Rows, section)
 	}
-	r.Rows = append(r.Rows, section("Assets", bs.Assets, bs.TotalAssets))
-	r.Rows = append(r.Rows, section("Liabilities", bs.Liabilities, bs.TotalLiabilities))
-	equityRow := section("Equity", bs.Equity, bs.TotalEquity)
-	equityRow.Rows = append(equityRow.Rows[:len(equityRow.Rows)-1],
-		models.ReportRow{RowType: models.ReportRowTypeRow, Cells: []models.ReportCell{
-			txt("Retained Earnings"), money(bs.RetainedEarnings),
-		}},
-		summaryRow("Total Equity", bs.TotalEquity),
-	)
-	r.Rows = append(r.Rows, equityRow)
-	r.Rows = append(r.Rows, summaryRow("Net Assets", bs.TotalAssets.Sub(bs.TotalLiabilities)))
 	return r
 }
 

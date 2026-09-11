@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -79,8 +78,82 @@ func TestHTTP_Reports_Values(t *testing.T) {
 	// 3. Journal report: there should be at least one entry (invoice posting).
 	jr := fetchReport(t, h, "/api/v1/reports/journal-report?fromDate="+from+"&toDate="+to)
 	require.NotEmpty(t, jr.Reports)
+}
 
-	_ = time.Now() // avoid unused import if the compiler strips asserts
+// TestHTTP_Reports_DateFilterExcludesOutOfWindow is the P0 regression test for
+// the "unused JOIN" bug: the date predicate used to live in the ON-clause of a
+// LEFT JOIN that SELECT/WHERE never referenced, so the reports silently summed
+// all history and fromDate/toDate had no effect. Each report is probed with a
+// posting on either side of the window — a December posting (before the period)
+// and a June one (after the cutoff) — so that dropping either bound, upper or
+// lower, changes a total and fails the test. This test fails on the old SQL and
+// passes only when both bounds really filter the aggregated lines.
+func TestHTTP_Reports_DateFilterExcludesOutOfWindow(t *testing.T) {
+	h := newHarness(t)
+
+	contactID := createContact(t, h, "Date filter "+uuid.NewString()[:6])
+	createAuthorisedInvoice(t, h, contactID, "2025-12-15T00:00:00Z", "50")  // before every window
+	createAuthorisedInvoice(t, h, contactID, "2026-03-01T00:00:00Z", "100") // inside every window
+	createAuthorisedInvoice(t, h, contactID, "2026-06-01T00:00:00Z", "700") // after every cutoff
+
+	// Trial Balance as at 2026-03-31: the period Debit/Credit columns cover
+	// March alone — the June invoice is past the cutoff and the December one
+	// belongs to the previous financial year.
+	tb := fetchReport(t, h, "/api/v1/reports/trial-balance?date=2026-03-31")
+	debits, credits := sumTrialBalanceTotals(t, tb)
+	assert.True(t, debits.Sub(dec("100")).Abs().LessThan(dec("0.01")),
+		"trial balance debit must cover the March invoice only, got %s", debits)
+	assert.True(t, credits.Sub(dec("100")).Abs().LessThan(dec("0.01")),
+		"trial balance credit must cover the March invoice only, got %s", credits)
+
+	// P&L over Q1 2026: net profit is the March invoice only.
+	pnl := fetchReport(t, h, "/api/v1/reports/profit-and-loss?fromDate=2026-01-01&toDate=2026-03-31")
+	netProfit := lastSummaryValue(t, pnl)
+	assert.True(t, netProfit.Sub(dec("100")).Abs().LessThan(dec("0.01")),
+		"P&L net profit must exclude the December and June invoices, got %s", netProfit)
+
+	// Balance Sheet as at 2026-03-31 is cumulative: it keeps the December
+	// posting but still drops the June one (50 + 100).
+	bs := fetchReport(t, h, "/api/v1/reports/balance-sheet?date=2026-03-31")
+	netAssets := summaryByLabel(t, bs, "Net Assets")
+	assert.True(t, netAssets.Sub(dec("150")).Abs().LessThan(dec("0.01")),
+		"balance sheet net assets must exclude the June invoice only, got %s", netAssets)
+}
+
+// createContact posts a customer contact and returns its ContactID.
+func createContact(t *testing.T, h *appHarness, name string) string {
+	t.Helper()
+	status, body := h.do(t, http.MethodPost, "/api/v1/contacts", map[string]any{
+		"Name":       name,
+		"IsCustomer": true,
+	}, true)
+	require.Equal(t, http.StatusCreated, status, string(body))
+	var env struct {
+		Contacts []struct {
+			ContactID string `json:"ContactID"`
+		} `json:"Contacts"`
+	}
+	require.NoError(t, json.Unmarshal(body, &env))
+	require.NotEmpty(t, env.Contacts)
+	return env.Contacts[0].ContactID
+}
+
+// createAuthorisedInvoice posts an authorised ACCREC invoice for a fixed net
+// amount, posted to the US-style revenue account (code 400).
+func createAuthorisedInvoice(t *testing.T, h *appHarness, contactID, date, amount string) {
+	t.Helper()
+	status, body := h.do(t, http.MethodPost, "/api/v1/invoices", map[string]any{
+		"Type":            "ACCREC",
+		"Status":          "AUTHORISED",
+		"ContactID":       contactID,
+		"Date":            date,
+		"DueDate":         date,
+		"LineAmountTypes": "Exclusive",
+		"LineItems": []map[string]any{
+			{"Description": "Work", "Quantity": "1", "UnitAmount": amount, "AccountCode": "400", "TaxAmount": "0"},
+		},
+	}, true)
+	require.Equal(t, http.StatusCreated, status, string(body))
 }
 
 // ---- helpers -----------------------------------------------------------------
@@ -145,6 +218,28 @@ func lastSummaryValue(t *testing.T, env xeroReportEnvelope) decimalLike {
 		}
 	}
 	return dec("0")
+}
+
+// summaryByLabel walks the report rows (including rows nested inside sections)
+// and returns the second cell of the first SummaryRow whose label matches.
+func summaryByLabel(t *testing.T, env xeroReportEnvelope, label string) decimalLike {
+	t.Helper()
+	require.NotEmpty(t, env.Reports)
+	var walk func(rows []xeroReportRow) (decimalLike, bool)
+	walk = func(rows []xeroReportRow) (decimalLike, bool) {
+		for _, r := range rows {
+			if r.RowType == "SummaryRow" && len(r.Cells) >= 2 && r.Cells[0].Value == label {
+				return dec(r.Cells[1].Value), true
+			}
+			if v, ok := walk(r.Rows); ok {
+				return v, true
+			}
+		}
+		return decimalLike{}, false
+	}
+	v, ok := walk(env.Reports[0].Rows)
+	require.Truef(t, ok, "summary row %q not found", label)
+	return v
 }
 
 // --- tiny decimal shim so tests don't need the full shopspring/decimal import ---

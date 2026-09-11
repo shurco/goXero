@@ -17,8 +17,10 @@ type BankRuleRepository struct {
 }
 
 func (r *BankRuleRepository) List(ctx context.Context, orgID uuid.UUID) ([]models.BankRule, error) {
-	q := `SELECT bank_rule_id, rule_type, name, COALESCE(definition,'{}'::jsonb), is_active, created_at, updated_at
-		FROM bank_rules WHERE organisation_id=$1 ORDER BY name ASC`
+	// Ordered the way the rules are evaluated: first match wins, so sort_order
+	// is significant and name is only a tie-break.
+	q := `SELECT bank_rule_id, rule_type, name, COALESCE(definition,'{}'::jsonb), is_active, sort_order, created_at, updated_at
+		FROM bank_rules WHERE organisation_id=$1 ORDER BY sort_order ASC, name ASC`
 	rows, err := r.pool.Query(ctx, q, orgID)
 	if err != nil {
 		return nil, err
@@ -38,7 +40,7 @@ func (r *BankRuleRepository) List(ctx context.Context, orgID uuid.UUID) ([]model
 func scanBankRule(row pgx.Row) (*models.BankRule, error) {
 	br := &models.BankRule{}
 	var defBytes []byte
-	err := row.Scan(&br.BankRuleID, &br.RuleType, &br.Name, &defBytes, &br.IsActive, &br.CreatedAt, &br.UpdatedAt)
+	err := row.Scan(&br.BankRuleID, &br.RuleType, &br.Name, &defBytes, &br.IsActive, &br.SortOrder, &br.CreatedAt, &br.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
@@ -54,7 +56,7 @@ func scanBankRule(row pgx.Row) (*models.BankRule, error) {
 }
 
 func (r *BankRuleRepository) GetByID(ctx context.Context, orgID, id uuid.UUID) (*models.BankRule, error) {
-	q := `SELECT bank_rule_id, rule_type, name, COALESCE(definition,'{}'::jsonb), is_active, created_at, updated_at
+	q := `SELECT bank_rule_id, rule_type, name, COALESCE(definition,'{}'::jsonb), is_active, sort_order, created_at, updated_at
 		FROM bank_rules WHERE organisation_id=$1 AND bank_rule_id=$2`
 	return scanBankRule(r.pool.QueryRow(ctx, q, orgID, id))
 }
@@ -64,11 +66,14 @@ func (r *BankRuleRepository) Create(ctx context.Context, orgID uuid.UUID, br *mo
 	if err != nil {
 		return err
 	}
-	q := `INSERT INTO bank_rules (organisation_id, rule_type, name, definition, is_active)
-		VALUES ($1,$2,$3,$4::jsonb,$5)
-		RETURNING bank_rule_id, created_at, updated_at`
+	// Xero appends a new rule last. Without an explicit order it would default
+	// to 0 and jump ahead of every rule that Reorder has already numbered.
+	q := `INSERT INTO bank_rules (organisation_id, rule_type, name, definition, is_active, sort_order)
+		VALUES ($1,$2,$3,$4::jsonb,$5,
+			COALESCE((SELECT MAX(sort_order)+1 FROM bank_rules WHERE organisation_id=$1), 0))
+		RETURNING bank_rule_id, sort_order, created_at, updated_at`
 	return r.pool.QueryRow(ctx, q, orgID, br.RuleType, br.Name, defJSON, br.IsActive).Scan(
-		&br.BankRuleID, &br.CreatedAt, &br.UpdatedAt,
+		&br.BankRuleID, &br.SortOrder, &br.CreatedAt, &br.UpdatedAt,
 	)
 }
 
@@ -99,4 +104,24 @@ func (r *BankRuleRepository) Delete(ctx context.Context, orgID, id uuid.UUID) er
 		return ErrNotFound
 	}
 	return nil
+}
+
+// Reorder rewrites the evaluation order of a tenant's rules. The whole list is
+// sent, so a concurrent edit cannot silently interleave two orderings — and any
+// id the tenant does not own simply matches no row.
+func (r *BankRuleRepository) Reorder(ctx context.Context, orgID uuid.UUID, orderedIDs []uuid.UUID) error {
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	for i, id := range orderedIDs {
+		if _, err := tx.Exec(ctx,
+			`UPDATE bank_rules SET sort_order=$3, updated_at=now()
+			 WHERE organisation_id=$1 AND bank_rule_id=$2`,
+			orgID, id, i); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }

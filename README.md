@@ -156,7 +156,8 @@ All under `/api/v1/…`, authenticated with `Authorization: Bearer <JWT>` **and*
 | Branding themes      | `GET/POST /branding-themes`                                                                                                                               |
 | Tracking             | `GET/POST /tracking-categories` · `GET/PUT/DELETE /tracking-categories/:id` · `PUT /tracking-categories/:id/options`                                      |
 | Users                | `GET /users`                                                                                                                                              |
-| Bank feeds           | `GET /bank-feeds/providers` · `GET /bank-feeds/institutions` · `GET/POST /bank-feeds/connections` · `GET/DELETE /bank-feeds/connections/:id` · `POST /bank-feeds/connections/:id/finalize` · `POST /bank-feeds/connections/:id/sync` · `PUT /bank-feeds/accounts/:feedAccountId` · `GET /bank-feeds/statement-lines` · `POST /bank-feeds/statement-lines/:id/import` · `POST /bank-feeds/statement-lines/:id/ignore` |
+| Bank feeds           | `GET /bank-feeds/providers` · `GET /bank-feeds/institutions` · `GET/POST /bank-feeds/connections` · `GET/DELETE /bank-feeds/connections/:id` · `POST /bank-feeds/connections/:id/finalize` · `POST /bank-feeds/connections/:id/sync` · `PUT /bank-feeds/accounts/:feedAccountId` |
+| Bank statements      | `GET /statement-lines` · `GET /statement-lines/balance` · `GET /statement-lines/:id` · `POST /statement-lines/:id/ignore` · `/unignore` · `/create` · `/match` · `/transfer` · `POST /statement-lines/bulk` · `/apply-rule` · `/cash-code` · `/auto-reconcile` · `POST /statement-imports` (OFX/QFX/QBO/QIF/CSV) · `GET /statement-imports` · `/statement-imports/:id` · `POST /statement-imports/:id/remap` · `/commit` |
 | Attachments          | `GET /:subject/:id/attachments` · `POST /:subject/:id/attachments/:fileName` · `GET /:subject/:id/attachments/:attachmentId`                              |
 | History              | `GET /:subject/:id/history` · `PUT /:subject/:id/history`                                                                                                 |
 | Reports              | `GET /reports/trial-balance` · `/profit-and-loss` · `/balance-sheet` · `/aged-receivables` · `/aged-payables` · `/bank-summary` · `/cash-summary` · `/executive-summary` · `/budget-summary` · `/bas` · `/journal-report` · `/invoice-summary` |
@@ -199,14 +200,16 @@ free PSD2 tier covering 2 500+ EU/UK banks). Hooking it up:
    # 4) pull transactions (idempotent — re-run as often as you like)
    curl -X POST $API/bank-feeds/connections/<id>/sync
 
-   # 5) review the staging inbox, then import the rows you want posted
-   curl "$API/bank-feeds/statement-lines?status=NEW"
-   curl -X POST $API/bank-feeds/statement-lines/<lineId>/import
+   # 5) review the staging inbox, then code the rows you want posted
+   curl "$API/statement-lines?status=NEW"
+   curl -X POST $API/statement-lines/<lineId>/create \
+     -H 'Content-Type: application/json' -d '{"AccountCode":"400"}'
    ```
 
 Statement lines are deduped by `(FeedAccountID, ProviderTxID)`, so re-syncing
 never double-counts. Rows you don't want posted can be hidden via
-`/bank-feeds/statement-lines/<lineId>/ignore`. Adding another aggregator
+`/statement-lines/<lineId>/ignore`, or matched against an existing
+transaction via `/statement-lines/<lineId>/match`. Adding another aggregator
 (Plaid, TrueLayer, Salt Edge) is purely a new `Provider` implementation under
 `internal/bankfeed/` — no schema or handler changes.
 

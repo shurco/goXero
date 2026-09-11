@@ -51,22 +51,3 @@ type BankFeedAccount struct {
 	Balance           *decimal.Decimal `json:"Balance,omitempty"`
 	UpdatedAt         time.Time        `json:"UpdatedAt"`
 }
-
-// BankFeedStatementLine is a raw row pulled from the provider, staged here so
-// the user can review before it becomes a `BankTransaction`. Uniqueness on
-// (FeedAccountID, ProviderTxID) makes re-syncing idempotent.
-type BankFeedStatementLine struct {
-	StatementLineID   uuid.UUID       `json:"StatementLineID"`
-	FeedAccountID     uuid.UUID       `json:"FeedAccountID"`
-	ProviderTxID      string          `json:"ProviderTxID"`
-	PostedAt          time.Time       `json:"PostedAt"`
-	Amount            decimal.Decimal `json:"Amount"`
-	CurrencyCode      string          `json:"CurrencyCode"`
-	Description       string          `json:"Description,omitempty"`
-	Counterparty      string          `json:"Counterparty,omitempty"`
-	Reference         string          `json:"Reference,omitempty"`
-	Status            string          `json:"Status"`
-	BankTransactionID *uuid.UUID      `json:"BankTransactionID,omitempty"`
-	ImportedAt        *time.Time      `json:"ImportedAt,omitempty"`
-	CreatedAt         time.Time       `json:"CreatedAt"`
-}

@@ -68,6 +68,14 @@ func scanBankTx(row pgx.Row) (*models.BankTransaction, error) {
 type BankTransactionFilter struct {
 	Type   string
 	Status string
+	// BankAccountID narrows to one bank account — the account-level reconcile
+	// views always want this.
+	BankAccountID *uuid.UUID
+	// IsReconciled, when set, splits the reconcile inbox (false) from the
+	// already-reconciled history (true).
+	IsReconciled *bool
+	// Search matches the reference or the contact name.
+	Search string
 }
 
 func (r *BankTransactionRepository) List(ctx context.Context, orgID uuid.UUID, f BankTransactionFilter, p models.Pagination) ([]models.BankTransaction, int, error) {
@@ -84,6 +92,24 @@ func (r *BankTransactionRepository) List(ctx context.Context, orgID uuid.UUID, f
 		args = append(args, f.Status)
 		sb.WriteString(" AND b.status=$")
 		sb.WriteString(strconv.Itoa(len(args)))
+	}
+	if f.BankAccountID != nil {
+		args = append(args, *f.BankAccountID)
+		sb.WriteString(" AND b.bank_account_id=$")
+		sb.WriteString(strconv.Itoa(len(args)))
+	}
+	if f.IsReconciled != nil {
+		args = append(args, *f.IsReconciled)
+		sb.WriteString(" AND b.is_reconciled=$")
+		sb.WriteString(strconv.Itoa(len(args)))
+	}
+	if f.Search != "" {
+		args = append(args, "%"+f.Search+"%")
+		sb.WriteString(" AND (COALESCE(b.reference,'') ILIKE $")
+		sb.WriteString(strconv.Itoa(len(args)))
+		sb.WriteString(" OR COALESCE(c.name,'') ILIKE $")
+		sb.WriteString(strconv.Itoa(len(args)))
+		sb.WriteString(")")
 	}
 	where := sb.String()
 
@@ -234,4 +260,82 @@ func recalculateBankTx(bt *models.BankTransaction) {
 	default:
 		bt.Total = sub.Add(tax)
 	}
+}
+
+// Update replaces a bank transaction in place: header fields, the whole set of
+// line items, and the GL journal it posted. Xero's `POST /BankTransactions/:id`
+// behaves the same way, and it is the endpoint the reconcile screen must call
+// when a user approves a transaction — creating a second transaction instead
+// (as the UI used to) double-books the money.
+func (r *BankTransactionRepository) Update(ctx context.Context, orgID uuid.UUID, bt *models.BankTransaction) error {
+	recalculateBankTx(bt)
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	cmd, err := tx.Exec(ctx, `UPDATE bank_transactions SET
+			contact_id=$3, bank_account_id=$4, type=$5,
+			is_reconciled=$6, date=$7, reference=NULLIF($8,''),
+			currency_code=NULLIF($9,''), currency_rate=$10, url=NULLIF($11,''),
+			status=$12, line_amount_types=$13,
+			sub_total=$14, total_tax=$15, total=$16, updated_date_utc=now()
+		 WHERE organisation_id=$1 AND bank_transaction_id=$2`,
+		orgID, bt.BankTransactionID, bt.ContactID, bt.BankAccountID, bt.Type,
+		bt.IsReconciled, bt.Date, bt.Reference, bt.CurrencyCode, bt.CurrencyRate, bt.URL,
+		bt.Status, bt.LineAmountTypes, bt.SubTotal, bt.TotalTax, bt.Total)
+	if err != nil {
+		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	if _, err := tx.Exec(ctx,
+		`DELETE FROM bank_transaction_line_items WHERE bank_transaction_id=$1`,
+		bt.BankTransactionID); err != nil {
+		return err
+	}
+	for _, li := range bt.LineItems {
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO bank_transaction_line_items (
+				bank_transaction_id, description, quantity, unit_amount,
+				account_code, tax_type, tax_amount, line_amount)
+			 VALUES ($1, NULLIF($2,''), $3,$4, NULLIF($5,''), NULLIF($6,''), $7,$8)`,
+			bt.BankTransactionID, li.Description, li.Quantity, li.UnitAmount,
+			li.AccountCode, li.TaxType, li.TaxAmount, li.LineAmount); err != nil {
+			return err
+		}
+	}
+	// Re-post: the amounts, the account or the tax may all have changed, so the
+	// old journal is replaced rather than patched.
+	if _, err := tx.Exec(ctx,
+		`DELETE FROM gl_journals WHERE organisation_id=$1 AND source_type='BANKTRANSACTION' AND source_id=$2`,
+		orgID, bt.BankTransactionID); err != nil {
+		return err
+	}
+	if bt.Status != "DELETED" {
+		if err := postBankTransactionJournal(ctx, tx, orgID, bt); err != nil {
+			return fmt.Errorf("post gl journal: %w", err)
+		}
+	}
+	return tx.Commit(ctx)
+}
+
+// Reconcile flips the reconciled flag on an existing transaction. Kept separate
+// from Update so the reconcile inbox can approve a transaction without the
+// caller having to send the whole record back — and so approving can never
+// accidentally rewrite the amounts.
+func (r *BankTransactionRepository) Reconcile(ctx context.Context, orgID, id uuid.UUID, reconciled bool) error {
+	cmd, err := r.pool.Exec(ctx,
+		`UPDATE bank_transactions SET is_reconciled=$3, updated_date_utc=now()
+		 WHERE organisation_id=$1 AND bank_transaction_id=$2 AND status <> 'DELETED'`,
+		orgID, id, reconciled)
+	if err != nil {
+		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"strconv"
@@ -67,7 +68,13 @@ func noContent(c fiber.Ctx) error {
 
 // httpError converts a repository/domain error into a Fiber error. Internal
 // errors are logged and masked so no implementation detail leaks to the client.
+// A Fiber error already carries its own status, so it is returned as-is rather
+// than masked as a 500.
 func httpError(err error) *fiber.Error {
+	var fe *fiber.Error
+	if errors.As(err, &fe) {
+		return fe
+	}
 	switch {
 	case errors.Is(err, repository.ErrNotFound):
 		return fiber.NewError(fiber.StatusNotFound, "not found")
@@ -174,4 +181,49 @@ func paginationFromQuery(c fiber.Ctx) models.Pagination {
 	p := models.Pagination{Page: page, PageSize: size}
 	p.Normalize()
 	return p
+}
+
+// jsonUnmarshalBytes / jsonUnmarshalString / mustJSON / mappingAsMap are the
+// JSON helpers the statement-import wizard needs: the import payload and the
+// column mapping both round-trip through JSONB, and the mapping is echoed back
+// to the client as a plain object.
+func jsonUnmarshalBytes(data []byte, v any) error {
+	if len(data) == 0 {
+		return nil
+	}
+	return json.Unmarshal(data, v)
+}
+
+func jsonUnmarshalString(s string, v any) error {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	return json.Unmarshal([]byte(s), v)
+}
+
+// mustJSON encodes v for a NOT NULL jsonb column. A marshal failure is a
+// programming error (the stored types are always encodable), but rather than
+// silently writing a misleading empty array we log it and fall back so the
+// NOT NULL constraint is still satisfied.
+func mustJSON(v any) []byte {
+	b, err := json.Marshal(v)
+	if err != nil {
+		slog.Error("mustJSON: marshal failed", "err", err)
+		return []byte("[]")
+	}
+	return b
+}
+
+// mappingAsMap renders a column mapping as the free-form object stored in
+// `bank_statement_imports.mapping`, so the wizard can reload it later.
+func mappingAsMap(m any) map[string]any {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return nil
+	}
+	var out map[string]any
+	if err := json.Unmarshal(b, &out); err != nil {
+		return nil
+	}
+	return out
 }

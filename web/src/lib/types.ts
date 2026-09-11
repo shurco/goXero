@@ -415,3 +415,154 @@ export interface Report {
 	UpdatedDateUTC?: string;
 	Rows?: ReportRow[];
 }
+
+// ── Bank statement lines (unified feed + manual-import inbox) ──────────────
+
+export type StatementLineSource = 'FEED' | 'IMPORT';
+export type StatementLineStatus = 'NEW' | 'IMPORTED' | 'IGNORED';
+
+export interface BankRuleSuggestion {
+	BankRuleID?: string;
+	RuleName?: string;
+	AccountID?: string;
+	TaxType?: string;
+	ContactID?: string;
+}
+
+export interface BankStatementLine {
+	StatementLineID: string;
+	FeedAccountID?: string;
+	BankAccountID?: string;
+	ImportID?: string;
+	/** Where the line came from — a live bank feed or an uploaded statement. */
+	Source: StatementLineSource;
+	ProviderTxID?: string;
+	PostedAt: string;
+	/** Signed: negative is money out. */
+	Amount: string | number;
+	/** Running balance printed on the statement, when the bank provides one. */
+	Balance?: string | number;
+	CurrencyCode?: string;
+	Payee?: string;
+	Description?: string;
+	Counterparty?: string;
+	Reference?: string;
+	ChequeNumber?: string;
+	Status: StatementLineStatus;
+	BankTransactionID?: string;
+	CodedAt?: string;
+	CodedBy?: string;
+	ImportedAt?: string;
+	CreatedDateUTC?: string;
+	// Cash-coding scratch fields — filled in by the client, not stored.
+	AccountCode?: string;
+	AccountID?: string;
+	TaxType?: string;
+	Suggestions?: BankRuleSuggestion[];
+}
+
+export interface StatementBalance {
+	BankAccountID: string;
+	LedgerBalance: string | number;
+	StatementBalance: string | number;
+	Difference: string | number;
+	UnreconciledCount: number;
+	ReconciledCount: number;
+	LastStatementEnd?: string;
+	LastImportedAt?: string;
+	LastSyncAt?: string;
+}
+
+// ── Manual statement import (the wizard) ───────────────────────────────────
+
+export type StatementImportStatus = 'STAGED' | 'IMPORTED' | 'FAILED';
+export type StatementFormat = 'CSV' | 'OFX' | 'QFX' | 'QBO' | 'QIF';
+
+export interface StatementImport {
+	ImportID: string;
+	BankAccountID: string;
+	Filename?: string;
+	Format: StatementFormat;
+	Status: StatementImportStatus;
+	LineCount: number;
+	ImportedCount: number;
+	DuplicateCount: number;
+	CurrencyCode?: string;
+	StatementStart?: string;
+	StatementEnd?: string;
+	OpeningBalance?: string | number;
+	ClosingBalance?: string | number;
+	Mapping?: Record<string, unknown>;
+	LastError?: string;
+	CreatedDateUTC?: string;
+	CommittedAt?: string;
+}
+
+/** The wizard's column mapping — mirrors the server's csv.Mapping. */
+export interface StatementMapping {
+	HasHeader: boolean;
+	SkipRows: number;
+	DateFormat?: string;
+	DecimalSeparator?: string;
+	AmountMode?: 'SIGNED' | 'DEBIT_CREDIT' | 'AMOUNT_WITH_TYPE';
+	Date?: string;
+	Amount?: string;
+	Debit?: string;
+	Credit?: string;
+	Type?: string;
+	Payee?: string;
+	Description?: string;
+	Reference?: string;
+	ChequeNumber?: string;
+	Balance?: string;
+	NegativeIsDebit?: boolean;
+}
+
+export interface DetectedColumn {
+	Name: string;
+	Index: number;
+	Samples?: string[];
+	/** The Mapping field this column looks like, or "" when unrecognised. */
+	Guess?: string;
+}
+
+export interface StatementPreviewRow {
+	Date: string;
+	Amount: string | number;
+	Payee?: string;
+	Description?: string;
+	Reference?: string;
+	ChequeNumber?: string;
+	Balance?: string | number;
+	Duplicate?: boolean;
+}
+
+/** Everything step 2 of the wizard needs, returned by the upload call. */
+export interface StatementParseResult {
+	Import: StatementImport;
+	Columns?: string[];
+	HasHeader?: boolean;
+	Delimiter?: string;
+	Mapping?: StatementMapping;
+	Detected?: DetectedColumn[];
+	Preview: StatementPreviewRow[];
+	Duplicates: number;
+}
+
+export interface BankReconcilePeriod {
+	PeriodID: string;
+	BankAccountID: string;
+	StartDate: string;
+	EndDate: string;
+	StatementBalance: string | number;
+	CreatedDateUTC?: string;
+}
+
+export interface StatementLineCoding {
+	StatementLineID: string;
+	AccountCode: string;
+	TaxType?: string;
+	ContactID?: string;
+	Reference?: string;
+	Description?: string;
+}
