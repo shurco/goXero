@@ -126,6 +126,15 @@
 	let accounts = $state<Account[]>([]);
 	let taxRates = $state<TaxRate[]>([]);
 	let loading = $state(true);
+	/**
+	 * The account whose data the screen is holding. The "Loading…" placeholder
+	 * is for an account the page has nothing to show for yet; a reload of the
+	 * account already on screen is a refresh and must not blank it. Plain state
+	 * rather than $state on purpose — it is read while loading and never
+	 * rendered, and reload runs from an $effect, which reactive state read
+	 * inside it would only send round again.
+	 */
+	let loadedAccountId: string | null = null;
 	let err = $state('');
 	let notice = $state('');
 
@@ -520,7 +529,15 @@
 	async function reload() {
 		if (!accountId) return;
 		const seq = ++inboxRequest;
-		loading = true;
+		/*
+		 * Only a load with nothing behind it raises the placeholder. Every later
+		 * reload is the refresh a commit makes, and it has to leave the screen
+		 * standing: the reconcile list is what gives this page its height, so
+		 * replacing it with one line of "Loading…" collapses the document, the
+		 * browser clamps the scroll back to the top, and the row the user just
+		 * clicked OK on jumps off the screen. Xero stays where the hand left it.
+		 */
+		loading = loadedAccountId !== accountId;
 		err = '';
 		try {
 			const [a, o, bal, box, all, tx, imp, per, accs, rates, auto, people] = await Promise.all([
@@ -558,6 +575,9 @@
 			// A newer load or search has taken over; its answer is the current
 			// one and this one must not write over it.
 			if (seq !== inboxRequest) return;
+			// What is on screen is now this account's, so the next reload of the
+			// same account refreshes it in place instead of blanking the page.
+			loadedAccountId = accountId;
 			account = a ?? null;
 			org = o ?? null;
 			balance = bal?.Balance ?? null;
@@ -1555,6 +1575,54 @@
 					Reference: transferReference.trim() || undefined
 				}),
 			'Transfer created and reconciled.'
+		);
+	}
+
+	/**
+	 * What the bank says about a line we have already coded, in the words of the
+	 * person who has to deal with it. Empty for a line the bank agrees with,
+	 * which is every line until it restates or withdraws one.
+	 */
+	function upstreamLabel(l: BankStatementLine): string {
+		if (l.UpstreamChange === 'REMOVED') return 'Withdrawn by the bank';
+		if (l.UpstreamChange === 'MODIFIED') return 'Changed by the bank';
+		return '';
+	}
+
+	/**
+	 * The bank's own version of the line, for the tooltip and the details panel.
+	 * It is what the feed parked beside our coding rather than applied over it,
+	 * so this is the one place the two can be read side by side.
+	 */
+	function upstreamDetail(l: BankStatementLine): string {
+		if (l.UpstreamChange === 'REMOVED') {
+			return 'The bank has removed this transaction from the feed. Your entry is still in the books.';
+		}
+		if (l.UpstreamChange !== 'MODIFIED') return '';
+		const amount = Number(l.UpstreamAmount ?? 0);
+		const when = l.UpstreamPostedAt ? formatDate(l.UpstreamPostedAt) : '';
+		return `The bank now has ${formatCurrency(Math.abs(amount), l.CurrencyCode ?? currency)}${
+			amount < 0 ? ' out' : ' in'
+		}${when ? ` on ${when}` : ''}, against the ${formatCurrency(
+			Math.abs(Number(l.Amount ?? 0)),
+			l.CurrencyCode ?? currency
+		)} you coded.`;
+	}
+
+	/**
+	 * Stop showing a notice the bank withdrew a line we had already coded. Nothing
+	 * is posted and nothing is unbooked: the transaction is the books, and the
+	 * bank's withdrawal is not a reason to move money in the ledger by itself.
+	 *
+	 * Only a withdrawal can be dismissed. A line the bank *changed* carries a
+	 * notice derived from the bank's current version, so there is nothing to clear
+	 * — the next sync would put it straight back — and the answer to it is to
+	 * recode the line or leave the notice standing.
+	 */
+	function dismissUpstream(l: BankStatementLine) {
+		void act(
+			() => statementApi.dismissUpstreamChange(l.StatementLineID),
+			"The bank's withdrawal was dismissed."
 		);
 	}
 
@@ -3322,6 +3390,36 @@
 								<td class="px-3 py-2">
 									{#if row.line.Status === 'IMPORTED'}
 										<span class="text-emerald-700">Reconciled</span>
+										<!--
+											Only a coded line can carry this: while a line is still in
+											the inbox the feed is free to correct it, and does.
+										-->
+										{#if row.line.UpstreamChange}
+											<div class="mt-1 flex items-center gap-2">
+												<span
+													class="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800"
+													title={upstreamDetail(row.line)}
+												>
+													{upstreamLabel(row.line)}
+												</span>
+												{#if row.line.UpstreamChange === 'REMOVED'}
+													<!--
+														A withdrawal is a stored flag the sync preserves, so
+														dismissing it lasts. A change is derived from the bank's
+														current version and would return on the next sync, so it
+														gets no button.
+													-->
+													<button
+														type="button"
+														class="btn-ghost-sm"
+														title="Stop showing this withdrawal"
+														onclick={() => dismissUpstream(row.line)}
+													>
+														Dismiss
+													</button>
+												{/if}
+											</div>
+										{/if}
 									{:else if row.line.Status === 'IGNORED'}
 										<span class="muted">Ignored</span>
 										<button
@@ -3655,6 +3753,12 @@
 							<dd class="text-right">
 								{codingLabel(details.CodedAccountCode, details.CodedAccountName ?? '')}
 							</dd>
+						</div>
+					{/if}
+					{#if details.UpstreamChange}
+						<div class="flex justify-between gap-6 py-2">
+							<dt class="muted">Bank's version</dt>
+							<dd class="text-right text-amber-800">{upstreamDetail(details)}</dd>
 						</div>
 					{/if}
 				</dl>

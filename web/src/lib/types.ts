@@ -498,9 +498,24 @@ export interface BankStatementLine {
 	 * the banner count its own work rather than every reconciled line.
 	 */
 	AutoReconciledAt?: string;
+	/**
+	 * What the bank says about a line that has already been coded. By then the
+	 * line is part of the books, so the feed neither rewrites it nor deletes it:
+	 * it parks the bank's version in the fields below and leaves the difference
+	 * for the user. `MODIFIED` when the two disagree, `REMOVED` when the bank
+	 * withdrew the line outright, absent when it has not argued with it.
+	 */
+	UpstreamChange?: UpstreamChange;
+	UpstreamAmount?: string | number;
+	UpstreamPostedAt?: string;
+	UpstreamChangedAt?: string;
+	UpstreamRemovedAt?: string;
 	/** The Discuss thread, when the caller asked for it. */
 	Comments?: BankStatementLineComment[];
 }
+
+/** See `BankStatementLine.UpstreamChange`. */
+export type UpstreamChange = 'MODIFIED' | 'REMOVED';
 
 /** One note on a statement line — Xero's "Discuss". */
 export interface BankStatementLineComment {

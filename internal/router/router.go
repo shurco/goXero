@@ -1,6 +1,8 @@
 package router
 
 import (
+	"log/slog"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
@@ -70,7 +72,38 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	if gc := bankfeed.NewGoCardless(cfg.BankFeed.GoCardlessBADSecretID, cfg.BankFeed.GoCardlessBADSecretKey); gc.Credentials() {
 		bankFeedRegistry.Register(gc)
 	}
-	bankFeedHandler := handlers.NewBankFeedHandler(repos, bankFeedRegistry, cfg.BankFeed.RedirectURL, cfg.BankFeed.SyncWindow)
+	// Providers that hold a per-connection secret (Plaid's Item access token)
+	// need somewhere to seal it. Without the key they are left unregistered
+	// rather than half-working: consent would succeed and every later sync would
+	// fail on a token we could not store.
+	var secretBox *bankfeed.SecretBox
+	if cfg.BankFeed.EncryptionKey != "" {
+		box, err := bankfeed.NewSecretBox(cfg.BankFeed.EncryptionKey)
+		if err != nil {
+			slog.Error("bank feed: ignoring BANKFEED_ENCRYPTION_KEY", "err", err)
+		} else {
+			secretBox = box
+		}
+	}
+	if cfg.BankFeed.PlaidClientID != "" && cfg.BankFeed.PlaidSecret != "" {
+		if secretBox == nil {
+			slog.Warn("bank feed: Plaid is configured but BANKFEED_ENCRYPTION_KEY is not set — " +
+				"consent tokens cannot be stored safely, so the adapter stays disabled")
+		} else {
+			bankFeedRegistry.Register(bankfeed.NewPlaid(
+				cfg.BankFeed.PlaidClientID, cfg.BankFeed.PlaidSecret,
+				cfg.BankFeed.PlaidClientName, cfg.BankFeed.PlaidProduction,
+				bankfeed.WithPlaidWebhookURL(cfg.BankFeed.PlaidWebhookURL)))
+			if cfg.BankFeed.PlaidWebhookURL == "" {
+				slog.Info("bank feed: PLAID_WEBHOOK_URL is not set — consent completes when the " +
+					"browser returns, which is all a deployment without a public URL can do")
+			}
+		}
+	}
+	bankFeedHandler := handlers.NewBankFeedHandler(repos, bankFeedRegistry, secretBox, cfg.BankFeed.RedirectURL, cfg.BankFeed.SyncWindow)
+	// A sync hands every account that received lines back to the reconcile inbox
+	// for its automatic pass, which is the same job an import does.
+	bankFeedHandler.SetAutoReconciler(bankStatementHandler)
 
 	app.Get("/health", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
@@ -85,6 +118,13 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	// via the handler-side middleware below.
 	app.Post("/api/auth/refresh", auth.Refresh)
 	app.Post("/api/auth/logout", mw.OptionalJWTAuth(cfg.Auth), auth.Logout)
+
+	// Bank feed webhooks. The caller is the aggregator, not a user, so there is
+	// no JWT to check and no tenant header to read — the route authenticates the
+	// delivery by its own signature instead, and looks the connection up from the
+	// id in the payload. Everything it can do is scoped to one already-consented
+	// connection, which is why it is safe to leave unauthenticated.
+	app.Post("/api/v1/bank-feeds/webhooks/plaid", bankFeedHandler.PlaidWebhook)
 
 	// Authenticated routes (no tenant required)
 	api := app.Group("/api", mw.JWTAuth(cfg.Auth))
@@ -272,6 +312,7 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Get("/bank-feeds/connections/:id", bankFeedHandler.GetConnection)
 	apiV1.Post("/bank-feeds/connections/:id/finalize", bankFeedHandler.FinalizeConnection)
 	apiV1.Post("/bank-feeds/connections/:id/sync", bankFeedHandler.SyncConnection)
+	apiV1.Post("/bank-feeds/connections/:id/reconnect", bankFeedHandler.ReconnectConnection)
 	apiV1.Delete("/bank-feeds/connections/:id", bankFeedHandler.DeleteConnection)
 	apiV1.Put("/bank-feeds/accounts/:feedAccountId", bankFeedHandler.BindFeedAccount)
 	// Bank statement inbox: the unified feed + imported line model and the
@@ -291,6 +332,7 @@ func Register(app *fiber.App, cfg *config.Config, repos *repository.Repositories
 	apiV1.Post("/statement-lines/:id/transfer", bankStatementHandler.Transfer)
 	apiV1.Post("/statement-lines/:id/adjustment", bankStatementHandler.Adjustment)
 	apiV1.Post("/statement-lines/:id/reconcile", bankStatementHandler.ReconcileSelection)
+	apiV1.Post("/statement-lines/:id/dismiss-upstream-change", bankStatementHandler.DismissUpstreamChange)
 	apiV1.Get("/statement-lines/:id/comments", bankStatementHandler.ListComments)
 	apiV1.Post("/statement-lines/:id/comments", bankStatementHandler.CreateComment)
 	apiV1.Delete("/statement-lines/:id", bankStatementHandler.DeleteStatementLine)

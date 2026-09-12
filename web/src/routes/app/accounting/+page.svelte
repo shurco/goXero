@@ -26,7 +26,7 @@
 <ModuleHeader title="Accounting" subtitle="Banking, ledger and reporting tools." />
 
 <p class="muted mb-6 text-sm">
-	<a href="/app/bank-feeds" class="text-brand-700 hover:underline">Bank feeds</a>
+	<a href="/app/accounting/bank-accounts/new" class="text-brand-700 hover:underline">Bank feeds</a>
 	— connect bank accounts via Open Banking.
 </p>
 

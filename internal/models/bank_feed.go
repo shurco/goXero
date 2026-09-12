@@ -29,6 +29,7 @@ type BankFeedConnection struct {
 	Status            string            `json:"Status"`
 	InstitutionID     string            `json:"InstitutionID,omitempty"`
 	InstitutionName   string            `json:"InstitutionName,omitempty"`
+	Country           string            `json:"Country,omitempty"`
 	ExternalReference string            `json:"ExternalReference,omitempty"`
 	AuthURL           string            `json:"AuthURL,omitempty"`
 	LastError         string            `json:"LastError,omitempty"`
@@ -36,6 +37,21 @@ type BankFeedConnection struct {
 	CreatedAt         time.Time         `json:"CreatedAt"`
 	UpdatedAt         time.Time         `json:"UpdatedAt"`
 	Accounts          []BankFeedAccount `json:"Accounts,omitempty"`
+
+	// ExternalSecret is the per-connection secret the provider issued during
+	// consent (today: a Plaid Item access_token), sealed with AES-256-GCM before
+	// it ever reaches the database. It is ciphertext and never leaves the
+	// server, so it is excluded from every API response.
+	ExternalSecret []byte `json:"-"`
+	// SyncCursor is the provider's incremental sync position. It hangs off the
+	// connection rather than an account because Plaid cursors track an Item.
+	SyncCursor string `json:"-"`
+	// SessionRef is the consent session the connection is currently waiting on —
+	// Plaid's link token, GoCardless's requisition id. A provider can finish a
+	// session out of band (Plaid's SESSION_FINISHED webhook carries nothing but
+	// this handle), and `external_reference` cannot stand in for it because
+	// consent overwrites that with the durable id.
+	SessionRef string `json:"-"`
 }
 
 // BankFeedAccount links an upstream bank account to our ledger account.

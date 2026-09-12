@@ -157,8 +157,8 @@ All under `/api/v1/…`, authenticated with `Authorization: Bearer <JWT>` **and*
 | Branding themes      | `GET/POST /branding-themes`                                                                                                                               |
 | Tracking             | `GET/POST /tracking-categories` · `GET/PUT/DELETE /tracking-categories/:id` · `PUT /tracking-categories/:id/options`                                      |
 | Users                | `GET /users`                                                                                                                                              |
-| Bank feeds           | `GET /bank-feeds/providers` · `GET /bank-feeds/institutions` · `GET/POST /bank-feeds/connections` · `GET/DELETE /bank-feeds/connections/:id` · `POST /bank-feeds/connections/:id/finalize` · `POST /bank-feeds/connections/:id/sync` · `PUT /bank-feeds/accounts/:feedAccountId` |
-| Bank statements      | `GET /statement-lines` · `GET /statement-lines/balance` · `GET /statement-lines/:id` · `POST /statement-lines/:id/ignore` · `/unignore` · `/create` · `/match` · `/transfer` · `POST /statement-lines/bulk` · `/apply-rule` · `/cash-code` · `/auto-reconcile` · `POST /statement-imports` (OFX/QFX/QBO/QIF/CSV) · `GET /statement-imports` · `/statement-imports/:id` · `POST /statement-imports/:id/remap` · `/commit` |
+| Bank feeds           | `GET /bank-feeds/providers` · `GET /bank-feeds/institutions` · `GET/POST /bank-feeds/connections` · `GET/DELETE /bank-feeds/connections/:id` · `POST /bank-feeds/connections/:id/finalize` · `/reconnect` · `/sync` · `PUT /bank-feeds/accounts/:feedAccountId` · `POST /bank-feeds/webhooks/plaid` (unauthenticated, signature-verified) |
+| Bank statements      | `GET /statement-lines` · `GET /statement-lines/balance` · `GET /statement-lines/:id` · `POST /statement-lines/:id/ignore` · `/unignore` · `/create` · `/match` · `/transfer` · `/dismiss-upstream-change` · `POST /statement-lines/bulk` · `/apply-rule` · `/cash-code` · `/auto-reconcile` · `POST /statement-imports` (OFX/QFX/QBO/QIF/CSV) · `GET /statement-imports` · `/statement-imports/:id` · `POST /statement-imports/:id/remap` · `/commit` |
 | Attachments          | `GET /:subject/:id/attachments` · `POST /:subject/:id/attachments/:fileName` · `GET /:subject/:id/attachments/:attachmentId`                              |
 | History              | `GET /:subject/:id/history` · `PUT /:subject/:id/history`                                                                                                 |
 | Reports              | `GET /reports/trial-balance` · `/profit-and-loss` · `/balance-sheet` · `/aged-receivables` · `/aged-payables` · `/bank-summary` · `/cash-summary` · `/executive-summary` · `/budget-summary` · `/bas` · `/journal-report` · `/invoice-summary` |
@@ -169,8 +169,105 @@ All under `/api/v1/…`, authenticated with `Authorization: Bearer <JWT>` **and*
 
 ### Connecting a bank via Open Banking
 
-goXero ships with an adapter for **GoCardless Bank Account Data** (ex-Nordigen,
-free PSD2 tier covering 2 500+ EU/UK banks). Hooking it up:
+goXero ships with two aggregator adapters. They can run side by side; the UI
+lists whichever ones have credentials configured. Both are reached the same way —
+**Accounting → Bank feeds**, or **Add bank account** — and both end the same way:
+the bank is chosen from the aggregator's own catalogue, access is approved at its
+consent screen, and the accounts it authorises arrive as ledger bank accounts you
+can reconcile.
+
+A bank is connected once, and the API enforces it (`409`): starting a second
+consent to an institution that already has a pending or linked connection is
+refused. It is checked twice on purpose — our own picker names the bank up front,
+while a provider that chooses the institution inside its own flow only reveals it
+when the consent comes back, and the rule is applied again there, before anything
+is adopted. Two feeds to one bank would mean a second identity for the same
+accounts, every transaction staged twice, and a second ledger bank account for
+money that already has one. To start over, disconnect that connection first; a
+broken one (`ERROR`) is repaired with `/reconnect`, which keeps its accounts and
+its history, and does not hold the bank hostage.
+
+Disconnecting one (`DELETE /bank-feeds/connections/<id>`) also ends the consent at
+the provider — Plaid deletes the Item, GoCardless the requisition — so no token or
+identity of ours is left alive at the bank. It is best-effort by design: a
+provider that refuses, or that cannot be reached, is logged and the connection is
+still removed, because a disconnect the provider can veto is not a disconnect.
+
+| Adapter | Coverage | Notes |
+|---|---|---|
+| **Plaid** | US & Canada, 12 000+ institutions | Free **Trial** plan (10 live Items) for teams created on/after 2026-04-15; Pay-as-you-go above that. Consent runs through Plaid-hosted Link, so goXero ships no JavaScript SDK. |
+| **GoCardless Bank Account Data** (ex-Nordigen) | EU/UK, 2 500+ banks | PSD2; free tier for personal use, paid above it. |
+
+#### Plaid (US banks)
+
+1. Take `client_id` / `secret` from the
+   [Plaid dashboard](https://dashboard.plaid.com/developers/keys). Sandbox keys
+   are free and let you connect Plaid's test institutions without touching a
+   real bank.
+2. Configure `.env`:
+
+   ```
+   PLAID_CLIENT_ID=...
+   PLAID_SECRET=...
+   PLAID_ENV=sandbox          # "production" for live banks
+   BANKFEED_ENCRYPTION_KEY=<a long random string>
+   BANKFEED_REDIRECT_URL=http://localhost:5173/app/bank-feeds/callback
+   ```
+
+   Plaid hands back a per-bank **access token** after consent. That token is a
+   bearer credential for your bank data, so it is sealed with AES-256-GCM before
+   it is stored — the adapter is not registered at all without
+   `BANKFEED_ENCRYPTION_KEY`.
+
+3. Restart the server, then in the UI: **Accounting → Bank feeds** (or
+   **Bank accounts → Add bank account**) **→ Plaid → search your bank → Open
+   consent link**. The consent screen is hosted by Plaid; when it sends you
+   back, `/app/bank-feeds/callback` finishes the connection and shows the
+   accounts it found.
+
+   Finishing a consent also gives the feed somewhere to post: every account the
+   bank authorised is created as a **ledger `BANK` account** — named after the
+   bank's own name for it, in the feed's currency, taking the next free number in
+   the organisation's bank series — and bound to the feed account, so it is on
+   **Bank accounts** immediately instead of waiting to be matched to one by hand.
+   Finalising or syncing again never creates a second copy, and a feed account
+   you would rather post somewhere else can be pointed at another ledger account
+   on the bank feeds screen.
+
+##### Webhooks (optional, recommended)
+
+Consent can be finished in two ways, and they are the same completion arriving
+by two routes: the browser returning to `BANKFEED_REDIRECT_URL`, and Plaid
+posting a `LINK/SESSION_FINISHED` webhook. The first one alone is enough for a
+self-hosted install nobody can reach from the internet. Set `PLAID_WEBHOOK_URL`
+to `https://<host>/api/v1/bank-feeds/webhooks/plaid` and Plaid also tells you
+things no redirect can, hours or weeks later:
+
+| Delivery | What goXero does |
+|---|---|
+| `LINK` / `SESSION_FINISHED` | Finishes the consent and stores the accounts — even if the user closed the tab before the redirect. |
+| `ITEM` / `ERROR` (usually `ITEM_LOGIN_REQUIRED`) | Marks the connection `ERROR` with the reason, which is what puts a **Reconnect** button on it. |
+| `ITEM` / `USER_PERMISSION_REVOKED` | Marks it `REVOKED` — only a fresh consent can bring it back. |
+| `ITEM` / `PENDING_EXPIRATION`, `PENDING_DISCONNECT` | Leaves the feed working and notes that consent lapses within a week. |
+
+The endpoint is public — Plaid is the caller, not a logged-in user — so it
+authenticates the delivery instead of the session: every request carries a
+`Plaid-Verification` JWS signed with Plaid's key, and the body is checked against
+the hash in its claims before anything in it is read. Deliveries that are not
+signed by Plaid get a 401 and are ignored; ones this integration does not model
+get a 200, so Plaid stops retrying them.
+
+##### Repairing a feed the bank has broken
+
+A connection in `ERROR` is usually one whose consent the bank invalidated. The
+fix is **Reconnect** on the connections screen, not connecting the bank again:
+`POST /bank-feeds/connections/<id>/reconnect` opens a Plaid *update mode* session
+against the Item that already exists, so the connection keeps its accounts and
+its sync cursor. A second consent would import the same accounts under a new
+connection and split their history in two. Providers with no repair flow (this is
+GoCardless's consent model) answer 400 — disconnect and reconnect those.
+
+#### GoCardless Bank Account Data (EU/UK banks)
 
 1. Create an account at [bankaccountdata.gocardless.com](https://bankaccountdata.gocardless.com)
    and generate `secret_id` / `secret_key` under **User Secrets**.
@@ -182,37 +279,77 @@ free PSD2 tier covering 2 500+ EU/UK banks). Hooking it up:
    BANKFEED_REDIRECT_URL=http://localhost:5173/app/bank-feeds/callback
    ```
 
-3. Restart the server — goXero discovers the adapter and exposes
-   `/api/v1/bank-feeds/*` for the authenticated tenant.
-4. Consent flow:
+#### Either adapter, from the API
 
-   ```bash
-   # 1) pick a bank
-   curl "$API/bank-feeds/institutions?provider=gocardless_bad&country=GB"
+```bash
+# 1) pick a bank (`q` searches upstream where the catalogue is too big to list,
+#    as it is for Plaid)
+curl "$API/bank-feeds/institutions?provider=plaid&country=US&q=chase"
 
-   # 2) create a connection (returns AuthURL — redirect the user there)
-   curl -X POST $API/bank-feeds/connections \
-        -H "Content-Type: application/json" \
-        -d '{"Provider":"gocardless_bad","InstitutionID":"SANDBOXFINANCE_SFIN0000"}'
+# 2) create a connection (returns AuthURL — redirect the user there)
+curl -X POST $API/bank-feeds/connections \
+     -H "Content-Type: application/json" \
+     -d '{"Provider":"plaid","InstitutionID":"ins_56"}'
 
-   # 3) after the user returns, finalise to discover accounts
-   curl -X POST $API/bank-feeds/connections/<id>/finalize
+# or let Plaid ask for the bank itself — `InstitutionID` may be left out for a
+# provider whose own flow has a picker
+curl -X POST $API/bank-feeds/connections \
+     -H "Content-Type: application/json" \
+     -d '{"Provider":"plaid","Country":"US"}'
 
-   # 4) pull transactions (idempotent — re-run as often as you like)
-   curl -X POST $API/bank-feeds/connections/<id>/sync
+# 3) after the user returns from consent, finalise to discover accounts — this
+#    also creates a ledger bank account for each one and binds it
+curl -X POST $API/bank-feeds/connections/<id>/finalize
 
-   # 5) review the staging inbox, then code the rows you want posted
-   curl "$API/statement-lines?status=NEW"
-   curl -X POST $API/statement-lines/<lineId>/create \
-     -H 'Content-Type: application/json' -d '{"AccountCode":"400"}'
-   ```
+# 4) pull transactions (idempotent — re-run as often as you like)
+curl -X POST $API/bank-feeds/connections/<id>/sync
+
+# 5) review the staging inbox, then code the rows you want posted
+curl "$API/statement-lines?status=NEW"
+curl -X POST $API/statement-lines/<lineId>/create \
+  -H 'Content-Type: application/json' -d '{"AccountCode":"400"}'
+```
+
+`InstitutionID` is what our own picker sends so that the provider skips its own,
+but it is not required where the provider's flow can ask for the bank itself
+(only Plaid can; a GoCardless requisition needs one up front, and the server
+answers `400` without it). Some Plaid accounts are not permitted to pre-select a
+bank at all: they refuse **every** `institution_id` — including the ones their own
+institution search returns — and the adapter then simply starts the session again
+without it, so the user chooses inside Plaid's window instead of hitting an error.
+Either way the connection is labelled from the Item afterwards, so a row always
+names the bank that was really connected rather than the one that was clicked.
 
 Statement lines are deduped by `(FeedAccountID, ProviderTxID)`, so re-syncing
 never double-counts. Rows you don't want posted can be hidden via
 `/statement-lines/<lineId>/ignore`, or matched against an existing
-transaction via `/statement-lines/<lineId>/match`. Adding another aggregator
-(Plaid, TrueLayer, Salt Edge) is purely a new `Provider` implementation under
-`internal/bankfeed/` — no schema or handler changes.
+transaction via `/statement-lines/<lineId>/match`. Both adapters normalise to
+one sign convention — **positive = money in** — which Plaid reports the
+opposite way round. Adding another aggregator (TrueLayer, Salt Edge) is a new
+`Provider` implementation under `internal/bankfeed/` plus a registry line; the
+schema, routes and UI stay as they are.
+
+A `/sync` is incremental where the provider supports it: it returns
+`{"Fetched", "NewLines", "AutoMatched", "UpstreamChanges"}`. `AutoMatched` is
+how many of the new lines the account's **auto-reconcile** setting matched on the
+way in (turn it on per bank account; the reconcile screen's banner is where Xero
+puts it). `UpstreamChanges` counts the lines under this connection that the bank
+has since restated or withdrawn.
+
+Those last ones are the awkward case, because by then the line has been coded and
+is part of the books. The feed therefore never rewrites or deletes a booked line:
+it parks the bank's version beside it and the difference is derived when the line
+is read.
+
+- *Still in the inbox* (`NEW`/`IGNORED`): nothing has been posted, so the bank
+  is simply right. The line is corrected in place, and a line the bank has
+  withdrawn is deleted.
+- *Already coded* (`IMPORTED`): the line keeps its amounts and its transaction,
+  and the Bank statements tab shows it as **Changed by the bank** or **Withdrawn
+  by the bank**. The bank's version is readable in the line's details, and
+  `POST /statement-lines/<lineId>/dismiss-upstream-change` records that the user
+  has seen it and accepts it. The notice disappears on its own if the two agree
+  again, so there is no flag to keep in step.
 
 `GET` list responses follow Xero's envelope (`{ Id, Status, ProviderName,
 DateTimeUTC, Payload: { <Resource>: [...], Pagination? } }`). `POST`/`PUT` return

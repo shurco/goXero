@@ -4,23 +4,25 @@
 		accountApi,
 		type BankFeedConnection,
 		type BankFeedAccount,
-		type BankFeedInstitution
+		type BankFeedInstitution,
+		type BankFeedProvider
 	} from '$lib/api';
+	import BankInstitutionPicker, {
+		defaultCountry
+	} from '$lib/components/BankInstitutionPicker.svelte';
 	import type { Account } from '$lib/types';
 	import { session } from '$lib/stores/session';
 	import ModuleHeader from '$lib/components/ModuleHeader.svelte';
 
-	let providers = $state<string[]>([]);
+	let providers = $state<BankFeedProvider[]>([]);
 	let connections = $state<BankFeedConnection[]>([]);
-	let feedAccounts = $state<BankFeedAccount[]>([]);
 	let bankAccounts = $state<Account[]>([]);
 	let loading = $state(true);
 
 	let showConnect = $state(false);
 	let selectedProvider = $state('');
+	/** The country the search runs under, bound into the picker. */
 	let country = $state('');
-	let institutions = $state<BankFeedInstitution[]>([]);
-	let instFilter = $state('');
 	let error = $state('');
 
 	async function reload() {
@@ -28,14 +30,11 @@
 		try {
 			const [p, c, accs] = await Promise.all([
 				bankFeedApi.providers().catch(() => ({ Providers: [] })),
-				bankFeedApi
-					.listConnections()
-					.catch(() => ({ Connections: [], Accounts: [] })),
+				bankFeedApi.listConnections().catch(() => ({ Connections: [] })),
 				accountApi.list({ status: 'ACTIVE' }).catch(() => [])
 			]);
 			providers = p.Providers ?? [];
 			connections = c.Connections ?? [];
-			feedAccounts = c.Accounts ?? [];
 			bankAccounts = (accs as Account[]).filter((a) => a.Type === 'BANK');
 		} finally {
 			loading = false;
@@ -43,35 +42,30 @@
 	}
 	$effect(() => { if ($session.tenantId) void reload(); });
 
-	async function openConnect(p: string) {
+	function openConnect(p: string) {
 		selectedProvider = p;
 		showConnect = true;
 		error = '';
-		institutions = [];
-		try {
-			const res = await bankFeedApi.institutions(p, country);
-			institutions = res.Institutions ?? [];
-		} catch (e) {
-			error = (e as Error).message;
-		}
+		// Reset per provider — the country one adapter was searched under is not
+		// the country to search the next one in.
+		country = defaultCountry(p);
 	}
 
-	async function reloadInstitutions() {
-		if (!selectedProvider) return;
-		try {
-			const res = await bankFeedApi.institutions(selectedProvider, country);
-			institutions = res.Institutions ?? [];
-		} catch (e) {
-			error = (e as Error).message;
-		}
-	}
-
-	async function startConnection(inst: BankFeedInstitution) {
+	/**
+	 * Start consent. The institution is optional: a provider whose own flow has a
+	 * picker (Plaid's Hosted Link is the whole Link flow) accepts a request that
+	 * names no bank and asks the user there. That is the only way in on an account
+	 * that refuses a pre-selected institution, and the way to reach a bank our
+	 * catalogue has not listed — the connection is labelled with whatever they
+	 * pick once consent completes.
+	 */
+	async function startConnection(inst?: BankFeedInstitution) {
 		try {
 			const res = await bankFeedApi.createConnection({
 				provider: selectedProvider,
-				institutionId: inst.ID,
-				institutionName: inst.Name
+				institutionId: inst?.ID,
+				institutionName: inst?.Name,
+				country
 			});
 			showConnect = false;
 			const authURL = res.Connections?.[0]?.AuthURL;
@@ -86,7 +80,7 @@
 
 	async function finalize(c: BankFeedConnection) {
 		try {
-			await bankFeedApi.finalize(c.FeedConnectionID);
+			await bankFeedApi.finalize(c.ConnectionID);
 			await reload();
 		} catch (e) {
 			alert((e as Error).message);
@@ -94,8 +88,29 @@
 	}
 	async function sync(c: BankFeedConnection) {
 		try {
-			const res = await bankFeedApi.sync(c.FeedConnectionID);
-			alert(`Fetched ${res.Fetched} line${res.Fetched === 1 ? '' : 's'} (${res.NewLines} new)`);
+			const res = await bankFeedApi.sync(c.ConnectionID);
+			const extra: string[] = [];
+			if (res.AutoMatched) extra.push(`auto-matched ${res.AutoMatched}`);
+			if (res.UpstreamChanges) extra.push(`${res.UpstreamChanges} line(s) the bank changed`);
+			alert(
+				`Fetched ${res.Fetched} line${res.Fetched === 1 ? '' : 's'} (${res.NewLines} new)` +
+					(extra.length ? `, ${extra.join(', ')}` : '')
+			);
+			await reload();
+		} catch (e) {
+			alert((e as Error).message);
+		}
+	}
+	/**
+	 * Send a broken connection back to the bank to be repaired where it stands.
+	 * The user then consents in a new tab, and either the redirect or the
+	 * provider's own webhook finishes the job — both land on `finalize`.
+	 */
+	async function reconnect(c: BankFeedConnection) {
+		try {
+			const res = await bankFeedApi.reconnect(c.ConnectionID);
+			const authURL = res.Connections?.[0]?.AuthURL;
+			if (authURL) window.open(authURL, '_blank', 'noopener');
 			await reload();
 		} catch (e) {
 			alert((e as Error).message);
@@ -103,7 +118,7 @@
 	}
 	async function remove(c: BankFeedConnection) {
 		if (!confirm(`Disconnect from ${c.InstitutionName ?? c.Provider}?`)) return;
-		await bankFeedApi.deleteConnection(c.FeedConnectionID);
+		await bankFeedApi.deleteConnection(c.ConnectionID);
 		await reload();
 	}
 	async function bind(fa: BankFeedAccount, accountId: string) {
@@ -112,10 +127,18 @@
 		await reload();
 	}
 
-	const filteredInstitutions = $derived(
-		institutions.filter(
-			(i) => !instFilter || i.Name.toLowerCase().includes(instFilter.toLowerCase())
-		)
+	/**
+	 * What the provider registered under this slug can do. False for a provider
+	 * the server no longer offers, which is the safe answer: it hides the offer
+	 * rather than showing a button that cannot work.
+	 */
+	function providerCapabilities(slug: string) {
+		return providers.find((p) => p.Slug === slug);
+	}
+
+	/** Whether the provider's own consent flow can ask for the bank itself. */
+	const providerPicksInstitution = $derived(
+		providerCapabilities(selectedProvider)?.PicksInstitution ?? false
 	);
 </script>
 
@@ -134,13 +157,13 @@
 			<h2 class="content-section-title">Connect a bank</h2>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-			{#each providers as name}
+			{#each providers as p (p.Slug)}
 				<button
 					type="button"
 					class="card p-4 text-left hover:border-brand-400 transition"
-					onclick={() => openConnect(name)}
+					onclick={() => openConnect(p.Slug)}
 				>
-					<div class="font-semibold capitalize">{name}</div>
+					<div class="font-semibold capitalize">{p.Slug}</div>
 					<div class="text-xs mt-1 text-emerald-700">Configured</div>
 				</button>
 			{/each}
@@ -156,7 +179,7 @@
 		<div class="muted">No connections yet.</div>
 	{:else}
 		<div class="space-y-4">
-			{#each connections as c}
+			{#each connections as c (c.ConnectionID)}
 				<div class="border border-ink-100 rounded-lg p-4">
 					<div class="flex items-start justify-between gap-3 flex-wrap">
 						<div>
@@ -165,19 +188,30 @@
 								{c.Provider} · <span class="uppercase">{c.Status}</span>
 								{#if c.Country} · {c.Country}{/if}
 							</div>
+							{#if c.LastError}
+								<div class="text-xs text-red-700 mt-1">{c.LastError}</div>
+							{/if}
 						</div>
 						<div class="flex gap-2">
-							{#if c.Status === 'PENDING' && c.AuthURL}
+							{#if (c.Status === 'PENDING' || c.Status === 'ERROR') && c.AuthURL}
+								<!-- A session is open: either a first-time consent or a repair. -->
 								<a href={c.AuthURL} target="_blank" rel="noopener noreferrer" class="btn-primary !py-1.5 !px-3 !text-xs">Open consent link</a>
 								<button class="btn-secondary !py-1.5 !px-3 !text-xs" onclick={() => finalize(c)}>I've finished</button>
 							{:else if c.Status === 'LINKED'}
 								<button class="btn-primary !py-1.5 !px-3 !text-xs" onclick={() => sync(c)}>Sync now</button>
+							{:else if c.Status === 'ERROR' && providerCapabilities(c.Provider)?.CanRepair}
+								<!-- Broken at the bank: re-authenticate this connection rather than
+								     connecting the same account a second time. Only a provider whose
+								     adapter can repair in place offers it — the rest report the
+								     consent as gone and expect a fresh connection, so for them the
+								     way back is Disconnect. -->
+								<button class="btn-primary !py-1.5 !px-3 !text-xs" onclick={() => reconnect(c)}>Reconnect</button>
 							{/if}
 							<button class="btn-secondary !py-1.5 !px-3 !text-xs" onclick={() => remove(c)}>Disconnect</button>
 						</div>
 					</div>
 
-					{#if feedAccounts.filter((a) => a.FeedConnectionID === c.FeedConnectionID).length}
+					{#if c.Accounts?.length}
 						<table class="table-auto-xero mt-4">
 							<thead>
 								<tr>
@@ -188,7 +222,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								{#each feedAccounts.filter((a) => a.FeedConnectionID === c.FeedConnectionID) as fa}
+								{#each c.Accounts as fa (fa.FeedAccountID)}
 									<tr>
 										<td class="font-medium">{fa.DisplayName ?? fa.ExternalAccountID}</td>
 										<td class="tabular-nums">{fa.IBAN ?? '—'}</td>
@@ -200,7 +234,7 @@
 												onchange={(e) => bind(fa, (e.target as HTMLSelectElement).value)}
 											>
 												<option value="">— select account —</option>
-												{#each bankAccounts as acc}
+												{#each bankAccounts as acc (acc.AccountID)}
 													<option value={acc.AccountID}>{acc.Name} ({acc.Code})</option>
 												{/each}
 											</select>
@@ -223,33 +257,18 @@
 				<h3 class="font-semibold">Connect via {selectedProvider}</h3>
 				<button class="btn-ghost" onclick={() => (showConnect = false)}>Close</button>
 			</div>
-			<div class="p-5 border-b border-ink-100 flex gap-3">
-				<input class="input flex-1" placeholder="Filter institutions…" bind:value={instFilter} />
-				<input class="input w-24" placeholder="Country" bind:value={country} onchange={reloadInstitutions} />
-			</div>
-			<div class="overflow-y-auto flex-1 p-2">
+			<div class="p-5 overflow-y-auto">
 				{#if error}
-					<div class="p-3 text-sm text-red-700">{error}</div>
+					<div class="mb-3 text-sm text-red-700">{error}</div>
 				{/if}
-				{#each filteredInstitutions as inst}
-					<button
-						class="w-full flex items-center gap-3 p-3 rounded-md hover:bg-ink-50 text-left"
-						onclick={() => startConnection(inst)}
-					>
-						{#if inst.LogoURL}
-							<img src={inst.LogoURL} alt="" class="h-8 w-8 rounded object-contain bg-ink-100" />
-						{:else}
-							<div class="h-8 w-8 rounded bg-ink-100"></div>
-						{/if}
-						<div>
-							<div class="font-medium">{inst.Name}</div>
-							<div class="text-xs muted">{(inst.Countries ?? []).join(', ')}</div>
-						</div>
-					</button>
-				{/each}
-				{#if filteredInstitutions.length === 0}
-					<div class="p-6 muted text-center text-sm">No institutions found.</div>
-				{/if}
+				<!-- The search, the results and the provider's own picker are one
+				     component, shared with the Add bank account screen. -->
+				<BankInstitutionPicker
+					provider={selectedProvider}
+					bind:country
+					picksInstitution={providerPicksInstitution}
+					onselect={startConnection}
+				/>
 			</div>
 		</div>
 	</div>

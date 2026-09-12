@@ -74,6 +74,10 @@
 			title: 'Banking',
 			items: [
 				{ label: 'Bank accounts', href: '/app/accounting/bank-accounts' },
+				// The same screen as Bank accounts → Add bank account: the bank is
+				// chosen from the aggregator's own catalogue there, which is what
+				// makes it the way in to a feed rather than a second place to look.
+				{ label: 'Bank feeds', href: '/app/accounting/bank-accounts/new' },
 				{ label: 'Bank rules', href: '/app/accounting/bank-rules' }
 			]
 		},

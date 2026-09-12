@@ -204,6 +204,7 @@ type importResponse struct {
 
 type statementLine struct {
 	StatementLineID   string `json:"StatementLineID"`
+	ProviderTxID      string `json:"ProviderTxID"`
 	PostedAt          string `json:"PostedAt"`
 	Source            string `json:"Source"`
 	Status            string `json:"Status"`
@@ -214,6 +215,10 @@ type statementLine struct {
 	CodedAccountCode  string `json:"CodedAccountCode"`
 	CodedAccountName  string `json:"CodedAccountName"`
 	AutoReconciledAt  string `json:"AutoReconciledAt"`
+	// What the bank says about a line that has already been coded: the
+	// derived notice plus the timestamp behind it.
+	UpstreamChange    string `json:"UpstreamChange"`
+	UpstreamRemovedAt string `json:"UpstreamRemovedAt"`
 }
 
 func listLines(t *testing.T, h *appHarness, query string) []statementLine {
