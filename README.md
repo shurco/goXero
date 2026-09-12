@@ -1,10 +1,11 @@
 # goXero
 
-**Disclaimer:** This repository is **not affiliated with, endorsed by, or connected in any way** to [Xero Limited](https://www.xero.com) or the official Xero product. Naming and UI patterns are **inspired only** by Xero’s public documentation and familiar workflows; all trademarks belong to their respective owners.
+> [!NOTE]
+> **Disclaimer:** This repository is **not affiliated with, endorsed by, or connected in any way** to [Xero Limited](https://www.xero.com) or the official Xero product. Naming and UI patterns are **inspired only** by Xero’s public documentation and familiar workflows; all trademarks belong to their respective owners.
 
 ### Why this project exists
 
-Over the last few years, prices for comparable cloud accounting software have gone up several times, while the slice of functionality I actually use has not kept pace. I was tired of paying for unused surface area, so I started **goXero** as a **free, open-source** alternative you can self-host and adapt to your own needs.
+Over the last few years, the price for essentially the same functionality used by the vast majority of small businesses and companies with no employees has increased from $6 to $27 per month, while the functionality I actually use has not kept pace. I was tired of paying for unused surface area, so I started **goXero** as a **free, open-source** alternative/clone you can self-host and adapt to your own needs.
 
 ---
 
