@@ -249,6 +249,22 @@ func (h *BankStatementHandler) UnignoreStatementLine(c fiber.Ctx) error {
 	return h.setLineStatus(c, models.BankFeedLineStatusNew)
 }
 
+// DismissUpstreamChange clears the notice that the bank withdrew a line which
+// had already been coded — the user saying "the posted version came in as its
+// own line, and my entry is the right one". The restatement notice has no
+// equivalent: that difference lives in the figures, and the way to settle it is
+// to correct the transaction rather than to silence the line.
+func (h *BankStatementHandler) DismissUpstreamChange(c fiber.Ctx) error {
+	id, err := parseID(c, "id")
+	if err != nil {
+		return err
+	}
+	if err := h.repos.BankStatements.DismissUpstreamRemoval(c.Context(), middleware.OrganisationIDFrom(c), id); err != nil {
+		return httpError(err)
+	}
+	return noContent(c)
+}
+
 func (h *BankStatementHandler) setLineStatus(c fiber.Ctx, status string) error {
 	orgID, id, err := tenantAndID(c)
 	if err != nil {
@@ -1004,6 +1020,25 @@ func (h *BankStatementHandler) AutoReconcile(c fiber.Ctx) error {
 	})
 }
 
+// AutoReconcileIfEnabled runs the automatic pass for an account, but only when
+// the account has it switched on: Xero's rule is that the user asks once, on the
+// account, rather than per batch of lines. It is what the statement import calls
+// when it is done, and what the bank feed calls after a sync — so a line that
+// agrees with a transaction already entered on the account is reconciled
+// wherever the line came from. The "Ok, let's reconcile" button does not come
+// through here: that one was asked for explicitly and runs regardless.
+func (h *BankStatementHandler) AutoReconcileIfEnabled(ctx context.Context, orgID, accountID uuid.UUID) (matched int, err error) {
+	acc, err := h.repos.Accounts.GetByID(ctx, orgID, accountID)
+	if err != nil {
+		return 0, httpError(err)
+	}
+	if acc == nil || !acc.AutoReconcile {
+		return 0, nil
+	}
+	matched, _, err = h.autoReconcileAccount(ctx, orgID, accountID)
+	return matched, err
+}
+
 // autoReconcileAccount is the body of "Ok, let's reconcile" without the HTTP
 // around it, so the two places that need it can share it: the button, and an
 // account whose auto-reconcile setting is on, which runs it after an import.
@@ -1303,12 +1338,9 @@ func (h *BankStatementHandler) CommitImport(c fiber.Ctx) error {
 	// can: the lines that agree exactly with a transaction on the account are
 	// reconciled as they land. The user asked for this once, on the account,
 	// rather than per file.
-	matched := 0
-	if acc, aerr := h.repos.Accounts.GetByID(c.Context(), orgID, imp.BankAccountID); aerr == nil && acc != nil && acc.AutoReconcile {
-		matched, _, err = h.autoReconcileAccount(c.Context(), orgID, imp.BankAccountID)
-		if err != nil {
-			return err
-		}
+	matched, err := h.AutoReconcileIfEnabled(c.Context(), orgID, imp.BankAccountID)
+	if err != nil {
+		return err
 	}
 	return c.JSON(fiber.Map{
 		"Import":      imp,

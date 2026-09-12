@@ -34,7 +34,12 @@ import type {
 	TaxRate
 } from './types';
 
-interface ApiError extends Error {
+/**
+ * What `request()` throws for a non-2xx answer: the message the server sent,
+ * plus the status, so a caller can act on *which* refusal it was rather than
+ * matching on prose.
+ */
+export interface ApiError extends Error {
 	status: number;
 	payload?: unknown;
 }
@@ -506,6 +511,17 @@ export const statementApi = {
 			body: JSON.stringify({ BankTransactionID: bankTransactionId })
 		}),
 	/**
+	 * Clear the notice that the bank withdrew an already-coded line. Nothing is
+	 * posted and nothing is unbooked: the entry is the books, and the withdrawal
+	 * only stops being shown. A line the bank *changed* has no dismissal — that
+	 * notice is derived from the bank's current version and comes back on the next
+	 * sync, so the answer to it is to recode the line or leave it.
+	 */
+	dismissUpstreamChange: (id: string) =>
+		request<void>(`/api/v1/statement-lines/${id}/dismiss-upstream-change`, {
+			method: 'POST'
+		}),
+	/**
 	 * Candidates for Find & match, best first. Each of the four filters on the
 	 * form is passed straight through: the server narrows the same list rather
 	 * than the client filtering a page of it, so the paging total stays true.
@@ -784,26 +800,36 @@ export const conversionBalanceApi = {
 
 // ── Bank feeds ────────────────────────────────────────────────────────────
 export interface BankFeedConnection {
-	FeedConnectionID: string;
+	ConnectionID: string;
 	Provider: string;
 	Status: string;
 	InstitutionID?: string;
 	InstitutionName?: string;
+	/** The country the institution was found under — a repair has to name it again. */
 	Country?: string;
 	ExternalReference?: string;
 	AuthURL?: string;
-	CreatedDateUTC?: string;
-	UpdatedDateUTC?: string;
+	/**
+	 * Why the feed stopped working, when it has. Set by the provider's webhook
+	 * (Plaid reports a broken consent as ITEM_LOGIN_REQUIRED) and shown next to
+	 * the Reconnect button, because the code means nothing to a bookkeeper.
+	 */
+	LastError?: string;
+	LastSyncedAt?: string;
+	CreatedAt?: string;
+	UpdatedAt?: string;
+	/** The upstream accounts discovered under this consent. */
+	Accounts?: BankFeedAccount[];
 }
 export interface BankFeedAccount {
 	FeedAccountID: string;
-	FeedConnectionID: string;
+	ConnectionID: string;
 	AccountID?: string;
 	ExternalAccountID: string;
 	DisplayName?: string;
 	IBAN?: string;
 	CurrencyCode?: string;
-	LastBalance?: number;
+	Balance?: number;
 }
 export interface BankFeedInstitution {
 	ID: string;
@@ -813,30 +839,57 @@ export interface BankFeedInstitution {
 	Countries?: string[];
 	TransactionTotalDays?: number;
 }
+export interface BankFeedProvider {
+	Slug: string;
+	/** The provider's own consent flow can ask which bank to use. */
+	PicksInstitution: boolean;
+	/** A broken consent can be re-authenticated in place instead of reconnected. */
+	CanRepair: boolean;
+}
 export const bankFeedApi = {
-	providers: () => request<{ Providers: string[] }>('/api/v1/bank-feeds/providers'),
-	institutions: (provider: string, country = '') => {
-		const qs = new URLSearchParams({ provider, country }).toString();
-		return request<{ Institutions: BankFeedInstitution[] }>(
+	providers: () => request<{ Providers: BankFeedProvider[] }>('/api/v1/bank-feeds/providers'),
+	/**
+	 * `q` is a free-text search term. Catalogues too large to enumerate (Plaid's
+	 * ~12k US institutions) are searched upstream; smaller ones are filtered by
+	 * the server after fetching.
+	 */
+	institutions: async (provider: string, country = '', q = '') => {
+		const qs = new URLSearchParams({ provider, country, q }).toString();
+		// A GET list arrives in the Xero envelope — `Payload.Institutions` — while
+		// the POST/PUT calls below answer with the bare key. `unwrap` reads both,
+		// so the caller sees the same shape either way.
+		const res = await request<XeroEnvelope<'Institutions', BankFeedInstitution>>(
 			`/api/v1/bank-feeds/institutions?${qs}`
 		);
+		return { Institutions: unwrap(res, 'Institutions') };
 	},
-	listConnections: () =>
-		request<{ Connections: BankFeedConnection[]; Accounts: BankFeedAccount[] }>(
+	listConnections: async () => {
+		const res = await request<XeroEnvelope<'Connections', BankFeedConnection>>(
 			'/api/v1/bank-feeds/connections'
-		),
+		);
+		return { Connections: unwrap(res, 'Connections') };
+	},
 	createConnection: (payload: {
 		provider: string;
-		institutionId: string;
+		/**
+		 * The bank to connect, when we know one. Optional: a provider whose own
+		 * flow has a picker (Plaid) accepts an empty one and asks the user there,
+		 * which is the only way in on an account that refuses a pre-selected
+		 * institution. The connection is labelled with what they pick.
+		 */
+		institutionId?: string;
 		institutionName?: string;
+		/** The country the institution was found under — Plaid rejects a mismatch. */
+		country?: string;
 		redirectUrl?: string;
 	}) =>
 		request<{ Connections: BankFeedConnection[] }>('/api/v1/bank-feeds/connections', {
 			method: 'POST',
 			body: JSON.stringify({
 				Provider: payload.provider,
-				InstitutionID: payload.institutionId,
+				InstitutionID: payload.institutionId ?? '',
 				InstitutionName: payload.institutionName ?? '',
+				Country: payload.country ?? '',
 				RedirectURL: payload.redirectUrl ?? ''
 			})
 		}),
@@ -846,8 +899,23 @@ export const bankFeedApi = {
 			{ method: 'POST' }
 		),
 	sync: (id: string) =>
-		request<{ Fetched: number; NewLines: number }>(
-			`/api/v1/bank-feeds/connections/${id}/sync`,
+		request<{
+			Fetched: number;
+			NewLines: number;
+			/** Lines the account's auto-reconcile setting matched on the way in. */
+			AutoMatched: number;
+			/** Coded lines under this connection the bank now disagrees with. */
+			UpstreamChanges: number;
+		}>(`/api/v1/bank-feeds/connections/${id}/sync`, { method: 'POST' }),
+	/**
+	 * Repair a broken connection in place, by re-authenticating the account at
+	 * the bank rather than connecting it again — a second consent would import
+	 * the same accounts under a new connection and split their history in two.
+	 * Providers without a repair flow answer 400.
+	 */
+	reconnect: (id: string) =>
+		request<{ Connections: BankFeedConnection[] }>(
+			`/api/v1/bank-feeds/connections/${id}/reconnect`,
 			{ method: 'POST' }
 		),
 	deleteConnection: (id: string) =>

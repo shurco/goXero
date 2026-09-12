@@ -98,6 +98,18 @@ type BankStatementLine struct {
 	// suggestion it is advisory: the Create panel opens with it filled in and
 	// anything can be changed before saving.
 	PreviousEntry *PreviousEntrySuggestion `json:"PreviousEntry,omitempty"`
+
+	// What the bank says about a line that has already been coded. By then the
+	// line is part of the books, so the feed neither rewrites it nor deletes it:
+	// it parks the bank's version here and leaves the difference for the user.
+	UpstreamAmount    *decimal.Decimal `json:"UpstreamAmount,omitempty"`
+	UpstreamPostedAt  *time.Time       `json:"UpstreamPostedAt,omitempty"`
+	UpstreamChangedAt *time.Time       `json:"UpstreamChangedAt,omitempty"`
+	UpstreamRemovedAt *time.Time       `json:"UpstreamRemovedAt,omitempty"`
+	// UpstreamChange is read-only and derived rather than stored: 'MODIFIED' when
+	// the bank's version disagrees with what was booked, 'REMOVED' when the bank
+	// withdrew the line outright. Empty on a line the bank has not argued with.
+	UpstreamChange string `json:"UpstreamChange,omitempty"`
 }
 
 // PreviousEntrySuggestion is what Xero calls "suggest previous entries": the

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -57,11 +58,26 @@ type AuthConfig struct {
 // BankFeedConfig holds credentials + defaults for Open Banking aggregators.
 // Empty secrets mean the adapter is not registered at boot.
 type BankFeedConfig struct {
-	RedirectURL            string        // where providers send the browser after consent
-	SyncWindow             time.Duration // how far back to pull per /sync call
-	SyncInterval           time.Duration // how often to poll every linked connection; 0 disables
+	RedirectURL  string        // where providers send the browser after consent
+	SyncWindow   time.Duration // how far back to pull per date-window /sync call
+	SyncInterval time.Duration // how often to poll every linked connection; 0 disables
+
+	// EncryptionKey seals per-connection secrets (Plaid Item access tokens).
+	// Aggregators that issue one cannot be registered without it.
+	EncryptionKey string
+
 	GoCardlessBADSecretID  string
 	GoCardlessBADSecretKey string
+
+	PlaidClientID   string
+	PlaidSecret     string
+	PlaidClientName string
+	PlaidProduction bool // PLAID_ENV=production; anything else is the sandbox
+	// PlaidWebhookURL is the public URL Plaid posts notifications to (consent
+	// finished, consent broken, consent about to lapse). Empty means this
+	// deployment is not reachable from the outside, in which case the browser
+	// returning from consent is what completes the flow.
+	PlaidWebhookURL string
 }
 
 func (d DatabaseConfig) DSN() string {
@@ -123,6 +139,10 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	// Plaid is the US/CA aggregator; anything that is not "production" talks to
+	// the sandbox, so a typo cannot silently move live bank data.
+	plaidEnv := getEnv("PLAID_ENV", "sandbox")
+
 	env := getEnv("APP_ENV", "development")
 	jwtSecret := getEnv("JWT_SECRET", defaultJWTSecret)
 	if env == "production" && jwtSecret == defaultJWTSecret {
@@ -162,8 +182,14 @@ func Load() (*Config, error) {
 			RedirectURL:            getEnv("BANKFEED_REDIRECT_URL", "http://localhost:5173/app/bank-feeds/callback"),
 			SyncWindow:             syncWindow,
 			SyncInterval:           syncInterval,
+			EncryptionKey:          getEnv("BANKFEED_ENCRYPTION_KEY", ""),
 			GoCardlessBADSecretID:  getEnv("GOCARDLESS_BAD_SECRET_ID", ""),
 			GoCardlessBADSecretKey: getEnv("GOCARDLESS_BAD_SECRET_KEY", ""),
+			PlaidClientID:          getEnv("PLAID_CLIENT_ID", ""),
+			PlaidSecret:            getEnv("PLAID_SECRET", ""),
+			PlaidClientName:        getEnv("PLAID_CLIENT_NAME", "goxero"),
+			PlaidProduction:        strings.EqualFold(plaidEnv, "production"),
+			PlaidWebhookURL:        getEnv("PLAID_WEBHOOK_URL", ""),
 		},
 	}, nil
 }

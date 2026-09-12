@@ -77,8 +77,10 @@ func (g *GoCardless) Name() string { return ProviderGoCardlessBAD }
 // it to decide whether to register the adapter at boot.
 func (g *GoCardless) Credentials() bool { return g.secretID != "" && g.secretKey != "" }
 
-// ListInstitutions implements Provider.
-func (g *GoCardless) ListInstitutions(ctx context.Context, country string) ([]Institution, error) {
+// ListInstitutions implements Provider. GoCardless answers with a whole
+// country at once (a few hundred banks), so `query` is applied here rather than
+// upstream — unlike Plaid, whose catalogue is far too large to enumerate.
+func (g *GoCardless) ListInstitutions(ctx context.Context, country, query string) ([]Institution, error) {
 	q := url.Values{}
 	if country != "" {
 		q.Set("country", strings.ToUpper(country))
@@ -95,7 +97,13 @@ func (g *GoCardless) ListInstitutions(ctx context.Context, country string) ([]In
 		return nil, err
 	}
 	res := make([]Institution, 0, len(out))
+	needle := strings.ToLower(strings.TrimSpace(query))
 	for _, i := range out {
+		if needle != "" &&
+			!strings.Contains(strings.ToLower(i.Name), needle) &&
+			!strings.Contains(strings.ToLower(i.BIC), needle) {
+			continue
+		}
 		res = append(res, Institution{
 			ID: i.ID, Name: i.Name, BIC: i.BIC,
 			Countries: i.Countries, LogoURL: i.Logo,
@@ -127,16 +135,19 @@ func (g *GoCardless) CreateSession(ctx context.Context, req SessionRequest) (*Se
 // FinalizeSession implements Provider. After the user returns from the bank,
 // the requisition status flips to LN (linked) and carries the account ids —
 // we then hydrate each one with /accounts/{id}/ and /balances/.
-func (g *GoCardless) FinalizeSession(ctx context.Context, externalReference string) ([]Account, error) {
+//
+// GoCardless needs no per-connection secret: the requisition id is the durable
+// identity, so the returned Consent echoes it and carries no Secret.
+func (g *GoCardless) FinalizeSession(ctx context.Context, cred Credential) (*Consent, error) {
 	var req struct {
 		Status   string   `json:"status"`
 		Accounts []string `json:"accounts"`
 	}
-	if err := g.do(ctx, http.MethodGet, "/requisitions/"+url.PathEscape(externalReference)+"/", nil, &req); err != nil {
+	if err := g.do(ctx, http.MethodGet, "/requisitions/"+url.PathEscape(cred.Reference)+"/", nil, &req); err != nil {
 		return nil, err
 	}
 	if req.Status != "LN" && req.Status != "LINKED" {
-		return nil, fmt.Errorf("requisition not linked yet (status=%s)", req.Status)
+		return nil, fmt.Errorf("%w: requisition not linked yet (status=%s)", ErrConsentNotFinished, req.Status)
 	}
 	out := make([]Account, 0, len(req.Accounts))
 	for _, id := range req.Accounts {
@@ -146,15 +157,19 @@ func (g *GoCardless) FinalizeSession(ctx context.Context, externalReference stri
 		}
 		out = append(out, *a)
 	}
-	return out, nil
+	return &Consent{Reference: cred.Reference, Accounts: out}, nil
 }
 
 // FetchStatementLines implements Provider — pulls both booked and pending
-// transactions and returns them as a single slice. Amounts are signed: credit
-// stays positive, debit becomes negative (provider returns them as absolute
-// values in the booked/pending arrays, with no explicit side, so we rely on
-// the amount already being signed per ISO 20022 / PSD2 convention).
-func (g *GoCardless) FetchStatementLines(ctx context.Context, externalAccountID string, from, to time.Time) ([]StatementLine, error) {
+// transactions and returns them as a single slice.
+//
+// The amount is passed through untouched: this adapter relies on GoCardless
+// already reporting money out as a negative amount, which is StatementLine's own
+// convention and the opposite of Plaid's (mapPlaidTx negates). That reliance is
+// pinned by TestMapGoCardlessTx's fixtures but has never been checked against the
+// live API — a real debit arriving positive would silently invert every
+// GoCardless reconciliation, and this is where the flip would go.
+func (g *GoCardless) FetchStatementLines(ctx context.Context, cred Credential, externalAccountID string, from, to time.Time) ([]StatementLine, error) {
 	q := url.Values{}
 	if !from.IsZero() {
 		q.Set("date_from", from.Format("2006-01-02"))
@@ -232,10 +247,41 @@ func (g *GoCardless) hydrateAccount(ctx context.Context, id string) (*Account, e
 	return a, nil
 }
 
+// GoCardlessError is a rejected call, carrying the status that says what kind of
+// rejection it was. The body is kept verbatim because GoCardless explains the
+// failure in it and there is no error code to read out.
+type GoCardlessError struct {
+	StatusCode int
+	Body       string
+	// Subject names what was called, for a message that says which step failed.
+	Subject string
+}
+
+func (e *GoCardlessError) Error() string {
+	return fmt.Sprintf("gocardless %s: %d %s", e.Subject, e.StatusCode, e.Body)
+}
+
+// ConsentBroken implements ConsentDiagnoser. A 403 means the access the user
+// granted no longer covers the call — the bank-side consent is gone, which is
+// what the requisition's own status would say if we could reach it. A 404 means
+// the requisition or account no longer exists at all.
+//
+// A 401 is deliberately not in the set: it is the application's own token being
+// refused, which is one broken deployment rather than every connection in it,
+// and marking the tenant's feeds dead over it would be a repair per connection
+// that fixes nothing. Rate limits and 5xx are transient by definition.
+func (g *GoCardless) ConsentBroken(err error) bool {
+	var apiErr *GoCardlessError
+	return errors.As(err, &apiErr) && (apiErr.StatusCode == http.StatusForbidden || apiErr.StatusCode == http.StatusNotFound)
+}
+
 // do handles auth token refresh + JSON marshalling + error envelope. Payloads
 // larger than 5 MiB are rejected to keep us honest.
 func (g *GoCardless) do(ctx context.Context, method, path string, body, out any) error {
-	if err := g.ensureToken(ctx); err != nil {
+	// The token is taken under the lock and carried out of it: reading the field
+	// here instead would race a refresh running for another connection's sync.
+	token, err := g.ensureToken(ctx)
+	if err != nil {
 		return err
 	}
 	var buf io.Reader
@@ -254,7 +300,7 @@ func (g *GoCardless) do(ctx context.Context, method, path string, body, out any)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("Authorization", "Bearer "+g.accessTok)
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := g.httpClient.Do(req)
 	if err != nil {
@@ -266,7 +312,7 @@ func (g *GoCardless) do(ctx context.Context, method, path string, body, out any)
 		return err
 	}
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("gocardless %s %s: %d %s", method, path, resp.StatusCode, string(raw))
+		return &GoCardlessError{StatusCode: resp.StatusCode, Body: errBody(raw), Subject: method + " " + path}
 	}
 	if out != nil && len(raw) > 0 {
 		return json.Unmarshal(raw, out)
@@ -274,43 +320,58 @@ func (g *GoCardless) do(ctx context.Context, method, path string, body, out any)
 	return nil
 }
 
-func (g *GoCardless) ensureToken(ctx context.Context) error {
+// RevokeConsent deletes the requisition, which is what ends our access to the
+// accounts behind it. A reference is either the durable requisition id or — for
+// a consent the user is still in the middle of — the session handle, which is
+// the same thing at GoCardless; both are deletable, and deleting a requisition
+// the user never finished is exactly as correct as deleting one they did.
+func (g *GoCardless) RevokeConsent(ctx context.Context, cred Credential) error {
+	if cred.Reference == "" {
+		return nil
+	}
+	return g.do(ctx, http.MethodDelete, "/requisitions/"+url.PathEscape(cred.Reference)+"/", nil, nil)
+}
+
+// ensureToken returns a live access token, minting one if the cached token is
+// missing or near expiry. It returns the token rather than leaving it in the
+// field so the caller never reads it without the lock.
+func (g *GoCardless) ensureToken(ctx context.Context) (string, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if g.accessTok != "" && time.Now().Before(g.accessExpAt) {
-		return nil
+		return g.accessTok, nil
 	}
 	body, err := json.Marshal(map[string]string{
 		"secret_id":  g.secretID,
 		"secret_key": g.secretKey,
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, g.baseURL+"/token/new/", bytes.NewReader(body))
 	if err != nil {
-		return err
+		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	resp, err := g.httpClient.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("gocardless token: %d %s", resp.StatusCode, string(raw))
+		return "", fmt.Errorf("gocardless token: %d %s", resp.StatusCode, errBody(raw))
 	}
 	var tok struct {
 		Access        string `json:"access"`
 		AccessExpires int    `json:"access_expires"`
 	}
 	if err := json.Unmarshal(raw, &tok); err != nil {
-		return err
+		return "", err
 	}
 	if tok.Access == "" {
-		return errors.New("gocardless token: empty access")
+		return "", errors.New("gocardless token: empty access")
 	}
 	g.accessTok = tok.Access
 	// Refresh 60s before expiry to avoid races around 401s.
@@ -319,7 +380,7 @@ func (g *GoCardless) ensureToken(ctx context.Context) error {
 		ttl = 30 * time.Minute
 	}
 	g.accessExpAt = time.Now().Add(ttl)
-	return nil
+	return g.accessTok, nil
 }
 
 // goCardlessTx matches the shape under /accounts/{id}/transactions/ booked or
@@ -341,8 +402,6 @@ type goCardlessTx struct {
 }
 
 // mapGoCardlessTx converts a provider row into our provider-agnostic shape.
-// Exported via the test-only alias MapGoCardlessTx so unit tests can pin the
-// behaviour.
 func mapGoCardlessTx(t goCardlessTx) (StatementLine, error) {
 	amount, err := decimal.NewFromString(t.TransactionAmount.Amount)
 	if err != nil {
@@ -368,15 +427,6 @@ func mapGoCardlessTx(t goCardlessTx) (StatementLine, error) {
 		Reference:    firstNonEmpty(t.EndToEndID, t.MandateID),
 		Raw:          raw,
 	}, nil
-}
-
-// MapGoCardlessTx is a test-visible alias for mapGoCardlessTx.
-func MapGoCardlessTx(payload []byte) (StatementLine, error) {
-	var t goCardlessTx
-	if err := json.Unmarshal(payload, &t); err != nil {
-		return StatementLine{}, err
-	}
-	return mapGoCardlessTx(t)
 }
 
 func parseDateOrZero(s string) time.Time {

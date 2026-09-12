@@ -55,9 +55,28 @@ var statementLineColumns = `
 	COALESCE(l.payee,''), COALESCE(l.description,''), COALESCE(l.counterparty,''),
 	COALESCE(l.reference,''), COALESCE(l.cheque_number,''), l.status, l.bank_transaction_id,
 	l.coded_at, l.coded_by, l.imported_at, l.created_at, l.auto_reconciled_at,
+	l.upstream_amount, l.upstream_posted_at, l.upstream_changed_at, l.upstream_removed_at,
+	-- The notice is NULL when the bank agrees with the coding; the projection
+	-- coalesces it so a reader never has to tell "no change" from "not read".
+	COALESCE(` + upstreamChangeExpr + `,''),
 	COALESCE(cli.account_code,''), COALESCE(ca.name,''),
 	(SELECT COUNT(*) FROM bank_statement_line_comments bslc
 	  WHERE bslc.statement_line_id = l.statement_line_id)`
+
+// upstreamChangeExpr is the single definition of "the bank disagrees with what
+// was booked", read off the columns the feed parks beside a coded line. The
+// projection and the count both go through it, so a notice can never show up in
+// one place and be missing from the other.
+//
+// The comparison is what makes the notice self-maintaining: it disappears the
+// moment the bank's version and the coding agree again, with no flag to keep in
+// step and nothing for a sync to remember.
+const upstreamChangeExpr = `CASE
+		WHEN l.upstream_removed_at IS NOT NULL THEN 'REMOVED'
+		WHEN l.upstream_amount IS NOT NULL
+		 AND (l.upstream_amount, l.upstream_posted_at)
+		     IS DISTINCT FROM (l.amount, l.posted_at) THEN 'MODIFIED'
+	END`
 
 // statementLineFrom reaches the coding of the transaction a line became and
 // gives the line its running balance.
@@ -116,6 +135,8 @@ func scanStatementLine(row pgx.Row) (*models.BankStatementLine, error) {
 		&s.Payee, &s.Description, &s.Counterparty,
 		&s.Reference, &s.ChequeNumber, &s.Status, &s.BankTransactionID,
 		&s.CodedAt, &s.CodedBy, &s.ImportedAt, &s.CreatedAt, &s.AutoReconciledAt,
+		&s.UpstreamAmount, &s.UpstreamPostedAt, &s.UpstreamChangedAt, &s.UpstreamRemovedAt,
+		&s.UpstreamChange,
 		&s.CodedAccountCode, &s.CodedAccountName,
 		&s.CommentCount,
 	)
@@ -431,6 +452,25 @@ func (r *BankStatementRepository) SetLineStatus(ctx context.Context, orgID, line
 		`UPDATE bank_statement_lines SET status=$3
 		 WHERE organisation_id=$1 AND statement_line_id=$2 AND status <> 'IMPORTED'`,
 		orgID, lineID, status)
+	if err != nil {
+		return err
+	}
+	if cmd.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// DismissUpstreamRemoval clears the notice that the bank withdrew a line we had
+// already booked. A restored restatement (the bank changing an amount we coded)
+// has no equivalent: that one is a standing difference between the two sets of
+// books, and the way to settle it is to correct the transaction, not to silence
+// the line.
+func (r *BankStatementRepository) DismissUpstreamRemoval(ctx context.Context, orgID, lineID uuid.UUID) error {
+	cmd, err := r.pool.Exec(ctx,
+		`UPDATE bank_statement_lines SET upstream_removed_at = NULL
+		 WHERE organisation_id = $1 AND statement_line_id = $2`,
+		orgID, lineID)
 	if err != nil {
 		return err
 	}
